@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.ddd.specialorder</groupId>
+    <artifactId>ddd-special-order-demo-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>ddd-special-order-demo-parent</name>
+    <description>DDD Special Order Demo Parent</description>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>backend</module>
+        <module>frontend</module>
+    </modules>
+
+    <properties>
+        <java.version>21</java.version>
+        <spring-boot.version>3.4.0</spring-boot.version>
+    </properties>
+</project>

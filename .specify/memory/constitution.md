@@ -1,50 +1,62 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# dddSpecilOrderDemo Constitution
+<!-- Sync Impact Report:
+- Version Change: 1.0.0 -> 1.1.0 (MyBatis Edition Specification)
+- Modified Principles:
+  - Pragmatic DDD -> Architecture & Integration (Specific MyBatis Rules)
+  - GRASP/RDD -> Domain Modeling (Rich Domain vs Anemic POJO)
+  - Test-First -> Database-First Workflow
+- Added Sections: Tech Stack, Persistence Rules, Query Safety
+- Templates Updated:
+  - .specify/templates/plan-template.md (Tech stack defaults set)
+  - .specify/templates/tasks-template.md (Workflow alignment: Schema -> MBG -> Test)
+-->
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Architecture & Integration (The MyBatis Rule)
+**Controller ➡ Repository ➡ MyBatis Mapper**.
+MyBatis Mappers and generated artifacts (XML, POJOs) are **Infrastructure**. They must never be exposed to the Web layer (Controllers) or directly used by Services without a Repository wrapper. This ensures the domain is decoupled from persistence details.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Domain Modeling Strategy (Rich Domain)
+**Domain Entity ≠ MBG POJO**.
+Avoid Anemic Domain Models. Do not use raw MyBatis Generator (MBG) POJOs as business objects if they only contain getters/setters.
+*   **Do**: Create "Rich" entities that inherit from POJOs or wrap them, adding business behaviors.
+*   **Don't**: Scatter business logic across Services while keeping objects empty.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Explicit Persistence
+**No Dirty Checking — Save Explicitly**.
+Unlike JPA, MyBatis does not automatically track changes. You **MUST** explicitly call `repository.save()` (or `update`) to persist changes to modified entities.
+*   **Workflow**: Retrieve → Modify → **Save** → Return.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Safe Querying & Interaction
+**Use Dynamic SQL / Example Classes**.
+For search and filtering, use MyBatis Dynamic SQL or MBG `Example` classes.
+*   **Prohibited**: String concatenation for SQL construction (SQL Injection risk).
+*   **Prohibited**: Complex joins in XML for simple reads (Keep it maintainable).
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Database-First Workflow (Test-Driven)
+**Schema ➡ Generator ➡ Test ➡ Implementation**.
+1.  Design Table Schema.
+2.  Run MyBatis Generator (MBG).
+3.  **Write Test**: Define how the Repository should behave.
+4.  Implement Repository using Mappers.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## Technology Stack
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
-
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
-
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+*   **Language**: Java 21 (LTS)
+*   **Framework**: Spring Boot 3.3+
+*   **Persistence**: MyBatis 3.5+ & MyBatis Generator (MBG)
+*   **Frontend**: Angular (Latest, Standalone)
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+### Amendment Process
+This constitution defines the "MyBatis Edition" architectural style for the project. Amendments changing the fundamental stack or layering require a Major version bump and migration plan.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+### Compliance
+Code reviews must reject:
+1.  Controllers injecting Mappers directly.
+2.  Service logic performing raw SQL string manipulation.
+3.  "Anemic" usage where business logic exists solely in Services.
+
+**Version**: 1.1.0 | **Ratified**: 2025-12-08 | **Last Amended**: 2025-12-08
