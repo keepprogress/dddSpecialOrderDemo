@@ -12,6 +12,7 @@
     <modules>
         <module>backend</module>
         <module>frontend</module>
+        <module>mybatis-generator</module>
     </modules>
 
     <properties>

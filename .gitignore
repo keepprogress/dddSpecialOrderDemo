@@ -27,3 +27,7 @@ logs/
 node_modules/
 dist/
 tmp/
+
+# Secrets
+application-secret.properties
+generator.properties
