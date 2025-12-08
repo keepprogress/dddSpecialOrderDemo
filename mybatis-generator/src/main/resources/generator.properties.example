@@ -1,0 +1,11 @@
+# =============================================================================
+# MyBatis Generator 資料庫連線設定範本 (generator.properties.example)
+# =============================================================================
+# 請複製此檔案為 generator.properties 並填入實際值
+# 此檔案 (generator.properties) 已被 .gitignore 排除，不會被提交
+# =============================================================================
+
+jdbc.driverClass=oracle.jdbc.OracleDriver
+jdbc.connectionURL=jdbc:oracle:thin:@//your-host:1521/your-service
+jdbc.userId=your_username
+jdbc.password=your_password

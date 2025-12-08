@@ -28,6 +28,16 @@ node_modules/
 dist/
 tmp/
 
-# Secrets
+# Secrets (敏感檔案 - 不可提交)
 application-secret.properties
 generator.properties
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+
+# Claude Code 本地設定 (settings.local.json 不應提交)
+.claude/settings.local.json

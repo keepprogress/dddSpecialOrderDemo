@@ -1,0 +1,39 @@
+# =============================================================================
+# Claude Code Ignore File
+# 這個檔案用來防止 LLM 讀取敏感資訊
+# =============================================================================
+
+# 敏感配置檔案
+**/application-secret.properties
+**/generator.properties
+
+# 環境變數檔案
+.env
+.env.*
+.env.local
+.env.*.local
+
+# 金鑰與憑證
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+*.pfx
+*.crt
+*.cer
+
+# 包含敏感資訊的目錄
+secrets/
+credentials/
+private/
+
+# 其他可能包含帳密的檔案
+*secret*
+*credential*
+*password*
+
+# AWS/Cloud 相關
+.aws/
+.gcp/
+.azure/
