@@ -61,4 +61,14 @@ public class AuthService {
             );
         }
     }
+
+    /**
+     * 記錄登出事件
+     *
+     * @param empId 員工ID
+     */
+    public void recordLogout(String empId) {
+        logger.info("Recording logout event for user: {}", empId);
+        // TODO: 可擴展至 AuditLogService 記錄到資料庫
+    }
 }

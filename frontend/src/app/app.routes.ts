@@ -58,6 +58,52 @@ export const routes: Routes = [
       import('./core/home/home.component').then((m) => m.HomeComponent),
     canActivate: [authGuard, loginContextGuard],
   },
+  // 導航列選單項目 (功能開發中)
+  {
+    path: 'orders',
+    loadComponent: () =>
+      import('./shared/components/placeholder/placeholder.component').then(
+        (m) => m.PlaceholderComponent
+      ),
+    canActivate: [authGuard, loginContextGuard],
+    data: { title: '訂單管理' },
+  },
+  {
+    path: 'returns',
+    loadComponent: () =>
+      import('./shared/components/placeholder/placeholder.component').then(
+        (m) => m.PlaceholderComponent
+      ),
+    canActivate: [authGuard, loginContextGuard],
+    data: { title: '退貨管理' },
+  },
+  {
+    path: 'shipping',
+    loadComponent: () =>
+      import('./shared/components/placeholder/placeholder.component').then(
+        (m) => m.PlaceholderComponent
+      ),
+    canActivate: [authGuard, loginContextGuard],
+    data: { title: '安運單管理' },
+  },
+  {
+    path: 'master',
+    loadComponent: () =>
+      import('./shared/components/placeholder/placeholder.component').then(
+        (m) => m.PlaceholderComponent
+      ),
+    canActivate: [authGuard, loginContextGuard],
+    data: { title: '主檔維護' },
+  },
+  {
+    path: 'reports',
+    loadComponent: () =>
+      import('./shared/components/placeholder/placeholder.component').then(
+        (m) => m.PlaceholderComponent
+      ),
+    canActivate: [authGuard, loginContextGuard],
+    data: { title: '報表' },
+  },
   {
     path: '**',
     redirectTo: 'home',

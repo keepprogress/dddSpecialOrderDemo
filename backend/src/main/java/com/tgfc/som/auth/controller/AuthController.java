@@ -51,4 +51,22 @@ public class AuthController {
             return ApiResponse.fail(response.errorMessage());
         }
     }
+
+    /**
+     * POST /auth/logout
+     * 登出審計事件 (記錄登出時間)
+     *
+     * @param jwt Keycloak JWT Token
+     * @return 登出結果
+     */
+    @PostMapping("/logout")
+    public ApiResponse<Void> logout(@AuthenticationPrincipal Jwt jwt) {
+        String username = JwtUtils.extractUsername(jwt);
+        logger.info("User {} logout", username);
+
+        // 記錄登出事件 (未來可擴展至 AuditLogService)
+        authService.recordLogout(username);
+
+        return ApiResponse.success("登出成功", null);
+    }
 }

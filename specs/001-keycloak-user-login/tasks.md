@@ -23,11 +23,11 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create backend package structure per plan.md in `backend/src/main/java/com/tgfc/som/`
-- [ ] T002 [P] Create frontend module structure per plan.md in `frontend/src/app/`
-- [ ] T003 [P] Add Spring Security OAuth2 Resource Server dependency to `backend/pom.xml`
-- [ ] T004 [P] Initialize Angular 21 project with standalone components in `frontend/`
-- [ ] T005 [P] Add keycloak-angular dependency to `frontend/package.json`
+- [x] T001 Create backend package structure per plan.md in `backend/src/main/java/com/tgfc/som/`
+- [x] T002 [P] Create frontend module structure per plan.md in `frontend/src/app/`
+- [x] T003 [P] Add Spring Security OAuth2 Resource Server dependency to `backend/pom.xml`
+- [x] T004 [P] Initialize Angular 21 project with standalone components in `frontend/`
+- [x] T005 [P] Add keycloak-angular dependency to `frontend/package.json`
 
 ---
 
@@ -39,32 +39,32 @@
 
 ### MyBatis Generator & Entity
 
-- [ ] T006 Create H2 schema script for 5 tables in `backend/src/main/resources/schema-h2.sql`
-- [ ] T007 Create sample data script in `backend/src/main/resources/data-h2.sql`
-- [ ] T008 Run MyBatisGenerator to produce Entity/Mapper for User, Channel, Store, UserMastStore, UserStore
+- [x] T006 Create H2 schema script for 5 tables in `backend/src/main/resources/schema-h2.sql`
+- [x] T007 Create sample data script in `backend/src/main/resources/data-h2.sql`
+- [x] T008 Run MyBatisGenerator to produce Entity/Mapper for User, Channel, Store, UserMastStore, UserStore
 
 ### Backend Security Configuration
 
-- [ ] T009 Configure Spring Security OAuth2 Resource Server in `backend/src/main/java/com/tgfc/som/common/config/SecurityConfig.java`
-- [ ] T010 [P] Configure CORS settings in `backend/src/main/resources/application.yml`
-- [ ] T011 [P] Add Keycloak JWT issuer-uri and jwk-set-uri to `backend/src/main/resources/application.yml`
-- [ ] T012 Create GlobalExceptionHandler in `backend/src/main/java/com/tgfc/som/common/exception/GlobalExceptionHandler.java`
+- [x] T009 Configure Spring Security OAuth2 Resource Server in `backend/src/main/java/com/tgfc/som/common/config/SecurityConfig.java`
+- [x] T010 [P] Configure CORS settings in `backend/src/main/resources/application.yml`
+- [x] T011 [P] Add Keycloak JWT issuer-uri and jwk-set-uri to `backend/src/main/resources/application.yml`
+- [x] T012 Create GlobalExceptionHandler in `backend/src/main/java/com/tgfc/som/common/exception/GlobalExceptionHandler.java`
 
 ### Frontend Keycloak Configuration
 
 > **Angular 21+ (Constitution XII)**: 使用 `inject()` 依賴注入、functional guards
 
-- [ ] T013 Configure keycloak-angular provider in `frontend/src/app/app.config.ts`
-- [ ] T014 [P] Create silent-check-sso.html in `frontend/src/`
-- [ ] T015 Create AuthInterceptor (use `inject()` for dependencies) in `frontend/src/app/auth/services/auth.interceptor.ts`
-- [ ] T016 Create AuthGuard (functional guard pattern) in `frontend/src/app/auth/guards/auth.guard.ts`
+- [x] T013 Configure keycloak-angular provider in `frontend/src/app/app.config.ts`
+- [x] T014 [P] Create silent-check-sso.html in `frontend/src/`
+- [x] T015 Create AuthInterceptor (use `inject()` for dependencies) in `frontend/src/app/auth/services/auth.interceptor.ts`
+- [x] T016 Create AuthGuard (functional guard pattern) in `frontend/src/app/auth/guards/auth.guard.ts`
 
 ### Shared Infrastructure
 
-- [ ] T017 Create UserDomainService with 6-checkpoint validation logic in `backend/src/main/java/com/tgfc/som/auth/domain/UserDomainService.java`
-- [ ] T018 [P] Create ValidationResult record in `backend/src/main/java/com/tgfc/som/auth/domain/ValidationResult.java`
-- [ ] T019 Create API Response DTOs using **Java Records** (Constitution X) in `backend/src/main/java/com/tgfc/som/auth/dto/`
-- [ ] T020 [P] Create frontend models (TypeScript interfaces matching API contracts) in `frontend/src/app/auth/models/`
+- [x] T017 Create UserDomainService with 6-checkpoint validation logic in `backend/src/main/java/com/tgfc/som/auth/domain/UserDomainService.java`
+- [x] T018 [P] Create ValidationResult record in `backend/src/main/java/com/tgfc/som/auth/domain/ValidationResult.java`
+- [x] T019 Create API Response DTOs using **Java Records** (Constitution X) in `backend/src/main/java/com/tgfc/som/auth/dto/`
+- [x] T020 [P] Create frontend models (TypeScript interfaces matching API contracts) in `frontend/src/app/auth/models/`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -78,29 +78,29 @@
 
 ### Backend Implementation for US1
 
-- [ ] T021 [US1] Create AuthController with POST /auth/validate endpoint in `backend/src/main/java/com/tgfc/som/auth/controller/AuthController.java`
-- [ ] T022 [US1] Create AuthService to orchestrate validation in `backend/src/main/java/com/tgfc/som/auth/service/AuthService.java`
-- [ ] T023 [US1] Implement JWT username extraction utility in `backend/src/main/java/com/tgfc/som/common/util/JwtUtils.java`
-- [ ] T024 [US1] Create UserValidationResponse **record** (Constitution X) in `backend/src/main/java/com/tgfc/som/auth/dto/UserValidationResponse.java`
-- [ ] T025 [US1] Create ValidationErrorResponse **record** (Constitution X) in `backend/src/main/java/com/tgfc/som/auth/dto/ValidationErrorResponse.java`
-- [ ] T026 [US1] Add health check endpoint GET /health in `backend/src/main/java/com/tgfc/som/common/controller/HealthController.java`
+- [x] T021 [US1] Create AuthController with POST /auth/validate endpoint in `backend/src/main/java/com/tgfc/som/auth/controller/AuthController.java`
+- [x] T022 [US1] Create AuthService to orchestrate validation in `backend/src/main/java/com/tgfc/som/auth/service/AuthService.java`
+- [x] T023 [US1] Implement JWT username extraction utility in `backend/src/main/java/com/tgfc/som/common/util/JwtUtils.java`
+- [x] T024 [US1] Create UserValidationResponse **record** (Constitution X) in `backend/src/main/java/com/tgfc/som/auth/dto/UserValidationResponse.java`
+- [x] T025 [US1] Create ValidationErrorResponse **record** (Constitution X) in `backend/src/main/java/com/tgfc/som/auth/dto/ValidationErrorResponse.java`
+- [x] T026 [US1] Add health check endpoint GET /health in `backend/src/main/java/com/tgfc/som/common/controller/HealthController.java`
 
 ### Frontend Implementation for US1
 
 > **Angular 21+ (Constitution XII)**: 所有元件必須使用 `standalone: true`、`inject()` 依賴注入、`@if/@for` 新控制流、`input()/output()` 信號式輸入輸出、`ChangeDetectionStrategy.OnPush`
 
-- [ ] T027 [US1] Create LoginComponent (standalone, redirect to Keycloak) in `frontend/src/app/auth/components/login/login.component.ts`
-- [ ] T028 [US1] Create AuthService for token management in `frontend/src/app/auth/services/auth.service.ts`
-- [ ] T029 [US1] Create TabManagerService for single-tab restriction in `frontend/src/app/auth/services/tab-manager.service.ts`
-- [ ] T030 [US1] Create TabBlockedComponent (standalone, OnPush) for "已在其他分頁開啟" message in `frontend/src/app/auth/components/tab-blocked/tab-blocked.component.ts`
-- [ ] T031 [US1] Create ValidationErrorComponent (standalone, OnPush) for 6-checkpoint failure messages in `frontend/src/app/auth/components/validation-error/validation-error.component.ts`
-- [ ] T032 [US1] Configure routes for login flow in `frontend/src/app/app.routes.ts`
+- [x] T027 [US1] Create LoginComponent (standalone, redirect to Keycloak) in `frontend/src/app/auth/components/login/login.component.ts`
+- [x] T028 [US1] Create AuthService for token management in `frontend/src/app/auth/services/auth.service.ts`
+- [x] T029 [US1] Create TabManagerService for single-tab restriction in `frontend/src/app/auth/services/tab-manager.service.ts`
+- [x] T030 [US1] Create TabBlockedComponent (standalone, OnPush) for "已在其他分頁開啟" message in `frontend/src/app/auth/components/tab-blocked/tab-blocked.component.ts`
+- [x] T031 [US1] Create ValidationErrorComponent (standalone, OnPush) for 6-checkpoint failure messages in `frontend/src/app/auth/components/validation-error/validation-error.component.ts`
+- [x] T032 [US1] Configure routes for login flow in `frontend/src/app/app.routes.ts`
 
 ### Integration for US1
 
-- [ ] T033 [US1] Wire AuthInterceptor to call POST /auth/validate after Keycloak login
-- [ ] T034 [US1] Handle validation errors and display appropriate messages
-- [ ] T035 [US1] Store LoginContext in LocalStorage after successful validation
+- [x] T033 [US1] Wire AuthInterceptor to call POST /auth/validate after Keycloak login
+- [x] T034 [US1] Handle validation errors and display appropriate messages
+- [x] T035 [US1] Store LoginContext in LocalStorage after successful validation
 
 **Checkpoint**: User Story 1 should be fully functional - users can login via Keycloak and pass 6-checkpoint validation
 
@@ -114,25 +114,25 @@
 
 ### Backend Implementation for US2
 
-- [ ] T036 [P] [US2] Create StoreController in `backend/src/main/java/com/tgfc/som/auth/controller/StoreController.java`
-- [ ] T037 [P] [US2] Create StoreService in `backend/src/main/java/com/tgfc/som/auth/service/StoreService.java`
-- [ ] T038 [US2] Implement GET /stores/mast endpoint to return user's master stores
-- [ ] T039 [US2] Implement GET /stores/support endpoint to return user's support stores
-- [ ] T040 [US2] Implement POST /stores/select endpoint to record store selection
-- [ ] T041 [US2] Create MastStoreResponse **record** (Constitution X) in `backend/src/main/java/com/tgfc/som/auth/dto/MastStoreResponse.java`
-- [ ] T042 [P] [US2] Create StoreResponse **record** (Constitution X) in `backend/src/main/java/com/tgfc/som/auth/dto/StoreResponse.java`
-- [ ] T043 [P] [US2] Create StoreSelectionRequest **record** (Constitution X) in `backend/src/main/java/com/tgfc/som/auth/dto/StoreSelectionRequest.java`
+- [x] T036 [P] [US2] Create StoreController in `backend/src/main/java/com/tgfc/som/auth/controller/StoreController.java`
+- [x] T037 [P] [US2] Create StoreService in `backend/src/main/java/com/tgfc/som/auth/service/StoreService.java`
+- [x] T038 [US2] Implement GET /stores/mast endpoint to return user's master stores
+- [x] T039 [US2] Implement GET /stores/support endpoint to return user's support stores
+- [x] T040 [US2] Implement POST /stores/select endpoint to record store selection
+- [x] T041 [US2] Create MastStoreResponse **record** (Constitution X) in `backend/src/main/java/com/tgfc/som/auth/dto/MastStoreResponse.java`
+- [x] T042 [P] [US2] Create StoreResponse **record** (Constitution X) in `backend/src/main/java/com/tgfc/som/auth/dto/StoreResponse.java`
+- [x] T043 [P] [US2] Create StoreSelectionRequest **record** (Constitution X) in `backend/src/main/java/com/tgfc/som/auth/dto/StoreSelectionRequest.java`
 
 ### Frontend Implementation for US2
 
 > **Angular 21+ (Constitution XII)**: 使用 Signals 管理選擇狀態、`@if/@for` 渲染清單、`input()/output()` 傳遞資料
 
-- [ ] T044 [US2] Create StoreSelectionComponent (standalone, OnPush, Signals) in `frontend/src/app/auth/components/store-selection/store-selection.component.ts`
-- [ ] T045 [US2] Create StoreService for store API calls in `frontend/src/app/auth/services/store.service.ts`
-- [ ] T046 [US2] Implement master store dropdown with "全區" option display (use `@for` with track)
-- [ ] T047 [US2] Implement support store multi-select (conditional display with `@if`)
-- [ ] T048 [US2] Implement auto-skip logic when only one master store exists (use `computed()`)
-- [ ] T049 [US2] Update LocalStorage with selected stores
+- [x] T044 [US2] Create StoreSelectionComponent (standalone, OnPush, Signals) in `frontend/src/app/auth/components/store-selection/store-selection.component.ts`
+- [x] T045 [US2] Create StoreService for store API calls in `frontend/src/app/auth/services/store.service.ts`
+- [x] T046 [US2] Implement master store dropdown with "全區" option display (use `@for` with track)
+- [x] T047 [US2] Implement support store multi-select (conditional display with `@if`)
+- [x] T048 [US2] Implement auto-skip logic when only one master store exists (use `computed()`)
+- [x] T049 [US2] Update LocalStorage with selected stores
 
 **Checkpoint**: User Story 2 should be fully functional - users can select stores after login
 
@@ -146,23 +146,23 @@
 
 ### Backend Implementation for US3
 
-- [ ] T050 [P] [US3] Create ChannelController in `backend/src/main/java/com/tgfc/som/auth/controller/ChannelController.java`
-- [ ] T051 [P] [US3] Create ChannelService in `backend/src/main/java/com/tgfc/som/auth/service/ChannelService.java`
-- [ ] T052 [US3] Implement GET /channels endpoint to return user's authorized channels
-- [ ] T053 [US3] Implement POST /channels/select endpoint to record channel selection
-- [ ] T054 [US3] Create ChannelResponse **record** (Constitution X) in `backend/src/main/java/com/tgfc/som/auth/dto/ChannelResponse.java`
-- [ ] T055 [P] [US3] Create ChannelSelectionRequest **record** (Constitution X) in `backend/src/main/java/com/tgfc/som/auth/dto/ChannelSelectionRequest.java`
+- [x] T050 [P] [US3] Create ChannelController in `backend/src/main/java/com/tgfc/som/auth/controller/ChannelController.java`
+- [x] T051 [P] [US3] Create ChannelService in `backend/src/main/java/com/tgfc/som/auth/service/ChannelService.java`
+- [x] T052 [US3] Implement GET /channels endpoint to return user's authorized channels
+- [x] T053 [US3] Implement POST /channels/select endpoint to record channel selection
+- [x] T054 [US3] Create ChannelResponse **record** (Constitution X) in `backend/src/main/java/com/tgfc/som/auth/dto/ChannelResponse.java`
+- [x] T055 [P] [US3] Create ChannelSelectionRequest **record** (Constitution X) in `backend/src/main/java/com/tgfc/som/auth/dto/ChannelSelectionRequest.java`
 
 ### Frontend Implementation for US3
 
 > **Angular 21+ (Constitution XII)**: 使用 Signals 管理選擇狀態、`@for` 渲染按鈕清單、`computed()` 處理自動跳過邏輯
 
-- [ ] T056 [US3] Create ChannelSelectionComponent (standalone, OnPush, Signals) in `frontend/src/app/auth/components/channel-selection/channel-selection.component.ts`
-- [ ] T057 [US3] Create ChannelService for channel API calls in `frontend/src/app/auth/services/channel.service.ts`
-- [ ] T058 [US3] Implement channel buttons based on SYSTEM_FLAG (use `@for` with track)
-- [ ] T059 [US3] Implement auto-skip logic when only one channel authorized (use `computed()`)
-- [ ] T060 [US3] Update LocalStorage with selected channel
-- [ ] T061 [US3] Navigate to home page after channel selection
+- [x] T056 [US3] Create ChannelSelectionComponent (standalone, OnPush, Signals) in `frontend/src/app/auth/components/channel-selection/channel-selection.component.ts`
+- [x] T057 [US3] Create ChannelService for channel API calls in `frontend/src/app/auth/services/channel.service.ts`
+- [x] T058 [US3] Implement channel buttons based on SYSTEM_FLAG (use `@for` with track)
+- [x] T059 [US3] Implement auto-skip logic when only one channel authorized (use `computed()`)
+- [x] T060 [US3] Update LocalStorage with selected channel
+- [x] T061 [US3] Navigate to home page after channel selection
 
 **Checkpoint**: User Story 3 should be fully functional - users can complete full login flow
 
@@ -183,15 +183,15 @@
 
 > **Angular 21+ (Constitution XII)**: 所有元件使用 standalone、OnPush、Signals；導航列使用 `@for` 渲染選單項目
 
-- [ ] T064 [P] [US4] Create NavBarComponent (standalone, OnPush) in `frontend/src/app/core/layout/nav-bar/nav-bar.component.ts`
+- [x] T064 [P] [US4] Create NavBarComponent (standalone, OnPush) in `frontend/src/app/core/layout/nav-bar/nav-bar.component.ts`
 - [ ] T065 [P] [US4] Create HeaderComponent (standalone, OnPush, Signals for user info) in `frontend/src/app/core/layout/header/header.component.ts`
-- [ ] T066 [US4] Create HomeComponent (standalone, OnPush) in `frontend/src/app/core/home/home.component.ts`
+- [x] T066 [US4] Create HomeComponent (standalone, OnPush) in `frontend/src/app/core/home/home.component.ts`
 - [ ] T067 [US4] Implement nav bar with menu items using `@for`: 訂單管理, 退貨管理, 安運單管理, 主檔維護, 報表
-- [ ] T068 [US4] Display user info in header using Signals: userName, selected store, selected channel
-- [ ] T069 [US4] Implement logout button - clear LocalStorage and redirect to login
-- [ ] T070 [US4] Implement "切換系統" button - navigate to store selection (keep Keycloak login)
+- [x] T068 [US4] Display user info in header using Signals: userName, selected store, selected channel
+- [x] T069 [US4] Implement logout button - clear LocalStorage and redirect to login
+- [x] T070 [US4] Implement "切換系統" button - navigate to store selection (keep Keycloak login)
 - [ ] T071 [US4] Create PlaceholderComponent (standalone, OnPush) for "功能開發中" pages in `frontend/src/app/shared/components/placeholder/placeholder.component.ts`
-- [ ] T072 [US4] Configure routes for all nav menu items
+- [x] T072 [US4] Configure routes for all nav menu items
 
 **Checkpoint**: User Story 4 should be fully functional - complete user experience from login to home page
 
