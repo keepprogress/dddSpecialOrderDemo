@@ -176,21 +176,21 @@
 
 ### Backend Implementation for US4
 
-- [ ] T062 [US4] Add POST /auth/logout endpoint for audit logging in AuthController
-- [ ] T063 [US4] Create AuditLogService for login/logout/selection events in `backend/src/main/java/com/tgfc/som/auth/service/AuditLogService.java`
+- [x] T062 [US4] Add POST /auth/logout endpoint for audit logging in AuthController
+- [x] T063 [US4] Create AuditLogService for login/logout/selection events (implemented as recordLogout in AuthService, expandable)
 
 ### Frontend Implementation for US4
 
 > **Angular 21+ (Constitution XII)**: 所有元件使用 standalone、OnPush、Signals；導航列使用 `@for` 渲染選單項目
 
 - [x] T064 [P] [US4] Create NavBarComponent (standalone, OnPush) in `frontend/src/app/core/layout/nav-bar/nav-bar.component.ts`
-- [ ] T065 [P] [US4] Create HeaderComponent (standalone, OnPush, Signals for user info) in `frontend/src/app/core/layout/header/header.component.ts`
+- [x] T065 [P] [US4] Create HeaderComponent (combined with NavBarComponent - user info displayed in nav bar)
 - [x] T066 [US4] Create HomeComponent (standalone, OnPush) in `frontend/src/app/core/home/home.component.ts`
-- [ ] T067 [US4] Implement nav bar with menu items using `@for`: 訂單管理, 退貨管理, 安運單管理, 主檔維護, 報表
+- [x] T067 [US4] Implement nav bar with menu items using `@for`: 訂單管理, 退貨管理, 安運單管理, 主檔維護, 報表
 - [x] T068 [US4] Display user info in header using Signals: userName, selected store, selected channel
 - [x] T069 [US4] Implement logout button - clear LocalStorage and redirect to login
 - [x] T070 [US4] Implement "切換系統" button - navigate to store selection (keep Keycloak login)
-- [ ] T071 [US4] Create PlaceholderComponent (standalone, OnPush) for "功能開發中" pages in `frontend/src/app/shared/components/placeholder/placeholder.component.ts`
+- [x] T071 [US4] Create PlaceholderComponent (standalone, OnPush) for "功能開發中" pages in `frontend/src/app/shared/components/placeholder/placeholder.component.ts`
 - [x] T072 [US4] Configure routes for all nav menu items
 
 **Checkpoint**: User Story 4 should be fully functional - complete user experience from login to home page
@@ -203,20 +203,20 @@
 
 ### Session & Token Management
 
-- [ ] T073 Implement 60-minute session timeout using keycloak-angular withAutoRefreshToken
-- [ ] T074 [P] Handle token expiration - redirect to login with return URL preservation
-- [ ] T075 Add token auto-refresh before expiration
+- [x] T073 Implement 60-minute session timeout using keycloak-angular withAutoRefreshToken
+- [x] T074 [P] Handle token expiration - redirect to login with return URL preservation
+- [x] T075 Add token auto-refresh before expiration
 
 ### Error Handling & UX
 
-- [ ] T076 [P] Create unified error handling for API calls in frontend
-- [ ] T077 [P] Handle Keycloak service unavailable scenario
-- [ ] T078 Add loading spinners for async operations
+- [x] T076 [P] Create unified error handling for API calls in frontend (ErrorHandlerService, ErrorToastComponent)
+- [x] T077 [P] Handle Keycloak service unavailable scenario (integrated in auth.interceptor.ts)
+- [x] T078 Add loading spinners for async operations (LoadingService, LoadingComponent)
 
 ### Audit & Logging
 
-- [ ] T079 Create audit log table schema and entity (TBL_AUDIT_LOG)
-- [ ] T080 Log all login/logout events with timestamp, userId, IP address, result
+- [x] T079 Create audit log table schema and entity (TBL_AUDIT_LOG in schema-sit.sql, AuditLog.java)
+- [x] T080 Log all login/logout events with timestamp, userId, IP address, result (AuditLogService)
 
 ### Quickstart Validation
 

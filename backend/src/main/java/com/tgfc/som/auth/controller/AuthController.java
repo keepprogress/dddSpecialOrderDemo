@@ -4,6 +4,7 @@ import com.tgfc.som.auth.dto.ApiResponse;
 import com.tgfc.som.auth.dto.UserValidationResponse;
 import com.tgfc.som.auth.service.AuthService;
 import com.tgfc.som.common.util.JwtUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -33,14 +34,19 @@ public class AuthController {
      * 驗證使用者 (6-checkpoint 驗證)
      *
      * @param jwt Keycloak JWT Token
+     * @param request HTTP 請求 (用於取得 IP 和 User-Agent)
      * @return UserValidationResponse 驗證結果
      */
     @PostMapping("/validate")
-    public ApiResponse<UserValidationResponse> validateUser(@AuthenticationPrincipal Jwt jwt) {
+    public ApiResponse<UserValidationResponse> validateUser(
+            @AuthenticationPrincipal Jwt jwt,
+            HttpServletRequest request) {
         String username = JwtUtils.extractUsername(jwt);
-        logger.info("Validating user: {}", username);
+        String ipAddress = getClientIp(request);
+        String userAgent = request.getHeader("User-Agent");
+        logger.info("Validating user: {} from IP: {}", username, ipAddress);
 
-        UserValidationResponse response = authService.validateUser(username);
+        UserValidationResponse response = authService.validateUser(username, ipAddress, userAgent);
 
         if (response.success()) {
             logger.info("User {} validation successful", username);
@@ -57,16 +63,35 @@ public class AuthController {
      * 登出審計事件 (記錄登出時間)
      *
      * @param jwt Keycloak JWT Token
+     * @param request HTTP 請求 (用於取得 IP 和 User-Agent)
      * @return 登出結果
      */
     @PostMapping("/logout")
-    public ApiResponse<Void> logout(@AuthenticationPrincipal Jwt jwt) {
+    public ApiResponse<Void> logout(
+            @AuthenticationPrincipal Jwt jwt,
+            HttpServletRequest request) {
         String username = JwtUtils.extractUsername(jwt);
-        logger.info("User {} logout", username);
+        String ipAddress = getClientIp(request);
+        String userAgent = request.getHeader("User-Agent");
+        logger.info("User {} logout from IP: {}", username, ipAddress);
 
-        // 記錄登出事件 (未來可擴展至 AuditLogService)
-        authService.recordLogout(username);
+        authService.recordLogout(username, ipAddress, userAgent);
 
         return ApiResponse.success("登出成功", null);
+    }
+
+    /**
+     * 取得客戶端 IP (支援 proxy)
+     */
+    private String getClientIp(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+        String xRealIp = request.getHeader("X-Real-IP");
+        if (xRealIp != null && !xRealIp.isEmpty()) {
+            return xRealIp;
+        }
+        return request.getRemoteAddr();
     }
 }

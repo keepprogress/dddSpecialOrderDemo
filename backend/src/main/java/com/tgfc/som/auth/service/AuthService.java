@@ -23,19 +23,23 @@ public class AuthService {
 
     private final UserMapper userMapper;
     private final UserDomainService userDomainService;
+    private final AuditLogService auditLogService;
 
-    public AuthService(UserMapper userMapper, UserDomainService userDomainService) {
+    public AuthService(UserMapper userMapper, UserDomainService userDomainService, AuditLogService auditLogService) {
         this.userMapper = userMapper;
         this.userDomainService = userDomainService;
+        this.auditLogService = auditLogService;
     }
 
     /**
      * 驗證使用者
      *
      * @param empId 員工ID (從 JWT 取得)
+     * @param ipAddress 客戶端 IP
+     * @param userAgent User-Agent
      * @return UserValidationResponse 驗證結果
      */
-    public UserValidationResponse validateUser(String empId) {
+    public UserValidationResponse validateUser(String empId, String ipAddress, String userAgent) {
         logger.debug("Starting user validation for: {}", empId);
 
         // 從資料庫查詢使用者 (UAT 主鍵為 EMP_ID)
@@ -50,11 +54,17 @@ public class AuthService {
                 userDomainService.parseSystemFlags(result.systemFlag())
             );
 
+            // 記錄驗證成功
+            auditLogService.logValidateSuccess(empId, user.getEmpName(), ipAddress, userAgent);
+
             return UserValidationResponse.success(
                 user.getEmpName(),
                 systemFlags
             );
         } else {
+            // 記錄驗證失敗
+            auditLogService.logValidateFail(empId, ipAddress, userAgent, result.errorCode(), result.errorMessage());
+
             return UserValidationResponse.fail(
                 result.errorCode(),
                 result.errorMessage()
@@ -66,9 +76,11 @@ public class AuthService {
      * 記錄登出事件
      *
      * @param empId 員工ID
+     * @param ipAddress 客戶端 IP
+     * @param userAgent User-Agent
      */
-    public void recordLogout(String empId) {
+    public void recordLogout(String empId, String ipAddress, String userAgent) {
         logger.info("Recording logout event for user: {}", empId);
-        // TODO: 可擴展至 AuditLogService 記錄到資料庫
+        auditLogService.logLogout(empId, null, ipAddress, userAgent);
     }
 }
