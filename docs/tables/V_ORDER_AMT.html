@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>V_ORDER_AMT - som.SOMDBA</title>
+        <!-- Tell the browser to be responsive to screen width -->
+        <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+        <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
+        <!-- Bootstrap 3.3.5 -->
+        <link rel="stylesheet" href="../bower/admin-lte/bootstrap/css/bootstrap.min.css">
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="../bower/font-awesome/css/font-awesome.min.css">
+        <!-- Ionicons -->
+        <link rel="stylesheet" href="../bower/ionicons/css/ionicons.min.css">
+        <!-- DataTables -->
+        <link rel="stylesheet" href="../bower/datatables.net-bs/css/dataTables.bootstrap.min.css">
+        <link rel="stylesheet" href="../bower/datatables.net-buttons-bs/css/buttons.bootstrap.min.css">
+        <!-- Code Mirror -->
+        <link rel="stylesheet" href="../bower/codemirror/codemirror.css">
+        <!-- Fonts -->
+        <link href='../fonts/indieflower/indie-flower.css' rel='stylesheet' type='text/css'>
+        <link href='../fonts/source-sans-pro/source-sans-pro.css' rel='stylesheet' type='text/css'>
+
+        <!-- Theme style -->
+        <link rel="stylesheet" href="../bower/admin-lte/dist/css/AdminLTE.min.css">
+        <!-- Salvattore -->
+        <link rel="stylesheet" href="../bower/salvattore/salvattore.css">
+        <!-- AdminLTE Skins. Choose a skin from the css/skins
+           folder instead of downloading all of them to reduce the load. -->
+        <link rel="stylesheet" href="../bower/admin-lte/dist/css/skins/_all-skins.min.css">
+        <!-- SchemaSpy -->
+        <link rel="stylesheet" href="../schemaSpy.css">
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+        <script src="../bower/html5shiv/html5shiv.min.js"></script>
+        <script src="../bower/respond/respond.min.js"></script>
+        <![endif]-->
+    </head>
+    <!-- ADD THE CLASS layout-top-nav TO REMOVE THE SIDEBAR. -->
+    <body class="hold-transition skin-blue layout-top-nav">
+        <div class="wrapper">
+            <header class="main-header">
+                <nav class="navbar navbar-static-top">
+                    <div class="container">
+                        <div class="navbar-header">
+                            <a href="../index.html" class="navbar-brand"><b>som</b></a><span class="navbar-brand" style="padding-left: 0">.SOMDBA</span>
+                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
+                        </div>
+
+                        <!-- Collect the nav links, forms, and other content for toggling -->
+                        <div class="collapse navbar-collapse pull-left" id="navbar-collapse">
+                            <ul class="nav navbar-nav">
+                                <li><a href="../index.html">Tables <span class="sr-only">(current)</span></a></li>
+                                <li><a href="../columns.html" title="All of the columns in the schema">Columns</a></li>
+                                <li><a href="../constraints.html" title="Useful for diagnosing error messages that just give constraint name or number">Constraints</a></li>
+                                <li><a href="../relationships.html" title="Diagram of table relationships">Relationships</a></li>
+                                <li><a href="../orphans.html" title="View of tables with neither parents nor children">Orphan&nbsp;Tables</a></li>
+                                <li><a href="../anomalies.html" title="Things that might not be quite right">Anomalies</a></li>
+                                <li><a href="../routines.html" title="Procedures and functions">Routines</a></li>
+                            </ul>
+                        </div>
+                        <!-- /.navbar-collapse -->
+                        <!-- Navbar Right Menu -->
+                    </div>
+                    <!-- /.container-fluid -->
+                </nav>
+            </header>
+            <!-- Main content -->
+            <!-- Full Width Column -->
+            <div class="content-wrapper">
+                <!-- Content Header (Page header) -->
+                <section class="content-header">
+                    <h1>V_ORDER_AMT</h1><p><span id="recordNumber">0</span> rows</p><br />
+                </section>
+                <!-- Main content -->
+                <section class="content">
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>
+                            <h3 id="Columns" class="box-title">Columns</h3>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
+                                <thead align='left'>
+                                <tr>
+                                    <th>Column</th>
+                                    <th>Type</th>
+                                    <th>Size</th>
+                                    <th title='Are nulls allowed?'>Nulls</th>
+                                    <th title='Is column automatically updated?'>Auto</th>
+                                    <th title='Default value'>Default</th>
+                                    <th title='Columns in tables that reference this column'>Children</th>
+                                    <th title='Columns in tables that are referenced by this column'>Parents</th>
+                                    <th title='Comments' class="toggle"><span>Comments</span></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td><span id="STORE_ID">STORE_ID</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>5</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="ORDER_ID">ORDER_ID</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="V_ORDER_AMT.ORDER_ID&#39;s name implies that it&#39;s a child of TBL_ORDER.ORDER_ID, but it doesn&#39;t reference that column."><a href='TBL_ORDER.html'>TBL_ORDER</a><span class='relatedKey'>.ORDER_ID</span></td>
+                                                <td class="constraint detail">Implied Constraint</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="CREATE_DATE">CREATE_DATE</span></td>
+                                    <td>DATE</td>
+                                    <td>7</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="ORDER_COUNT">ORDER_COUNT</span></td>
+                                    <td>NUMBER</td>
+                                    <td>0</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="ORDER_AMT">ORDER_AMT</span></td>
+                                    <td>NUMBER</td>
+                                    <td>0</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="GOODS_AMT">GOODS_AMT</span></td>
+                                    <td>NUMBER</td>
+                                    <td>0</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="I_PRICE">I_PRICE</span></td>
+                                    <td>NUMBER</td>
+                                    <td>0</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="I_DISCOUNT">I_DISCOUNT</span></td>
+                                    <td>NUMBER</td>
+                                    <td>0</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="DISCOUNT_AMT">DISCOUNT_AMT</span></td>
+                                    <td>NUMBER</td>
+                                    <td>0</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="BARCODE">BARCODE</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>13</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="SUB_DEPT_ID">SUB_DEPT_ID</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>3</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <i class="fa fa-code-fork"></i>
+                            <h3 id="Relationships" class="box-title">Relationships</h3>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <div class="nav-tabs-custom"><!-- Tabs within a box -->
+                                <h5>Close relationships within degrees of separation</h5>
+                                <ul class="nav nav-tabs pull-left ui-sortable-handle">
+                                    <li class="active"><a href="#oneDegreeImg-chart" data-toggle="tab" aria-expanded="true">One</a></li>
+                                    <li class=""><a href="#oneimpliedDegreeImg-chart" data-toggle="tab" aria-expanded="true">One implied</a></li>
+                                </ul>
+                                <div class="tab-content no-padding">
+                                    <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
+                                        
+                                        <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/V_ORDER_AMT.1degree.svg" class="diagram" border="0" align="left"></object></a>
+                                    </div>
+                                    <div class="chart tab-pane " id="oneimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
+                                        
+                                        <a name='diagram'><object type="image/svg+xml" id="oneimpliedDegreeImg" data="../diagrams/tables/V_ORDER_AMT.implied1degrees.svg" class="diagram" border="0" align="left"></object></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- /.box-body -->
+                    </div>
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <i class="fa fa-file-code-o"></i>
+                            <h3 id="ViewDefinition" class="box-title">View Definition</h3>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">select A.store_id,&#10;       A.order_id,&#10;       A.create_date,&#10;       sum(A.order_count) as order_count,&#10;       sum(A.order_amt) as order_amt,&#10;       sum(A.goods_amt) as goods_amt,&#10;       sum(A.i_price) as i_price,&#10;       sum(A.i_discount) as i_discount,&#10;       sum(A.discount_amt) as discount_amt,&#10;       A.barcode,&#10;       A.sub_dept_id&#10;  from (&#10;        --已付款或已結案&#10;        select o.store_id,&#10;                tod.create_date as create_date,&#10;                o.order_id,&#10;                --o.order_status_id,&#10;                --開單日&#10;                --trunc(o.create_date) as create_date,&#10;                --商品異動日&#10;                --trunc(tod.create_date) as update_date,&#10;                --開單日&#61;商品異動日 count+1&#10;                decode(trunc(tod.create_date), trunc(o.create_date), 1, 0) +&#10;                --商品負掉金額已將整張訂單負掉，count-1&#10;                 decode(o.total_price +&#10;                        (tod.p_act_pos_amt + tod.i_price + toc.discount),&#10;                        0,&#10;                        -1,&#10;                        0) as order_count,&#10;                tod.p_act_pos_amt + tod.i_price + toc.discount as order_amt,&#10;                tod.p_act_pos_amt as goods_amt,&#10;                tod.i_price as i_price,&#10;                toc.discount as i_discount,&#10;                tocd.act_total_price as discount_amt,&#10;                tod.barcode,&#10;                tod.sub_dept_id&#10;          from tbl_order o&#10;          left join tbl_order_compute tocd&#10;            on tocd.order_id &#61; o.order_id&#10;           and tocd.compute_type &#61; &#39;6&#39;&#10;          left join tbl_order_compute toc&#10;            on toc.order_id &#61; o.order_id&#10;           and toc.compute_type &#61; &#39;3&#39;&#10;          left join (SELECT c.order_id,c.barcode,c.sub_dept_id,&#10;                            trunc(c.create_date) as create_date,&#10;                            sum(NVL(DECODE(c.GOODS_TYPE,&#10;                                           &#39;CP&#39;,&#10;                                           NVL(c.ACT_POS_AMT, 0)),&#10;                                    0)) as cp_act_pos_amt,&#10;                            sum(NVL(DECODE(c.GOODS_TYPE,&#10;                                           &#39;DD&#39;,&#10;                                           NVL(c.ACT_DELIVERY_PRICE, 0),&#10;                                           &#39;VD&#39;,&#10;                                           NVL(c.ACT_DELIVERY_PRICE, 0)),&#10;                                    0)) as i_price,&#10;                            sum(NVL(DECODE(c.GOODS_TYPE,&#10;                                           &#39;P&#39;,&#10;                                           NVL(c.total_price, 0)),&#10;                                    0)) as p_act_pos_amt&#10;                       FROM tbl_order_detl c&#10;                      where c.NSKU_FLAG in (&#39;N&#39;, &#39;Y&#39;, &#39;C&#39;)&#10;                           --and c.sub_dept_id &#61; &#39;082&#39;&#10;                           --and c.class_id &#61; &#39;001&#39;&#10;                           --and c.sub_class_id &#61; &#39;001&#39;&#10;                        --and trunc(c.create_date) between date&#10;                      --&#39;2016-11-01&#39;&#10;                       -- and date &#39;2016-11-30&#39;&#10;                      group by c.order_id,c.barcode,c.sub_dept_id, trunc(c.create_date)) tod&#10;            ON (o.order_id &#61; tod.order_id)&#10;         where 1&#61;1&#10;         --o.store_id in (&#39;00751&#39;)&#10;              --排除二安單&#10;           and o.reinstall &#61; &#39;N&#39;&#10;              --排除金額為0的訂單&#10;           and (tod.p_act_pos_amt + tod.i_price + toc.act_total_price &lt;&gt; 0)&#10;           --and trunc(tod.create_date) between date&#10;         --&#39;2016-11-01&#39;&#10;          -- and date &#39;2016-11-30&#39;&#10;          -- and trunc(o.create_date) &lt;&#61; date&#10;         --&#39;2016-11-30&#39;&#10;              --排除當日作廢訂單&#10;           and decode(o.order_status_id,&#10;                      &#39;6&#39;,&#10;                      trunc(o.invalid_date),&#10;                      date &#39;9999-12-31&#39;) &lt;&gt; trunc(o.create_date)&#10;        union&#10;        --已作廢&#10;        select o.store_id,&#10;                trunc(o.invalid_date) as create_date,&#10;                o.order_id,&#10;                --o.order_status_id,&#10;                -1,&#10;                - (tod.p_act_pos_amt + tod.i_price + toc.discount)  as order_amt,&#10;                - (tod.p_act_pos_amt)  as goods_amt,&#10;                - (tod.i_price)  as i_price,&#10;                - (toc.discount)  as i_discount,&#10;                - (tocd.act_total_price)  as discount_amt,&#10;                tod.barcode,&#10;                tod.sub_dept_id&#10;          from tbl_order o&#10;          left join tbl_order_compute tocd&#10;            on tocd.order_id &#61; o.order_id&#10;           and tocd.compute_type &#61; &#39;6&#39;&#10;          left join tbl_order_compute toc&#10;            on toc.order_id &#61; o.order_id&#10;           and toc.compute_type &#61; &#39;3&#39;&#10;          left join (SELECT c.order_id,c.barcode,c.sub_dept_id,&#10;                            sum(NVL(DECODE(c.GOODS_TYPE,&#10;                                           &#39;CP&#39;,&#10;                                           NVL(c.ACT_POS_AMT, 0)),&#10;                                    0)) + sum(NVL(DECODE(c.GOODS_TYPE,&#10;                                                         &#39;CP&#39;,&#10;                                                         NVL(d.trans_amt, 0)),&#10;                                                  0)) cp_act_pos_amt,&#10;                            sum(NVL(DECODE(c.GOODS_TYPE,&#10;                                           &#39;DD&#39;,&#10;                                           NVL(c.ACT_DELIVERY_PRICE, 0),&#10;                                           &#39;VD&#39;,&#10;                                           NVL(c.ACT_DELIVERY_PRICE, 0)),&#10;                                    0)) + sum(NVL(DECODE(c.GOODS_TYPE,&#10;                                                         &#39;DD&#39;,&#10;                                                         NVL(d.trans_amt, 0),&#10;                                                         &#39;VD&#39;,&#10;                                                         NVL(d.trans_amt, 0)),&#10;                                                  0)) i_price,&#10;                            sum(NVL(DECODE(c.GOODS_TYPE,&#10;                                           &#39;P&#39;,&#10;                                           NVL(c.total_price, 0)),&#10;                                    0)) + sum(NVL(DECODE(c.GOODS_TYPE,&#10;                                                         &#39;P&#39;,&#10;                                                         NVL(d.trans_amt, 0)),&#10;                                                  0)) p_act_pos_amt&#10;                       FROM tbl_order_detl c&#10;                       left join tbl_trans_rtn_sku d&#10;                         on d.order_id &#61; c.order_id&#10;                        and d.detl_seq_id &#61; c.detl_seq_id&#10;                        and d.status in (&#39;N&#39;, &#39;B&#39;)&#10;                      where c.NSKU_FLAG &#61; &#39;N&#39;&#10;                     --and c.sub_dept_id &#61; &#39;082&#39;&#10;                     --and c.class_id &#61; &#39;001&#39;&#10;                     --and c.sub_class_id &#61; &#39;001&#39;&#10;                      group by c.order_id,c.barcode,c.sub_dept_id) tod&#10;            ON (o.order_id &#61; tod.order_id)&#10;         where 1&#61;1&#10;         --o.store_id in (&#39;00751&#39;)&#10;           and o.order_status_id &#61; &#39;6&#39;&#10;           and o.invalid_reason_id &lt;&gt; &#39;C0504&#39;&#10;              --排除當日作廢訂單&#10;           and trunc(o.create_date) &lt;&gt; trunc(o.invalid_date)&#10;              --排除二安單&#10;           and o.reinstall &#61; &#39;N&#39;&#10;              --排除金額為0的訂單&#10;           and (tod.p_act_pos_amt + tod.i_price + toc.act_total_price &lt;&gt; 0)&#10;           --and trunc(o.invalid_date) between date &#39;2016-11-01&#39; and date&#10;        -- &#39;2016-11-30&#39;&#10;        union&#10;        --已退貨&#10;        select o.store_id,&#10;                ttm.trans_date as create_date,&#10;                o.order_id,&#10;                decode(o.total_price + (tod.p_act_pos_amt + tod.i_price),&#10;                       0,&#10;                       -1,&#10;                       0) as ordeR_count,&#10;                tod.p_act_pos_amt + tod.i_price as order_amt,&#10;                tod.p_act_pos_amt as goods_amt,&#10;                tod.i_price as i_price,&#10;                0 as i_discount,&#10;                0 as discount_amt,&#10;                tod.barcode,&#10;                tod.sub_dept_id&#10;          from tbl_order o&#10;         inner join tbl_trans_mast ttm&#10;            on ttm.order_id &#61; o.order_id&#10;           and ttm.trans_type &#61; &#39;B&#39;&#10;           and ttm.status in (&#39;B&#39;, &#39;N&#39;)&#10;         inner join (SELECT c.order_id,c.barcode,c.sub_dept_id,&#10;                            d.download_seq_id,&#10;                            sum(NVL(DECODE(c.GOODS_TYPE,&#10;                                           &#39;CP&#39;,&#10;                                           NVL(d.trans_amt, 0)),&#10;                                    0)) cp_act_pos_amt,&#10;                            sum(NVL(DECODE(c.GOODS_TYPE,&#10;                                           &#39;DD&#39;,&#10;                                           NVL(d.trans_amt, 0),&#10;                                           &#39;VD&#39;,&#10;                                           NVL(d.trans_amt, 0)),&#10;                                    0)) i_price,&#10;                            sum(NVL(DECODE(c.GOODS_TYPE,&#10;                                           &#39;P&#39;,&#10;                                           NVL(d.trans_amt, 0)),&#10;                                    0)) p_act_pos_amt&#10;                       FROM tbl_order_detl c&#10;                       left join tbl_trans_rtn_sku d&#10;                         on d.order_id &#61; c.order_id&#10;                        and d.detl_seq_id &#61; c.detl_seq_id&#10;                        and d.status &#61; &#39;N&#39;&#10;                      where c.NSKU_FLAG &#61; &#39;N&#39;&#10;                     --and c.sub_dept_id &#61; &#39;082&#39;&#10;                     --and c.class_id &#61; &#39;001&#39;&#10;                     --and c.sub_class_id &#61; &#39;001&#39;&#10;                      group by c.order_id, d.download_seq_id,c.barcode,c.sub_dept_id) tod&#10;            ON o.order_id &#61; tod.order_id and tod.download_seq_id &#61; ttm.download_seq_id&#10;         where 1&#61;1&#10;         --o.store_id in (&#39;00751&#39;)&#10;              --排除二安單&#10;           and o.reinstall &#61; &#39;N&#39;&#10;              --排除金額為0的訂單&#10;           and (tod.p_act_pos_amt + tod.i_price &lt;&gt; 0)&#10;           --and ttm.trans_date between date &#39;2016-11-01&#39; and date&#10;         --&#39;2016-11-30&#39;&#10;         ) A&#10; group by A.store_id,A.order_id, A.create_date,A.barcode,A.sub_dept_id</textarea>
+                            <div style="padding-top: 5px;"><hr></div>
+                            <div class="box box-solid">
+                                <div class="box-header with-border">
+                                    <i class="fa fa-puzzle-piece"></i>
+                                    <h3 class="box-title">Possibly Referenced Tables/Views</h3>
+                                </div>
+                                <!-- /.box-header -->
+                                <div class="box-body">
+                                    <ul class="list-unstyled">
+                                        <li><a href="TBL_ORDER.html">TBL_ORDER</a></li>
+                                        <li><a href="TBL_ORDER_COMPUTE.html">TBL_ORDER_COMPUTE</a></li>
+                                        <li><a href="TBL_ORDER_DETL.html">TBL_ORDER_DETL</a></li>
+                                        <li><a href="TBL_TRANS_RTN_SKU.html">TBL_TRANS_RTN_SKU</a></li>
+                                        <li><a href="TBL_TRANS_MAST.html">TBL_TRANS_MAST</a></li>
+                                    </ul>
+                                </div><!-- /.box-body -->
+                            </div>
+                        </div><!-- /.box-body -->
+                    </div>
+                </section>
+                <script>
+                    var config = {
+                        pagination: true
+                    }
+                </script>
+            </div>
+            <!-- /.content-wrapper -->
+            <footer class="main-footer">
+                <div>
+                    <div class="pull-right hidden-xs">
+                        <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
+                        <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
+                    </div>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 7.0.2</a></strong>
+                </div>
+                <!-- /.container -->
+            </footer>
+        </div>
+        <!-- ./wrapper -->
+
+        <!-- jQuery 2.2.3 -->
+        <script src="../bower/admin-lte/plugins/jQuery/jquery-2.2.3.min.js"></script>
+        <script src="../bower/admin-lte/plugins/jQueryUI/jquery-ui.min.js"></script>
+        <!-- Bootstrap 3.3.5 -->
+        <script src="../bower/admin-lte/bootstrap/js/bootstrap.min.js"></script>
+        <!-- DataTables -->
+        <script src="../bower/datatables.net/jquery.dataTables.min.js"></script>
+        <script src="../bower/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+        <script src="../bower/datatables.net-buttons/dataTables.buttons.min.js"></script>
+        <script src="../bower/datatables.net-buttons-bs/js/buttons.bootstrap.min.js"></script>
+        <script src="../bower/datatables.net-buttons/buttons.html5.min.js"></script>
+        <script src="../bower/datatables.net-buttons/buttons.print.min.js"></script>
+        <script src="../bower/datatables.net-buttons/buttons.colVis.min.js"></script>
+        <!-- SheetJS -->
+        <script src="../bower/js-xlsx/xlsx.full.min.js"></script>
+        <!-- pdfmake -->
+        <script src="../bower/pdfmake/pdfmake.min.js"></script>
+        <script src="../bower/pdfmake/vfs_fonts.js"></script>
+        <!-- SlimScroll -->
+        <script src="../bower/admin-lte/plugins/slimScroll/jquery.slimscroll.min.js"></script>
+        <!-- FastClick -->
+        <script src="../bower/admin-lte/plugins/fastclick/fastclick.js"></script>
+        <!-- Salvattore -->
+        <script src="../bower/salvattore/salvattore.min.js"></script>
+        <!-- AnchorJS -->
+        <script src="../bower/anchor-js/anchor.min.js"></script>
+        <!-- CodeMirror -->
+        <script src="../bower/codemirror/codemirror.js"></script>
+        <script src="../bower/codemirror/sql.js"></script>
+        <!-- AdminLTE App -->
+        <script src="../bower/admin-lte/dist/js/app.min.js"></script>
+        <script src="table.js"></script>
+        <script src="../schemaSpy.js"></script>
+    </body>
+</html>

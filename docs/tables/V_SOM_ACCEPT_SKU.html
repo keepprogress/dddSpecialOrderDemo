@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>V_SOM_ACCEPT_SKU - som.SOMDBA</title>
+        <!-- Tell the browser to be responsive to screen width -->
+        <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+        <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
+        <!-- Bootstrap 3.3.5 -->
+        <link rel="stylesheet" href="../bower/admin-lte/bootstrap/css/bootstrap.min.css">
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="../bower/font-awesome/css/font-awesome.min.css">
+        <!-- Ionicons -->
+        <link rel="stylesheet" href="../bower/ionicons/css/ionicons.min.css">
+        <!-- DataTables -->
+        <link rel="stylesheet" href="../bower/datatables.net-bs/css/dataTables.bootstrap.min.css">
+        <link rel="stylesheet" href="../bower/datatables.net-buttons-bs/css/buttons.bootstrap.min.css">
+        <!-- Code Mirror -->
+        <link rel="stylesheet" href="../bower/codemirror/codemirror.css">
+        <!-- Fonts -->
+        <link href='../fonts/indieflower/indie-flower.css' rel='stylesheet' type='text/css'>
+        <link href='../fonts/source-sans-pro/source-sans-pro.css' rel='stylesheet' type='text/css'>
+
+        <!-- Theme style -->
+        <link rel="stylesheet" href="../bower/admin-lte/dist/css/AdminLTE.min.css">
+        <!-- Salvattore -->
+        <link rel="stylesheet" href="../bower/salvattore/salvattore.css">
+        <!-- AdminLTE Skins. Choose a skin from the css/skins
+           folder instead of downloading all of them to reduce the load. -->
+        <link rel="stylesheet" href="../bower/admin-lte/dist/css/skins/_all-skins.min.css">
+        <!-- SchemaSpy -->
+        <link rel="stylesheet" href="../schemaSpy.css">
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+        <script src="../bower/html5shiv/html5shiv.min.js"></script>
+        <script src="../bower/respond/respond.min.js"></script>
+        <![endif]-->
+    </head>
+    <!-- ADD THE CLASS layout-top-nav TO REMOVE THE SIDEBAR. -->
+    <body class="hold-transition skin-blue layout-top-nav">
+        <div class="wrapper">
+            <header class="main-header">
+                <nav class="navbar navbar-static-top">
+                    <div class="container">
+                        <div class="navbar-header">
+                            <a href="../index.html" class="navbar-brand"><b>som</b></a><span class="navbar-brand" style="padding-left: 0">.SOMDBA</span>
+                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
+                        </div>
+
+                        <!-- Collect the nav links, forms, and other content for toggling -->
+                        <div class="collapse navbar-collapse pull-left" id="navbar-collapse">
+                            <ul class="nav navbar-nav">
+                                <li><a href="../index.html">Tables <span class="sr-only">(current)</span></a></li>
+                                <li><a href="../columns.html" title="All of the columns in the schema">Columns</a></li>
+                                <li><a href="../constraints.html" title="Useful for diagnosing error messages that just give constraint name or number">Constraints</a></li>
+                                <li><a href="../relationships.html" title="Diagram of table relationships">Relationships</a></li>
+                                <li><a href="../orphans.html" title="View of tables with neither parents nor children">Orphan&nbsp;Tables</a></li>
+                                <li><a href="../anomalies.html" title="Things that might not be quite right">Anomalies</a></li>
+                                <li><a href="../routines.html" title="Procedures and functions">Routines</a></li>
+                            </ul>
+                        </div>
+                        <!-- /.navbar-collapse -->
+                        <!-- Navbar Right Menu -->
+                    </div>
+                    <!-- /.container-fluid -->
+                </nav>
+            </header>
+            <!-- Main content -->
+            <!-- Full Width Column -->
+            <div class="content-wrapper">
+                <!-- Content Header (Page header) -->
+                <section class="content-header">
+                    <h1>V_SOM_ACCEPT_SKU</h1><p><span id="recordNumber">0</span> rows</p><br />
+                </section>
+                <!-- Main content -->
+                <section class="content">
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>
+                            <h3 id="Columns" class="box-title">Columns</h3>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
+                                <thead align='left'>
+                                <tr>
+                                    <th>Column</th>
+                                    <th>Type</th>
+                                    <th>Size</th>
+                                    <th title='Are nulls allowed?'>Nulls</th>
+                                    <th title='Is column automatically updated?'>Auto</th>
+                                    <th title='Default value'>Default</th>
+                                    <th title='Columns in tables that reference this column'>Children</th>
+                                    <th title='Columns in tables that are referenced by this column'>Parents</th>
+                                    <th title='Comments' class="toggle"><span>Comments</span></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="PROJECT_ID">PROJECT_ID</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>20</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="V_SOM_ACCEPT_SKU.PROJECT_ID&#39;s name implies that it&#39;s a child of TBL_PROJECT_MAST.PROJECT_ID, but it doesn&#39;t reference that column."><a href='TBL_PROJECT_MAST.html'>TBL_PROJECT_MAST</a><span class='relatedKey'>.PROJECT_ID</span></td>
+                                                <td class="constraint detail">Implied Constraint</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="ORDER_ID">ORDER_ID</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>10</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="V_SOM_ACCEPT_SKU.ORDER_ID&#39;s name implies that it&#39;s a child of TBL_ORDER.ORDER_ID, but it doesn&#39;t reference that column."><a href='TBL_ORDER.html'>TBL_ORDER</a><span class='relatedKey'>.ORDER_ID</span></td>
+                                                <td class="constraint detail">Implied Constraint</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="FORM_NO">FORM_NO</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>14</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="CHANNEL_ID">CHANNEL_ID</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>5</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="V_SOM_ACCEPT_SKU.CHANNEL_ID&#39;s name implies that it&#39;s a child of TBL_CHANNEL.CHANNEL_ID, but it doesn&#39;t reference that column."><a href='TBL_CHANNEL.html'>TBL_CHANNEL</a><span class='relatedKey'>.CHANNEL_ID</span></td>
+                                                <td class="constraint detail">Implied Constraint</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="SITE_ID">SITE_ID</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>4</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="MEMBER_CARD_ID">MEMBER_CARD_ID</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>13</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="MEMBER_NAME">MEMBER_NAME</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>40</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="INSTALL_ADDR_ZIP">INSTALL_ADDR_ZIP</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>3</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="ZIP_CITY">ZIP_CITY</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>80</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="INSTALL_ADDR">INSTALL_ADDR</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>60</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="WORKTYPE_ID">WORKTYPE_ID</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>4</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="V_SOM_ACCEPT_SKU.WORKTYPE_ID&#39;s name implies that it&#39;s a child of TBL_WORKTYPE.WORKTYPE_ID, but it doesn&#39;t reference that column."><a href='TBL_WORKTYPE.html'>TBL_WORKTYPE</a><span class='relatedKey'>.WORKTYPE_ID</span></td>
+                                                <td class="constraint detail">Implied Constraint</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="WORKTYPE_NAME">WORKTYPE_NAME</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>60</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="WORKAGENT_ID">WORKAGENT_ID</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="V_SOM_ACCEPT_SKU.WORKAGENT_ID&#39;s name implies that it&#39;s a child of TBL_WKSTM_EX_VENDOR.WORKAGENT_ID, but it doesn&#39;t reference that column."><a href='TBL_WKSTM_EX_VENDOR.html'>TBL_WKSTM_EX_VENDOR</a><span class='relatedKey'>.WORKAGENT_ID</span></td>
+                                                <td class="constraint detail">Implied Constraint</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="WORKAGENT_NAME">WORKAGENT_NAME</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>60</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="HISU_WORKAGENT_ID">HISU_WORKAGENT_ID</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>15</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="HISU_WORKAGENT_NAME">HISU_WORKAGENT_NAME</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>60</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="RC_DATE">RC_DATE</span></td>
+                                    <td>DATE</td>
+                                    <td>7</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="ORDER_SEQ_ID">ORDER_SEQ_ID</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>5</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="SKU_NO">SKU_NO</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>9</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="SKU_NAME">SKU_NAME</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>50</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="QUANTITY">QUANTITY</span></td>
+                                    <td>NUMBER</td>
+                                    <td>8</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="RC_QTY">RC_QTY</span></td>
+                                    <td>NUMBER</td>
+                                    <td>0</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="INSTALL_FLAG">INSTALL_FLAG</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>1</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="DELIVERY_FLAG">DELIVERY_FLAG</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>1</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="SKU_TYPE">SKU_TYPE</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <i class="fa fa-code-fork"></i>
+                            <h3 id="Relationships" class="box-title">Relationships</h3>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <div class="nav-tabs-custom"><!-- Tabs within a box -->
+                                <h5>Close relationships within degrees of separation</h5>
+                                <ul class="nav nav-tabs pull-left ui-sortable-handle">
+                                    <li class="active"><a href="#oneDegreeImg-chart" data-toggle="tab" aria-expanded="true">One</a></li>
+                                    <li class=""><a href="#oneimpliedDegreeImg-chart" data-toggle="tab" aria-expanded="true">One implied</a></li>
+                                </ul>
+                                <div class="tab-content no-padding">
+                                    <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
+                                        
+                                        <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/V_SOM_ACCEPT_SKU.1degree.svg" class="diagram" border="0" align="left"></object></a>
+                                    </div>
+                                    <div class="chart tab-pane " id="oneimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
+                                        
+                                        <a name='diagram'><object type="image/svg+xml" id="oneimpliedDegreeImg" data="../diagrams/tables/V_SOM_ACCEPT_SKU.implied1degrees.svg" class="diagram" border="0" align="left"></object></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- /.box-body -->
+                    </div>
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <i class="fa fa-file-code-o"></i>
+                            <h3 id="ViewDefinition" class="box-title">View Definition</h3>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">SELECT&#10;    so.project_id,&#10;    so.order_id  ,&#10;    (&#10;        CASE&#10;            WHEN ins.installation_id IS NULL&#10;            THEN (&#10;                    CASE&#10;                        WHEN pod.po_id IS NULL&#10;                        THEN (&#10;                                CASE&#10;                                    WHEN tp.pickup_id IS NULL&#10;                                    THEN &#39;&#39;&#10;                                    ELSE tp.pickup_id&#10;                                END)&#10;                        ELSE pod.po_id&#10;                    END)&#10;            ELSE ins.installation_id&#10;        END) AS form_no ,&#10;    (&#10;     SELECT&#10;            sap_channel&#10;       FROM&#10;            tbl_channel&#10;      WHERE&#10;            channel_id&#61;so.channel_id) AS channel_id ,&#10;    (&#10;     SELECT&#10;            site_id&#10;       FROM&#10;            tbl_store&#10;      WHERE&#10;            store_id&#61;so.store_id) AS site_id ,&#10;    so.member_card_id                        ,&#10;    so.member_name                           ,&#10;    so.install_addr_zip                      ,&#10;    (&#10;     SELECT&#10;            zcity.district_name||zipc.district_name&#10;       FROM&#10;            tbl_district zipc&#10;  LEFT JOIN&#10;            tbl_district zcity&#10;         ON&#10;            zcity.district_id&#61;zipc.parent_district_id&#10;      WHERE&#10;            zipc.district_id&#61;so.install_addr_zip) AS zip_city ,&#10;    so.install_addr                                           ,&#10;    ins.worktype_id                                           ,&#10;    ins.worktype_name                                         ,&#10;    ins.workagent_id                                          ,&#10;    ins.workagent_name                                        ,&#10;    ins.hisu_workagent_id                                     ,&#10;    ins.hisu_workagent_name                                   ,&#10;    ta.upd_date     AS rc_date                                    ,&#10;    sod.detl_seq_id AS order_seq_id                               ,&#10;    sod.sku_no                                                    ,&#10;    sod.sku_name                                                  ,&#10;    sod.quantity                                                  ,&#10;    (&#10;        CASE&#10;            WHEN ins.receive_quantity IS NULL&#10;            THEN (&#10;                    CASE&#10;                        WHEN pod.rc_quantity IS NULL&#10;                        THEN (&#10;                                CASE&#10;                                    WHEN tp.pickup_qty IS NULL&#10;                                    THEN sod.quantity&#10;                                    ELSE tp.pickup_qty&#10;                                END)&#10;                        ELSE pod.rc_quantity&#10;                    END )&#10;            ELSE ins.receive_quantity&#10;        END) AS rc_qty ,&#10;    sod.install_flag   ,&#10;    sod.delivery_flag  ,&#10;    (&#10;SELECT DISTINCT&#10;            sku_type&#10;       FROM&#10;            tbl_sku&#10;      WHERE&#10;            sku_no&#61;sod.sku_no) AS sku_type&#10;FROM&#10;    (&#10;     SELECT&#10;            ti.order_id    ,&#10;            ti.store_id    ,&#10;            td.order_seq_id,&#10;            td.sku         ,&#10;            td.trans_qty   ,&#10;            MAX(ti.upd_date) AS upd_date&#10;       FROM&#10;            tbl_inadvance_mast ti,&#10;            tbl_inadvance_sku td&#10;      WHERE&#10;            ti.seq_id    &#61;td.seq_id&#10;        AND ti.order_id  &#61;td.order_id&#10;        AND ti.trans_flag&#61;&#39;C&#39;&#10;   GROUP BY&#10;            ti.order_id    ,&#10;            ti.store_id    ,&#10;            td.order_seq_id,&#10;            td.sku         ,&#10;            td.trans_qty ) ta&#10;INNER JOIN&#10;    tbl_order so&#10; ON&#10;    so.order_id&#61;ta.order_id&#10;AND so.store_id&#61;ta.store_id&#10;AND so.order_status_id IN (&#39;3&#39;,&#10;                           &#39;5&#39;)&#10;INNER JOIN&#10;    tbl_order_detl sod&#10; ON&#10;    sod.order_id   &#61;so.order_id&#10;AND sod.detl_seq_id&#61;ta.order_seq_id&#10;AND sod.sku_no     &#61;ta.sku&#10;LEFT JOIN&#10;    tbl_order_detl soc&#10; ON&#10;    soc.order_id     &#61;sod.order_id&#10;AND soc.detl_seq_id  &#61;sod.detl_seq_id&#10;AND soc.sku_no       &#61;sod.sku_no&#10;AND soc.delivery_flag&#61;&#39;C&#39;&#10;LEFT JOIN&#10;    (&#10;     SELECT&#10;            a.project_id          ,&#10;            a.order_id            ,&#10;            a.installation_id     ,&#10;            a.channel_id          ,&#10;            a.store_id            ,&#10;            a.system_flag         ,&#10;            a.status              ,&#10;            a.worktype_id         ,&#10;            a.worktype_name       ,&#10;            a.workagent_id        ,&#10;            a.workagent_name      ,&#10;            a.hisu_workagent_id   ,&#10;            a.hisu_workagent_name ,&#10;            a.install_accept_time ,&#10;            b.sku_no              ,&#10;            b.parent_seq_id       ,&#10;            b.quantity            ,&#10;            b.receive_quantity    ,&#10;            b.receive_date&#10;       FROM&#10;            tbl_installation a,&#10;            tbl_install_detl b&#10;      WHERE&#10;            a.order_id       &#61;b.order_id&#10;        AND a.installation_id&#61;b.installation_id&#10;        AND a.status IN (&#39;1&#39;,&#10;                         &#39;2&#39;,&#10;                         &#39;3&#39;,&#10;                         &#39;4&#39;,&#10;                         &#39;5&#39;,&#10;                         &#39;A&#39;)&#10;        AND b.goods_type             &#61;&#39;P&#39;&#10;        AND b.receive_date IS NOT NULL ) ins&#10; ON&#10;    ins.order_id     &#61;ta.order_id&#10;AND ins.parent_seq_id&#61;ta.order_seq_id&#10;AND ins.sku_no       &#61;ta.sku --and trunc(ins.receive_date) &#61; trunc(ta.upd_date)&#10;LEFT JOIN&#10;    (&#10;     SELECT&#10;            tpo.project_id                 ,&#10;            tpo.order_id                   ,&#10;            tpo.po_id                      ,&#10;            tpo.store_id                   ,&#10;            tpo.channel_id                 ,&#10;            tpo.status                     ,&#10;            tpo.rc_date                    ,&#10;            tpd.detl_seq_id AS order_seq_id,&#10;            tpd.sku_no                     ,&#10;            tpd.sku_name                   ,&#10;            tpd.quantity                   ,&#10;            tpd.rc_quantity&#10;       FROM&#10;            tbl_vendor_po_mast tpo,&#10;            tbl_vendor_po_detl tpd&#10;      WHERE&#10;            tpo.order_id&#61;tpd.order_id&#10;        AND tpo.store_id&#61;tpd.store_id&#10;        AND tpo.po_id   &#61;tpd.po_id&#10;        AND tpo.status IN (&#39;1&#39;,&#10;                           &#39;2&#39;) ) pod&#10; ON&#10;    pod.order_id    &#61;ta.order_id&#10;AND pod.order_seq_id&#61;ta.order_seq_id&#10;AND pod.sku_no      &#61;ta.sku --and trunc(pod.rc_date)&#61;trunc(ta.upd_date)&#10;LEFT JOIN&#10;    (&#10;     SELECT&#10;            a.project_id ,&#10;            a.order_id   ,&#10;            a.pickup_id  ,&#10;            a.store_id   ,&#10;            a.channel_id ,&#10;            a.system_flag,&#10;            a.status     ,&#10;            b.detl_seq_id,&#10;            b.sku_no     ,&#10;            b.quantity   ,&#10;            b.pickup_qty ,&#10;            b.pickup_time&#10;       FROM&#10;            tbl_pickup_mast a,&#10;            tbl_pickup_detl b&#10;      WHERE&#10;            a.store_id &#61;b.store_id&#10;        AND a.pickup_id&#61;b.pickup_id&#10;        AND a.status IN (&#39;1&#39;,&#10;                         &#39;5&#39;)) tp&#10; ON&#10;    tp.order_id          &#61;ta.order_id&#10;AND tp.detl_seq_id       &#61;ta.order_seq_id&#10;AND tp.sku_no            &#61;ta.sku&#10;AND TRUNC(tp.pickup_time)&#61;TRUNC(ta.upd_date)</textarea>
+                            <div style="padding-top: 5px;"><hr></div>
+                            <div class="box box-solid">
+                                <div class="box-header with-border">
+                                    <i class="fa fa-puzzle-piece"></i>
+                                    <h3 class="box-title">Possibly Referenced Tables/Views</h3>
+                                </div>
+                                <!-- /.box-header -->
+                                <div class="box-body">
+                                    <ul class="list-unstyled">
+                                        <li><a href="TBL_CHANNEL.html">TBL_CHANNEL</a></li>
+                                        <li><a href="TBL_STORE.html">TBL_STORE</a></li>
+                                        <li><a href="TBL_DISTRICT.html">TBL_DISTRICT</a></li>
+                                        <li><a href="TBL_SKU.html">TBL_SKU</a></li>
+                                        <li><a href="TBL_INADVANCE_MAST.html">TBL_INADVANCE_MAST</a></li>
+                                        <li><a href="TBL_INADVANCE_SKU.html">TBL_INADVANCE_SKU</a></li>
+                                        <li><a href="TBL_ORDER.html">TBL_ORDER</a></li>
+                                        <li><a href="TBL_ORDER_DETL.html">TBL_ORDER_DETL</a></li>
+                                        <li><a href="TBL_INSTALLATION.html">TBL_INSTALLATION</a></li>
+                                        <li><a href="TBL_INSTALL_DETL.html">TBL_INSTALL_DETL</a></li>
+                                        <li><a href="TBL_VENDOR_PO_MAST.html">TBL_VENDOR_PO_MAST</a></li>
+                                        <li><a href="TBL_VENDOR_PO_DETL.html">TBL_VENDOR_PO_DETL</a></li>
+                                        <li><a href="TBL_PICKUP_MAST.html">TBL_PICKUP_MAST</a></li>
+                                        <li><a href="TBL_PICKUP_DETL.html">TBL_PICKUP_DETL</a></li>
+                                    </ul>
+                                </div><!-- /.box-body -->
+                            </div>
+                        </div><!-- /.box-body -->
+                    </div>
+                </section>
+                <script>
+                    var config = {
+                        pagination: true
+                    }
+                </script>
+            </div>
+            <!-- /.content-wrapper -->
+            <footer class="main-footer">
+                <div>
+                    <div class="pull-right hidden-xs">
+                        <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
+                        <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
+                    </div>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 7.0.2</a></strong>
+                </div>
+                <!-- /.container -->
+            </footer>
+        </div>
+        <!-- ./wrapper -->
+
+        <!-- jQuery 2.2.3 -->
+        <script src="../bower/admin-lte/plugins/jQuery/jquery-2.2.3.min.js"></script>
+        <script src="../bower/admin-lte/plugins/jQueryUI/jquery-ui.min.js"></script>
+        <!-- Bootstrap 3.3.5 -->
+        <script src="../bower/admin-lte/bootstrap/js/bootstrap.min.js"></script>
+        <!-- DataTables -->
+        <script src="../bower/datatables.net/jquery.dataTables.min.js"></script>
+        <script src="../bower/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+        <script src="../bower/datatables.net-buttons/dataTables.buttons.min.js"></script>
+        <script src="../bower/datatables.net-buttons-bs/js/buttons.bootstrap.min.js"></script>
+        <script src="../bower/datatables.net-buttons/buttons.html5.min.js"></script>
+        <script src="../bower/datatables.net-buttons/buttons.print.min.js"></script>
+        <script src="../bower/datatables.net-buttons/buttons.colVis.min.js"></script>
+        <!-- SheetJS -->
+        <script src="../bower/js-xlsx/xlsx.full.min.js"></script>
+        <!-- pdfmake -->
+        <script src="../bower/pdfmake/pdfmake.min.js"></script>
+        <script src="../bower/pdfmake/vfs_fonts.js"></script>
+        <!-- SlimScroll -->
+        <script src="../bower/admin-lte/plugins/slimScroll/jquery.slimscroll.min.js"></script>
+        <!-- FastClick -->
+        <script src="../bower/admin-lte/plugins/fastclick/fastclick.js"></script>
+        <!-- Salvattore -->
+        <script src="../bower/salvattore/salvattore.min.js"></script>
+        <!-- AnchorJS -->
+        <script src="../bower/anchor-js/anchor.min.js"></script>
+        <!-- CodeMirror -->
+        <script src="../bower/codemirror/codemirror.js"></script>
+        <script src="../bower/codemirror/sql.js"></script>
+        <!-- AdminLTE App -->
+        <script src="../bower/admin-lte/dist/js/app.min.js"></script>
+        <script src="table.js"></script>
+        <script src="../schemaSpy.js"></script>
+    </body>
+</html>

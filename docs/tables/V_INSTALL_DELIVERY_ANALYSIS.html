@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>V_INSTALL_DELIVERY_ANALYSIS - som.SOMDBA</title>
+        <!-- Tell the browser to be responsive to screen width -->
+        <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+        <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
+        <!-- Bootstrap 3.3.5 -->
+        <link rel="stylesheet" href="../bower/admin-lte/bootstrap/css/bootstrap.min.css">
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="../bower/font-awesome/css/font-awesome.min.css">
+        <!-- Ionicons -->
+        <link rel="stylesheet" href="../bower/ionicons/css/ionicons.min.css">
+        <!-- DataTables -->
+        <link rel="stylesheet" href="../bower/datatables.net-bs/css/dataTables.bootstrap.min.css">
+        <link rel="stylesheet" href="../bower/datatables.net-buttons-bs/css/buttons.bootstrap.min.css">
+        <!-- Code Mirror -->
+        <link rel="stylesheet" href="../bower/codemirror/codemirror.css">
+        <!-- Fonts -->
+        <link href='../fonts/indieflower/indie-flower.css' rel='stylesheet' type='text/css'>
+        <link href='../fonts/source-sans-pro/source-sans-pro.css' rel='stylesheet' type='text/css'>
+
+        <!-- Theme style -->
+        <link rel="stylesheet" href="../bower/admin-lte/dist/css/AdminLTE.min.css">
+        <!-- Salvattore -->
+        <link rel="stylesheet" href="../bower/salvattore/salvattore.css">
+        <!-- AdminLTE Skins. Choose a skin from the css/skins
+           folder instead of downloading all of them to reduce the load. -->
+        <link rel="stylesheet" href="../bower/admin-lte/dist/css/skins/_all-skins.min.css">
+        <!-- SchemaSpy -->
+        <link rel="stylesheet" href="../schemaSpy.css">
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+        <script src="../bower/html5shiv/html5shiv.min.js"></script>
+        <script src="../bower/respond/respond.min.js"></script>
+        <![endif]-->
+    </head>
+    <!-- ADD THE CLASS layout-top-nav TO REMOVE THE SIDEBAR. -->
+    <body class="hold-transition skin-blue layout-top-nav">
+        <div class="wrapper">
+            <header class="main-header">
+                <nav class="navbar navbar-static-top">
+                    <div class="container">
+                        <div class="navbar-header">
+                            <a href="../index.html" class="navbar-brand"><b>som</b></a><span class="navbar-brand" style="padding-left: 0">.SOMDBA</span>
+                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
+                        </div>
+
+                        <!-- Collect the nav links, forms, and other content for toggling -->
+                        <div class="collapse navbar-collapse pull-left" id="navbar-collapse">
+                            <ul class="nav navbar-nav">
+                                <li><a href="../index.html">Tables <span class="sr-only">(current)</span></a></li>
+                                <li><a href="../columns.html" title="All of the columns in the schema">Columns</a></li>
+                                <li><a href="../constraints.html" title="Useful for diagnosing error messages that just give constraint name or number">Constraints</a></li>
+                                <li><a href="../relationships.html" title="Diagram of table relationships">Relationships</a></li>
+                                <li><a href="../orphans.html" title="View of tables with neither parents nor children">Orphan&nbsp;Tables</a></li>
+                                <li><a href="../anomalies.html" title="Things that might not be quite right">Anomalies</a></li>
+                                <li><a href="../routines.html" title="Procedures and functions">Routines</a></li>
+                            </ul>
+                        </div>
+                        <!-- /.navbar-collapse -->
+                        <!-- Navbar Right Menu -->
+                    </div>
+                    <!-- /.container-fluid -->
+                </nav>
+            </header>
+            <!-- Main content -->
+            <!-- Full Width Column -->
+            <div class="content-wrapper">
+                <!-- Content Header (Page header) -->
+                <section class="content-header">
+                    <h1>V_INSTALL_DELIVERY_ANALYSIS</h1><p><span id="recordNumber">0</span> rows</p><br />
+                </section>
+                <!-- Main content -->
+                <section class="content">
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>
+                            <h3 id="Columns" class="box-title">Columns</h3>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
+                                <thead align='left'>
+                                <tr>
+                                    <th>Column</th>
+                                    <th>Type</th>
+                                    <th>Size</th>
+                                    <th title='Are nulls allowed?'>Nulls</th>
+                                    <th title='Is column automatically updated?'>Auto</th>
+                                    <th title='Default value'>Default</th>
+                                    <th title='Columns in tables that reference this column'>Children</th>
+                                    <th title='Columns in tables that are referenced by this column'>Parents</th>
+                                    <th title='Comments' class="toggle"><span>Comments</span></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="CHANNEL_ID">CHANNEL_ID</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>5</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="V_INSTALL_DELIVERY_ANALYSIS.CHANNEL_ID&#39;s name implies that it&#39;s a child of TBL_CHANNEL.CHANNEL_ID, but it doesn&#39;t reference that column."><a href='TBL_CHANNEL.html'>TBL_CHANNEL</a><span class='relatedKey'>.CHANNEL_ID</span></td>
+                                                <td class="constraint detail">Implied Constraint</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="SYSTEM_FLAG">SYSTEM_FLAG</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>5</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="STORE_ID">STORE_ID</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>5</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="STORE_NAME">STORE_NAME</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>40</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="SUB_DEPT_ID">SUB_DEPT_ID</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>3</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="CLASS_ID">CLASS_ID</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>3</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="SUB_CLASS_ID">SUB_CLASS_ID</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>3</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="ORDER_ID">ORDER_ID</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>10</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="V_INSTALL_DELIVERY_ANALYSIS.ORDER_ID&#39;s name implies that it&#39;s a child of TBL_ORDER.ORDER_ID, but it doesn&#39;t reference that column."><a href='TBL_ORDER.html'>TBL_ORDER</a><span class='relatedKey'>.ORDER_ID</span></td>
+                                                <td class="constraint detail">Implied Constraint</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="INSTALLATION_ID">INSTALLATION_ID</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>14</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="INSTALL_ACCEPT_TIME">INSTALL_ACCEPT_TIME</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="DATA_DATE">DATA_DATE</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="NAME">NAME</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>40</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="ID_TYPE">ID_TYPE</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>6</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="SKU_NO">SKU_NO</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>9</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="ID_AMT">ID_AMT</span></td>
+                                    <td>NUMBER</td>
+                                    <td>0</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="RETURN_AMT">RETURN_AMT</span></td>
+                                    <td>NUMBER</td>
+                                    <td>0</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="ID_COST">ID_COST</span></td>
+                                    <td>NUMBER</td>
+                                    <td>0</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="RETURN_COST">RETURN_COST</span></td>
+                                    <td>NUMBER</td>
+                                    <td>0</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="WORKAGENT_NAME">WORKAGENT_NAME</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>60</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="REINSTALL">REINSTALL</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>1</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="REINSTALL_REASON">REINSTALL_REASON</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>150</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="MEMBER_CARD_TYPE">MEMBER_CARD_TYPE</span></td>
+                                    <td>VARCHAR2</td>
+                                    <td>150</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <i class="fa fa-code-fork"></i>
+                            <h3 id="Relationships" class="box-title">Relationships</h3>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <div class="nav-tabs-custom"><!-- Tabs within a box -->
+                                <h5>Close relationships within degrees of separation</h5>
+                                <ul class="nav nav-tabs pull-left ui-sortable-handle">
+                                    <li class="active"><a href="#oneDegreeImg-chart" data-toggle="tab" aria-expanded="true">One</a></li>
+                                    <li class=""><a href="#oneimpliedDegreeImg-chart" data-toggle="tab" aria-expanded="true">One implied</a></li>
+                                </ul>
+                                <div class="tab-content no-padding">
+                                    <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
+                                        
+                                        <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/V_INSTALL_DELIVERY_ANALYSIS.1degree.svg" class="diagram" border="0" align="left"></object></a>
+                                    </div>
+                                    <div class="chart tab-pane " id="oneimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
+                                        
+                                        <a name='diagram'><object type="image/svg+xml" id="oneimpliedDegreeImg" data="../diagrams/tables/V_INSTALL_DELIVERY_ANALYSIS.implied1degrees.svg" class="diagram" border="0" align="left"></object></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- /.box-body -->
+                    </div>
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <i class="fa fa-file-code-o"></i>
+                            <h3 id="ViewDefinition" class="box-title">View Definition</h3>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">select distinct ti.CHANNEL_ID, ti.system_flag,ti.STORE_ID,ts.STORE_NAME, tid.SUB_DEPT_ID, tid.CLASS_ID,&#10;tid.SUB_CLASS_ID, ti.ORDER_ID,&#10;ti.INSTALLATION_ID, to_char(ti.INSTALL_ACCEPT_TIME,&#39;yyyy/mm/dd&#39;) as INSTALL_ACCEPT_TIME,&#10;to_char(sysdate,&#39;yyyy/mm/dd&#39;) as data_date,tc.NAME,&#10;decode(tid.SUB_DEPT_ID,&#39;025&#39;,&#39;運送&#39;,&#39;026&#39;,&#39;安裝&#39;,&#39;N/A&#39;) as id_type,&#10;tid.SKU_NO,&#10;--nvl(tod.ACT_INSTALL_PRICE,0), nvl(tod.ACT_DELIVERY_PRICE,0),&#10;case when tid.SUB_DEPT_ID&#61;&#39;025&#39; then round(nvl(tod.ACT_DELIVERY_PRICE,0)/(select parm_value from tbl_parm where parm&#61;&#39;SALES_TAX&#39;),0)&#10;when tid.SUB_DEPT_ID&#61;&#39;026&#39; then round(nvl(tod.ACT_INSTALL_PRICE,0)/(select parm_value from tbl_parm where parm&#61;&#39;SALES_TAX&#39;),0)&#10;else 0 end as id_amt,&#10;round(nvl(ttrs.trans_amt,0),0) as return_amt,&#10;case when ti.SYSTEM_FLAG&#61;&#39;SO&#39; and ti.act_hisu_flag&#61;&#39;N&#39; then (case when tid.SUB_DEPT_ID&#61;&#39;025&#39; then round(nvl(tod.ACT_DELIVERY_PRICE,0)/(select parm_value from tbl_parm where parm&#61;&#39;SALES_TAX&#39;),0)&#10;when tid.SUB_DEPT_ID&#61;&#39;026&#39; then round(nvl(tod.ACT_INSTALL_PRICE,0)/(select parm_value from tbl_parm where parm&#61;&#39;SALES_TAX&#39;),0)&#10;else 0 end)&#10;when ti.SYSTEM_FLAG in (&#39;SO&#39;,&#39;TTS&#39;) and ti.act_hisu_flag&#61;&#39;Y&#39; then tod.id_cost&#10;else tod.id_cost end as id_cost,&#10;nvl(rtn.return_cost,0) as return_cost,&#10;case when ti.system_flag&#61;&#39;TTS&#39; then&#10;decode(ti.act_hisu_flag,&#39;Y&#39;,ti.hisu_workagent_name, ti.workagent_name)&#10;else ti.workagent_name end as workagent_name,&#10;ti.REINSTALL, tsc.SUB_CONFIG_NAME as reinstall_reason, tscm.SUB_CONFIG_NAME as MEMBER_CARD_TYPE&#10;from tbl_installation ti&#10;inner join tbl_store ts on ti.STORE_ID&#61;ts.STORE_ID&#10;inner join tbl_install_detl tid on tid.INSTALLATION_ID &#61; ti.INSTALLATION_ID and tid.SUB_DEPT_ID in (&#39;025&#39;,&#39;026&#39;)&#10;inner join tbl_class tc on tid.SUB_DEPT_ID&#61;tc.SUB_DEPT_ID and tid.CLASS_ID&#61;tc.CLASS_ID and tid.SUB_CLASS_ID&#61;tc.SUB_CLASS_ID&#10;&#10;inner join (select sum(UNIT_COST*QUANTITY) as id_COST,sum(ACT_INSTALL_PRICE) as ACT_INSTALL_PRICE,&#10;sum(ACT_DELIVERY_PRICE) as ACT_DELIVERY_PRICE,order_id,sku_no,worktype_id from tbl_order_detl&#10;where goods_type&lt;&gt;&#39;P&#39;&#10;group by order_id,sku_no,OPEN_PRICE,worktype_id) tod on tid.ORDER_ID&#61;tod.ORDER_ID and tid.sku_no&#61;tod.sku_no&#10;and tod.worktype_id&#61;ti.worktype_id&#10;&#10;inner join tbl_order o on tod.ORDER_ID &#61; o.ORDER_ID&#10;left join tbl_sub_config tsc on tsc.MASTER_CONFIG_ID&#61;&#39;C11&#39; and tsc.sub_config_id&#61;o.REINSTALL_REASON&#10;left join tbl_sub_config tscm on tscm.MASTER_CONFIG_ID&#61;&#39;M01&#39; and tscm.sub_config_id&#61;o.MEMBER_CARD_TYPE&#10;left join tbl_workagent_statement_ex swse on swse.INSTALLATION_ID &#61; ti.INSTALLATION_ID&#10;left join tbl_trans_mast ttm on tid.ORDER_ID&#61;ttm.ORDER_ID and ttm.TRANS_TYPE&#61;&#39;B&#39; and ttm.STATUS&#61;&#39;N&#39; --需加上trans_date between 資料日期範圍選項&#10;&#10;left join (select distinct abs(sum(TRANS_AMT/(select parm_value from tbl_parm where parm&#61;&#39;SALES_TAX&#39;))) as TRANS_AMT,a.order_id,a.sku_no&#10;from tbl_order_detl a&#10;inner join TBL_TRANS_RTN_SKU b on a.order_id&#61;b.order_id and a.sku_no&#61;b.sku_no&#10;and a.detl_seq_id&#61;b.DETL_SEQ_ID&#10;group by a.order_id,a.sku_no&#10;) ttrs on ttrs.order_id&#61;ttm.order_id and ttrs.sku_no&#61;tid.sku_no&#10;&#10;left join (select distinct sum(case when a.open_price&#61;&#39;N&#39; then ABS(a.UNIT_COST*b.QTY)&#10;when a.open_price&#61;&#39;Y&#39; then ABS(ROUND(a.UNIT_COST*(b.TRANS_AMT/ decode(NVL(a.ACT_INSTALL_PRICE,0)+&#10;NVL(a.ACT_DELIVERY_PRICE,0),0,1, NVL(a.ACT_INSTALL_PRICE,0)+NVL(a.ACT_DELIVERY_PRICE,0))),0))&#10;else ABS(a.UNIT_COST*b.QTY) end) as return_cost,a.order_id,a.sku_no&#10;from tbl_order_detl a&#10;inner join TBL_TRANS_RTN_SKU b on a.order_id&#61;b.order_id and a.sku_no&#61;b.sku_no&#10;and a.detl_seq_id&#61;b.DETL_SEQ_ID&#10;group by a.order_id,a.sku_no&#10;) rtn on rtn.order_id&#61;ttm.order_id and rtn.sku_no&#61;tid.sku_no&#10;&#10;where ti.STATUS&#61;&#39;5&#39; and swse.STORE_ID is null&#10;and ti.order_id&#61;&#39;1000091775&#39;&#10;and (tod.ACT_INSTALL_PRICE&lt;&gt;0 or tod.ACT_DELIVERY_PRICE&lt;&gt;0)&#10;order by ti.system_flag,ti.STORE_ID,ts.STORE_NAME, ti.order_id,ti.INSTALLATION_ID</textarea>
+                            <div style="padding-top: 5px;"><hr></div>
+                            <div class="box box-solid">
+                                <div class="box-header with-border">
+                                    <i class="fa fa-puzzle-piece"></i>
+                                    <h3 class="box-title">Possibly Referenced Tables/Views</h3>
+                                </div>
+                                <!-- /.box-header -->
+                                <div class="box-body">
+                                    <ul class="list-unstyled">
+                                        <li><a href="TBL_PARM.html">TBL_PARM</a></li>
+                                        <li><a href="TBL_INSTALLATION.html">TBL_INSTALLATION</a></li>
+                                        <li><a href="TBL_STORE.html">TBL_STORE</a></li>
+                                        <li><a href="TBL_INSTALL_DETL.html">TBL_INSTALL_DETL</a></li>
+                                        <li><a href="TBL_CLASS.html">TBL_CLASS</a></li>
+                                        <li><a href="TBL_ORDER_DETL.html">TBL_ORDER_DETL</a></li>
+                                        <li><a href="TBL_ORDER.html">TBL_ORDER</a></li>
+                                        <li><a href="TBL_SUB_CONFIG.html">TBL_SUB_CONFIG</a></li>
+                                        <li><a href="TBL_WORKAGENT_STATEMENT_EX.html">TBL_WORKAGENT_STATEMENT_EX</a></li>
+                                        <li><a href="TBL_TRANS_MAST.html">TBL_TRANS_MAST</a></li>
+                                        <li><a href="TBL_TRANS_RTN_SKU.html">TBL_TRANS_RTN_SKU</a></li>
+                                    </ul>
+                                </div><!-- /.box-body -->
+                            </div>
+                        </div><!-- /.box-body -->
+                    </div>
+                </section>
+                <script>
+                    var config = {
+                        pagination: true
+                    }
+                </script>
+            </div>
+            <!-- /.content-wrapper -->
+            <footer class="main-footer">
+                <div>
+                    <div class="pull-right hidden-xs">
+                        <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
+                        <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
+                    </div>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 7.0.2</a></strong>
+                </div>
+                <!-- /.container -->
+            </footer>
+        </div>
+        <!-- ./wrapper -->
+
+        <!-- jQuery 2.2.3 -->
+        <script src="../bower/admin-lte/plugins/jQuery/jquery-2.2.3.min.js"></script>
+        <script src="../bower/admin-lte/plugins/jQueryUI/jquery-ui.min.js"></script>
+        <!-- Bootstrap 3.3.5 -->
+        <script src="../bower/admin-lte/bootstrap/js/bootstrap.min.js"></script>
+        <!-- DataTables -->
+        <script src="../bower/datatables.net/jquery.dataTables.min.js"></script>
+        <script src="../bower/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+        <script src="../bower/datatables.net-buttons/dataTables.buttons.min.js"></script>
+        <script src="../bower/datatables.net-buttons-bs/js/buttons.bootstrap.min.js"></script>
+        <script src="../bower/datatables.net-buttons/buttons.html5.min.js"></script>
+        <script src="../bower/datatables.net-buttons/buttons.print.min.js"></script>
+        <script src="../bower/datatables.net-buttons/buttons.colVis.min.js"></script>
+        <!-- SheetJS -->
+        <script src="../bower/js-xlsx/xlsx.full.min.js"></script>
+        <!-- pdfmake -->
+        <script src="../bower/pdfmake/pdfmake.min.js"></script>
+        <script src="../bower/pdfmake/vfs_fonts.js"></script>
+        <!-- SlimScroll -->
+        <script src="../bower/admin-lte/plugins/slimScroll/jquery.slimscroll.min.js"></script>
+        <!-- FastClick -->
+        <script src="../bower/admin-lte/plugins/fastclick/fastclick.js"></script>
+        <!-- Salvattore -->
+        <script src="../bower/salvattore/salvattore.min.js"></script>
+        <!-- AnchorJS -->
+        <script src="../bower/anchor-js/anchor.min.js"></script>
+        <!-- CodeMirror -->
+        <script src="../bower/codemirror/codemirror.js"></script>
+        <script src="../bower/codemirror/sql.js"></script>
+        <!-- AdminLTE App -->
+        <script src="../bower/admin-lte/dist/js/app.min.js"></script>
+        <script src="table.js"></script>
+        <script src="../schemaSpy.js"></script>
+    </body>
+</html>
