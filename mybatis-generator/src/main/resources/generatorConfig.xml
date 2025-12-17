@@ -4,57 +4,114 @@
         "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
 
 <generatorConfiguration>
-    <!-- 讀取外部 properties 檔案 (這行是關鍵！) -->
+    <!-- 讀取外部 properties 檔案 -->
     <properties resource="generator.properties"/>
 
-    <context id="MySqlContext" targetRuntime="MyBatis3" defaultModelType="flat">
-        
+    <context id="OracleContext" targetRuntime="MyBatis3" defaultModelType="flat">
+
+        <!-- Oracle 不需要 delimiter，移除 MySQL 特有設定 -->
         <property name="autoDelimitKeywords" value="true"/>
-        <property name="beginningDelimiter" value="`"/>
-        <property name="endingDelimiter" value="`"/>
+        <property name="javaFileEncoding" value="UTF-8"/>
 
-        <plugin type="com.softwareloop.mybatis.generator.plugins.LombokPlugin">
-            <property name="builder" value="true"/>
-            <property name="allArgsConstructor" value="true"/>
-            <property name="noArgsConstructor" value="true"/>
-            <property name="toString" value="true"/>
-        </plugin>
+        <!--
+            注意：本專案禁止使用 Lombok (Constitution IX)
+            不可加入 LombokPlugin，Entity 必須包含完整的 getter/setter
+        -->
 
+        <!-- Serializable Plugin -->
         <plugin type="org.mybatis.generator.plugins.SerializablePlugin"/>
 
+        <!-- 產生 toString 方法 -->
+        <plugin type="org.mybatis.generator.plugins.ToStringPlugin"/>
+
+        <!-- 產生 equals 和 hashCode 方法 -->
+        <plugin type="org.mybatis.generator.plugins.EqualsHashCodePlugin"/>
+
+        <!-- 註解產生器設定 -->
         <commentGenerator>
             <property name="suppressDate" value="true"/>
-            <property name="suppressAllComments" value="true"/>
+            <property name="suppressAllComments" value="false"/>
+            <property name="addRemarkComments" value="true"/>
         </commentGenerator>
 
-        <!-- 使用 properties 中的變數 -->
+        <!-- JDBC 連線設定（使用 properties 變數） -->
         <jdbcConnection driverClass="${jdbc.driverClass}"
                         connectionURL="${jdbc.connectionURL}"
                         userId="${jdbc.userId}"
                         password="${jdbc.password}">
-            <property name="nullCatalogMeansCurrent" value="true" />
+            <!-- Oracle 特有設定 -->
+            <property name="remarksReporting" value="true"/>
         </jdbcConnection>
 
-        <javaModelGenerator targetPackage="com.ddd.specialorder.infrastructure.persistence.entity"
+        <!-- Java 類型解析器 -->
+        <javaTypeResolver>
+            <property name="forceBigDecimals" value="false"/>
+            <property name="useJSR310Types" value="true"/>
+        </javaTypeResolver>
+
+        <!-- Entity 產生位置 -->
+        <javaModelGenerator targetPackage="com.tgfc.som.entity"
                             targetProject="../backend/src/main/java">
             <property name="enableSubPackages" value="true"/>
             <property name="trimStrings" value="true"/>
         </javaModelGenerator>
 
+        <!-- Mapper XML 產生位置 -->
         <sqlMapGenerator targetPackage="mapper"
                          targetProject="../backend/src/main/resources">
             <property name="enableSubPackages" value="true"/>
         </sqlMapGenerator>
 
+        <!-- Mapper 介面產生位置 -->
         <javaClientGenerator type="XMLMAPPER"
-                             targetPackage="com.ddd.specialorder.infrastructure.persistence.mapper"
+                             targetPackage="com.tgfc.som.mapper"
                              targetProject="../backend/src/main/java">
             <property name="enableSubPackages" value="true"/>
         </javaClientGenerator>
 
-        <!-- 範例 Table，請依需求修改 -->
-        <table tableName="users" domainObjectName="UserEntity">
-             <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
+        <!-- ================================================================== -->
+        <!-- Feature: 001-keycloak-user-login 資料表配置                          -->
+        <!-- ================================================================== -->
+
+        <!-- 使用者資料表 -->
+        <table tableName="TBL_USER" domainObjectName="User">
+            <property name="useActualColumnNames" value="false"/>
+            <columnOverride column="USER_ID" javaType="String"/>
+            <columnOverride column="USER_NAME" javaType="String"/>
+            <columnOverride column="SYSTEM_FLAG" javaType="String"/>
+            <columnOverride column="DISABLE_FLAG" javaType="String"/>
+            <columnOverride column="ENABLE_DATE" javaType="java.time.LocalDate"/>
+            <columnOverride column="DISABLE_DATE" javaType="java.time.LocalDate"/>
+        </table>
+
+        <!-- 通路/系統別資料表 -->
+        <table tableName="TBL_CHANNEL" domainObjectName="Channel">
+            <property name="useActualColumnNames" value="false"/>
+            <columnOverride column="CHANNEL_ID" javaType="String"/>
+            <columnOverride column="CHANNEL_NAME" javaType="String"/>
+            <columnOverride column="CHANNEL_DESC" javaType="String"/>
+        </table>
+
+        <!-- 店別資料表 -->
+        <table tableName="TBL_STORE" domainObjectName="Store">
+            <property name="useActualColumnNames" value="false"/>
+            <columnOverride column="STORE_ID" javaType="String"/>
+            <columnOverride column="STORE_NAME" javaType="String"/>
+            <columnOverride column="CHANNEL_ID" javaType="String"/>
+        </table>
+
+        <!-- 使用者主店別資料表 -->
+        <table tableName="TBL_USER_MAST_STORE" domainObjectName="UserMastStore">
+            <property name="useActualColumnNames" value="false"/>
+            <columnOverride column="USER_ID" javaType="String"/>
+            <columnOverride column="STORE_ID" javaType="String"/>
+        </table>
+
+        <!-- 使用者支援店別資料表 -->
+        <table tableName="TBL_USER_STORE" domainObjectName="UserStore">
+            <property name="useActualColumnNames" value="false"/>
+            <columnOverride column="USER_ID" javaType="String"/>
+            <columnOverride column="STORE_ID" javaType="String"/>
         </table>
 
     </context>

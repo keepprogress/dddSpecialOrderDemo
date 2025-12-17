@@ -1,0 +1,369 @@
+openapi: 3.0.3
+info:
+  title: SOM Authentication API
+  description: API for Keycloak user login, store selection, and system selection
+  version: 1.0.0
+  contact:
+    name: SOM Development Team
+
+servers:
+  - url: /api
+    description: API Base Path
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Auth
+    description: Authentication and user validation
+  - name: Store
+    description: Store selection operations
+  - name: Channel
+    description: Channel/System selection operations
+
+paths:
+  /auth/validate:
+    post:
+      tags:
+        - Auth
+      summary: Validate user after Keycloak login
+      description: |
+        Performs 6-checkpoint validation after successful Keycloak authentication.
+        The Keycloak username is extracted from the JWT token.
+      operationId: validateUser
+      responses:
+        '200':
+          description: User validation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserValidationResponse'
+        '401':
+          description: Unauthorized - Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - User validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+
+  /auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: Log audit event for logout
+      description: Records logout event in audit log
+      operationId: logoutUser
+      responses:
+        '200':
+          description: Logout recorded successfully
+        '401':
+          description: Unauthorized
+
+  /stores/mast:
+    get:
+      tags:
+        - Store
+      summary: Get user's authorized master stores
+      description: Returns the list of master stores the user is authorized to access
+      operationId: getMastStores
+      responses:
+        '200':
+          description: List of master stores
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MastStore'
+        '401':
+          description: Unauthorized
+
+  /stores/support:
+    get:
+      tags:
+        - Store
+      summary: Get user's authorized support stores
+      description: Returns the list of support stores the user is authorized to access
+      operationId: getSupportStores
+      parameters:
+        - name: mastStoreId
+          in: query
+          description: Selected master store ID (null for all-region)
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of support stores
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Store'
+        '401':
+          description: Unauthorized
+
+  /stores/select:
+    post:
+      tags:
+        - Store
+      summary: Record store selection
+      description: Records the user's store selection for audit
+      operationId: selectStores
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreSelectionRequest'
+      responses:
+        '200':
+          description: Store selection recorded
+        '400':
+          description: Invalid store selection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+
+  /channels:
+    get:
+      tags:
+        - Channel
+      summary: Get user's authorized channels
+      description: Returns the list of channels/systems the user is authorized to access
+      operationId: getChannels
+      responses:
+        '200':
+          description: List of channels
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Channel'
+        '401':
+          description: Unauthorized
+
+  /channels/select:
+    post:
+      tags:
+        - Channel
+      summary: Record channel selection
+      description: Records the user's channel selection for audit
+      operationId: selectChannel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChannelSelectionRequest'
+      responses:
+        '200':
+          description: Channel selection recorded
+        '400':
+          description: Invalid channel selection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check endpoint
+      description: Returns the health status of the API (no authentication required)
+      operationId: healthCheck
+      security: []
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Keycloak JWT Access Token
+
+  schemas:
+    UserValidationResponse:
+      type: object
+      required:
+        - userId
+        - userName
+        - systemFlags
+        - hasMastStore
+        - hasSupportStore
+      properties:
+        userId:
+          type: string
+          description: User ID
+          example: "john.doe"
+        userName:
+          type: string
+          description: User display name
+          example: "John Doe"
+        systemFlags:
+          type: array
+          items:
+            type: string
+          description: Authorized system/channel codes
+          example: ["SO", "TTS"]
+        hasMastStore:
+          type: boolean
+          description: Whether user has master store assignment
+        hasSupportStore:
+          type: boolean
+          description: Whether user has support store assignments
+
+    ValidationErrorResponse:
+      type: object
+      required:
+        - errorCode
+        - message
+      properties:
+        errorCode:
+          type: string
+          description: Validation error code
+          enum:
+            - USER_NOT_FOUND
+            - SYSTEM_FLAG_NULL
+            - USER_DISABLED
+            - DATES_NOT_SET
+            - OUT_OF_DATE_RANGE
+            - NO_PERMISSIONS
+          example: "USER_DISABLED"
+        message:
+          type: string
+          description: User-friendly error message
+          example: "帳號已被停用，請聯繫管理員"
+
+    MastStore:
+      type: object
+      required:
+        - storeName
+        - isAllRegion
+      properties:
+        storeId:
+          type: string
+          nullable: true
+          description: Store ID (null for all-region)
+          example: "S001"
+        storeName:
+          type: string
+          description: Store display name
+          example: "台北門市"
+        isAllRegion:
+          type: boolean
+          description: Whether this represents all-region access
+          example: false
+
+    Store:
+      type: object
+      required:
+        - storeId
+        - storeName
+        - channelId
+      properties:
+        storeId:
+          type: string
+          description: Store ID
+          example: "S001"
+        storeName:
+          type: string
+          description: Store display name
+          example: "台北門市"
+        channelId:
+          type: string
+          description: Channel this store belongs to
+          example: "SO"
+
+    Channel:
+      type: object
+      required:
+        - channelId
+        - channelName
+      properties:
+        channelId:
+          type: string
+          description: Channel/System code
+          example: "SO"
+        channelName:
+          type: string
+          description: Channel/System display name
+          example: "Special Order"
+        channelDesc:
+          type: string
+          description: Channel/System description
+          example: "特殊訂單系統"
+
+    StoreSelectionRequest:
+      type: object
+      required:
+        - mastStoreId
+      properties:
+        mastStoreId:
+          type: string
+          nullable: true
+          description: Selected master store ID (null for all-region)
+          example: "S001"
+        supportStoreIds:
+          type: array
+          items:
+            type: string
+          description: Selected support store IDs
+          example: ["S002", "S003"]
+
+    ChannelSelectionRequest:
+      type: object
+      required:
+        - channelId
+      properties:
+        channelId:
+          type: string
+          description: Selected channel/system code
+          example: "SO"
+
+    ErrorResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Error message
+          example: "Invalid request"
+        details:
+          type: string
+          description: Additional error details
+
+    HealthResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: [UP, DOWN]
+          example: "UP"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-12-17T10:30:00Z"

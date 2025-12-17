@@ -30,4 +30,8 @@ tmp/
 
 # Secrets
 application-secret.properties
-generator.properties
+
+# MyBatis Generator 本地設定（含密碼的覆寫檔案）
+mybatis-generator/src/main/resources/generator-local.properties
+mybatis-generator/run-generator.bat
+mybatis-generator/run-generator.sh

@@ -17,24 +17,21 @@
   the iteration process.
 -->
 
-**Language/Version**: Java 21 (LTS)  
-**Primary Dependencies**: Spring Boot 3.3+, MyBatis 3.5+  
-**Storage**: [Database Type, e.g., MySQL, PostgreSQL] (MyBatis Mappers)  
-**Testing**: JUnit 5, Mockito, H2/TestContainers  
-**Target Platform**: [e.g., Linux server, Cloud Container]  
-**Project Type**: Web Application (Spring Boot + Angular)  
-**Performance Goals**: [domain-specific, e.g., 1000 req/s]  
-**Constraints**: MyBatis Generator artifacts must be isolated in Infrastructure layer.  
-**Scale/Scope**: [domain-specific]
+**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
+**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
+**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
+**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
+**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
+**Project Type**: [single/web/mobile - determines source structure]  
+**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
+**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
+**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-- [ ] **Layering**: Controller -> Repository -> Mapper (No direct Mapper use in Controller/Service)
-- [ ] **Domain**: Business logic in Rich Entities, not just Services?
-- [ ] **Persistence**: Is `repository.save()` explicitly planned for updates?
-- [ ] **Workflow**: Database Schema designed first?
+[Gates determined based on constitution file]
 
 ## Project Structure
 
@@ -44,7 +41,7 @@
 specs/[###-feature]/
 ├── plan.md              # This file (/speckit.plan command output)
 ├── research.md          # Phase 0 output (/speckit.plan command)
-├── data-model.md        # Phase 1 output (Schema & POJOs)
+├── data-model.md        # Phase 1 output (/speckit.plan command)
 ├── quickstart.md        # Phase 1 output (/speckit.plan command)
 ├── contracts/           # Phase 1 output (/speckit.plan command)
 └── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
@@ -53,20 +50,45 @@ specs/[###-feature]/
 ### Source Code (repository root)
 <!--
   ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature.
+  for this feature. Delete unused options and expand the chosen structure with
+  real paths (e.g., apps/admin, packages/something). The delivered plan must
+  not include Option labels.
 -->
 
 ```text
-# Standard Layout
-backend/src/main/java/com/[company]/[project]/
-├── api/             # Controllers (DTOs)
-├── domain/          # Rich Entities, Service Interfaces
-├── infrastructure/  # MyBatis Mappers, XML, Repositories (Impl)
-└── service/         # Application Services
+# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
+src/
+├── models/
+├── services/
+├── cli/
+└── lib/
 
-frontend/src/app/
-├── components/
-└── services/
+tests/
+├── contract/
+├── integration/
+└── unit/
+
+# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
+backend/
+├── src/
+│   ├── models/
+│   ├── services/
+│   └── api/
+└── tests/
+
+frontend/
+├── src/
+│   ├── components/
+│   ├── pages/
+│   └── services/
+└── tests/
+
+# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
+api/
+└── [same as backend above]
+
+ios/ or android/
+└── [platform-specific structure: feature modules, UI flows, platform tests]
 ```
 
 **Structure Decision**: [Document the selected structure and reference the real
@@ -78,4 +100,5 @@ directories captured above]
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
-| [e.g., Raw SQL] | [Complex Reporting] | [Dynamic SQL insufficient for window functions] |
+| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
+| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |

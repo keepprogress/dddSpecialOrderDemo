@@ -11,11 +11,56 @@
 
     <artifactId>mybatis-generator</artifactId>
     <packaging>pom</packaging>
+    <description>
+        MyBatis Generator 模組 - 自動產生 Mapper 與 Entity
+
+        注意：本專案禁止使用 Lombok (Constitution IX)
+        Generator 會產生完整的 getter/setter/toString/equals/hashCode
+
+        執行方式:
+        1. 設定環境變數 (推薦):
+           set MBG_DB_URL=jdbc:oracle:thin:@//host:port/service
+           set MBG_DB_USER=username
+           set MBG_DB_PASSWORD=password
+           mvn mybatis-generator:generate
+
+        2. 使用 Maven Profile (開發用):
+           mvn mybatis-generator:generate -P dev
+
+        3. 使用 Maven 加密密碼:
+           參考 README-SECURITY.md
+    </description>
 
     <properties>
-        <mysql.version>8.0.33</mysql.version>
         <mybatis-generator.version>1.4.2</mybatis-generator.version>
+        <ojdbc.version>21.11.0.0</ojdbc.version>
     </properties>
+
+    <!-- ================================================================== -->
+    <!-- Maven Profiles: 不同環境的資料庫連線設定                              -->
+    <!-- 注意: 密碼應使用環境變數或 Maven 加密，勿直接寫在此處                    -->
+    <!-- ================================================================== -->
+    <profiles>
+        <!-- 開發環境 Profile (使用環境變數) -->
+        <profile>
+            <id>dev</id>
+            <properties>
+                <db.url>${env.MBG_DB_URL}</db.url>
+                <db.user>${env.MBG_DB_USER}</db.user>
+                <db.password>${env.MBG_DB_PASSWORD}</db.password>
+            </properties>
+        </profile>
+
+        <!-- SIT 環境 Profile (使用 Maven settings.xml 中的 server) -->
+        <profile>
+            <id>sit</id>
+            <properties>
+                <db.url>${env.MBG_SIT_DB_URL}</db.url>
+                <db.user>${env.MBG_SIT_DB_USER}</db.user>
+                <db.password>${env.MBG_SIT_DB_PASSWORD}</db.password>
+            </properties>
+        </profile>
+    </profiles>
 
     <build>
         <plugins>
@@ -29,18 +74,19 @@
                     <verbose>true</verbose>
                 </configuration>
                 <dependencies>
-                    <!-- Database Driver (Oracle 21c) -->
+                    <!-- Oracle 21c JDBC Driver -->
                     <dependency>
                         <groupId>com.oracle.database.jdbc</groupId>
                         <artifactId>ojdbc11</artifactId>
-                        <version>21.11.0.0</version>
+                        <version>${ojdbc.version}</version>
                     </dependency>
-                    <!-- Lombok Plugin for MBG (Optional, creates simpler entities) -->
-                    <dependency>
-                        <groupId>com.softwareloop</groupId>
-                        <artifactId>mybatis-generator-lombok-plugin</artifactId>
-                        <version>1.0</version>
-                    </dependency>
+                    <!--
+                        注意：禁止加入 Lombok Plugin (Constitution IX)
+                        <dependency>
+                            <groupId>com.softwareloop</groupId>
+                            <artifactId>mybatis-generator-lombok-plugin</artifactId>
+                        </dependency>
+                    -->
                 </dependencies>
             </plugin>
         </plugins>
