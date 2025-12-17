@@ -1,8 +1,8 @@
 # Quickstart: Keycloak 使用者登入與系統選擇
 
 **Feature**: 001-keycloak-user-login
-**Date**: 2025-12-17
-**Status**: Ready for Implementation
+**Date**: 2025-12-18
+**Status**: Implementation Complete
 
 ## Prerequisites
 
@@ -13,7 +13,7 @@
 | Java | 21+ | Backend runtime |
 | Node.js | 20+ | Frontend build |
 | Maven | 3.9+ | Backend build |
-| Angular CLI | 19+ | Frontend development |
+| Angular CLI | 21+ | Frontend development |
 
 ### Environment Setup
 
@@ -39,34 +39,59 @@
 
 ## Local Development
 
-### Backend (H2 Database)
+### Environment Profiles
 
-1. **Start with H2 Profile**
+| Profile | Database | Keycloak | Usage |
+|---------|----------|----------|-------|
+| `sit` | H2 (in-memory) | localhost:8180 | Local development |
+| `uat` | Oracle UAT | authempsit02.testritegroup.com | Test environment |
+
+### Backend (SIT - Local Development)
+
+1. **Prerequisites**
+   - Start local Keycloak on port 8180
+   - Or use Docker: `docker run -p 8180:8080 quay.io/keycloak/keycloak start-dev`
+
+2. **Start with SIT Profile**
    ```bash
    cd backend
-   mvn spring-boot:run -Dspring-boot.run.profiles=h2
+   mvn spring-boot:run -Dspring-boot.run.profiles=sit
    ```
 
-2. **H2 Console Access**
+3. **H2 Console Access**
    - URL: `http://localhost:8080/h2-console`
    - JDBC URL: `jdbc:h2:mem:somdb`
    - Username: `sa`
    - Password: (empty)
 
-3. **API Endpoints**
+4. **API Endpoints**
    - Base URL: `http://localhost:8080/api`
    - Health: `http://localhost:8080/api/health`
-   - Swagger UI: `http://localhost:8080/swagger-ui.html`
+
+### Backend (UAT - Test Environment)
+
+1. **Start with UAT Profile**
+   ```bash
+   cd backend
+   mvn spring-boot:run -Dspring-boot.run.profiles=uat,secret
+   ```
+   Note: Requires `application-secret.properties` with Oracle credentials.
 
 ### Frontend (Development Server)
 
-1. **Start Development Server**
+1. **Start Development Server (SIT)**
    ```bash
    cd frontend
-   ng serve
+   ng serve --configuration=sit
    ```
 
-2. **Access Application**
+2. **Start Development Server (UAT)**
+   ```bash
+   cd frontend
+   ng serve --configuration=uat
+   ```
+
+3. **Access Application**
    - URL: `http://localhost:4200`
    - Login redirects to Keycloak
 
@@ -74,91 +99,46 @@
 
 ## Keycloak Configuration
 
-### Test Environment
+### SIT (Local Keycloak)
+
+| Setting | Value |
+|---------|-------|
+| Auth Server URL | `http://localhost:8180` |
+| Realm | `som` |
+| Client ID (Frontend) | `som-frontend` |
+
+### UAT (Test Environment)
 
 | Setting | Value |
 |---------|-------|
 | Auth Server URL | `https://authempsit02.testritegroup.com/auth` |
 | Realm | `testritegroup-employee` |
-| Client ID | `epos-frontend` |
-| Audience | `epos-backend` |
-
-### Required Keycloak Settings
-
-1. **Client Configuration (epos-frontend)**
-   - Access Type: `public`
-   - Standard Flow Enabled: `ON`
-   - Direct Access Grants: `OFF`
-   - Valid Redirect URIs: `http://localhost:4200/*`
-   - Web Origins: `http://localhost:4200`
-
-2. **Client Configuration (epos-backend)**
-   - Access Type: `bearer-only`
-   - Used for: Backend API token validation
+| Client ID (Frontend) | `epos-frontend` |
+| Client ID (Backend) | `epos-backend` |
 
 ---
 
-## Sample Data (H2)
+## Sample Data (H2/SIT)
 
-### Users
+Sample data is automatically loaded from `data-sit.sql` when using the SIT profile.
 
-```sql
--- Insert test users
-INSERT INTO TBL_USER (USER_ID, USER_NAME, SYSTEM_FLAG, DISABLE_FLAG, ENABLE_DATE, DISABLE_DATE)
-VALUES ('test.user', 'Test User', 'SO,TTS', NULL, '2024-01-01', '2025-12-31');
+### Test Users
 
-INSERT INTO TBL_USER (USER_ID, USER_NAME, SYSTEM_FLAG, DISABLE_FLAG, ENABLE_DATE, DISABLE_DATE)
-VALUES ('admin.user', 'Admin User', 'SO,TTS,APP', NULL, '2024-01-01', '2025-12-31');
+| EMP_ID | EMP_NAME | SYSTEM_FLAG | Notes |
+|--------|----------|-------------|-------|
+| `test.user` | Test User | SO,TTS | Normal user with single mast store |
+| `admin.user` | Admin User | SO,TTS,APP | 全區 user (STORE_ID = NULL) |
+| `disabled.user` | Disabled User | SO | User with DISABLED_FLAG = 'Y' |
 
-INSERT INTO TBL_USER (USER_ID, USER_NAME, SYSTEM_FLAG, DISABLE_FLAG, ENABLE_DATE, DISABLE_DATE)
-VALUES ('disabled.user', 'Disabled User', 'SO', 'Y', '2024-01-01', '2025-12-31');
-```
+### Schema Structure
 
-### Channels
-
-```sql
--- Insert channels (static data)
-INSERT INTO TBL_CHANNEL (CHANNEL_ID, CHANNEL_NAME, CHANNEL_DESC)
-VALUES ('SO', 'Special Order', '特殊訂單系統');
-
-INSERT INTO TBL_CHANNEL (CHANNEL_ID, CHANNEL_NAME, CHANNEL_DESC)
-VALUES ('TTS', 'TTS', 'TTS 系統');
-
-INSERT INTO TBL_CHANNEL (CHANNEL_ID, CHANNEL_NAME, CHANNEL_DESC)
-VALUES ('APP', 'APP', 'APP 系統');
-```
-
-### Stores
-
-```sql
--- Insert sample stores
-INSERT INTO TBL_STORE (STORE_ID, STORE_NAME, CHANNEL_ID)
-VALUES ('S001', '台北門市', 'SO');
-
-INSERT INTO TBL_STORE (STORE_ID, STORE_NAME, CHANNEL_ID)
-VALUES ('S002', '新竹門市', 'SO');
-
-INSERT INTO TBL_STORE (STORE_ID, STORE_NAME, CHANNEL_ID)
-VALUES ('S003', '台中門市', 'SO');
-```
-
-### User Store Assignments
-
-```sql
--- User mast store (NULL = 全區)
-INSERT INTO TBL_USER_MAST_STORE (USER_ID, STORE_ID)
-VALUES ('test.user', 'S001');
-
-INSERT INTO TBL_USER_MAST_STORE (USER_ID, STORE_ID)
-VALUES ('admin.user', NULL);  -- 全區權限
-
--- User support stores
-INSERT INTO TBL_USER_STORE (USER_ID, STORE_ID)
-VALUES ('test.user', 'S002');
-
-INSERT INTO TBL_USER_STORE (USER_ID, STORE_ID)
-VALUES ('test.user', 'S003');
-```
+Tables use UAT Oracle structure:
+- `TBL_USER`: EMP_ID (PK), EMP_NAME, SYSTEM_FLAG, DISABLED_FLAG, START_DATE, END_DATE
+- `TBL_CHANNEL`: CHANNEL_ID (PK), CHANNEL_NAME
+- `TBL_STORE`: STORE_ID (PK), CHANNEL_ID, STORE_NAME
+- `TBL_USER_MAST_STORE`: EMP_ID, STORE_ID (NULL = 全區)
+- `TBL_USER_STORE`: EMP_ID, STORE_ID
+- `TBL_AUDIT_LOG`: LOG_ID (PK), EMP_ID, ACTION_TYPE, etc.
 
 ---
 
@@ -203,10 +183,10 @@ npx playwright test
    - Redirect to homepage
 
 4. **Homepage Verification**
-   - Verify Nav Bar items
+   - Verify Nav Bar items (訂單管理, 退貨管理, 安運單管理, 主檔維護, 報表)
    - Verify user info display
    - Test logout button
-   - Test system switch
+   - Test "切換系統" button
 
 ---
 
@@ -216,19 +196,18 @@ npx playwright test
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
-| CORS error | Backend not configured | Check `cors.allowed-origins` in application.yml |
-| Token expired | Session timeout | Keycloak token auto-refresh should handle this |
-| User not found | User ID mismatch | Ensure Keycloak username matches TBL_USER.USER_ID |
-| 403 Forbidden | Validation failed | Check 6-checkpoint validation errors |
+| CORS error | Backend not configured | Check `cors.allowed-origins` in application.properties |
+| Token expired | Session timeout | Keycloak auto-refresh should handle (60 min timeout) |
+| User not found | User ID mismatch | Ensure Keycloak username matches TBL_USER.EMP_ID |
+| 403 Forbidden | Validation failed | Check 6-checkpoint validation errors in console |
+| Keycloak connection refused | Local Keycloak not running | Start Keycloak on port 8180 |
 
 ### Debug Mode
 
-```yaml
-# application-h2.yml
-logging:
-  level:
-    com.tgfc.som: DEBUG
-    org.springframework.security: DEBUG
+Add to `application-sit.properties`:
+```properties
+logging.level.com.tgfc.som=DEBUG
+logging.level.org.springframework.security=DEBUG
 ```
 
 ---
@@ -267,5 +246,12 @@ curl "http://localhost:8080/api/stores/support?mastStoreId=S001" \
 
 ```bash
 curl http://localhost:8080/api/channels \
+  -H "Authorization: Bearer <keycloak-token>"
+```
+
+### Logout
+
+```bash
+curl -X POST http://localhost:8080/api/auth/logout \
   -H "Authorization: Bearer <keycloak-token>"
 ```
