@@ -1,24 +1,24 @@
 <!--
   Sync Impact Report:
 
-  Version Change: 1.0.0 → 1.0.1
+  Version Change: 1.0.1 → 1.1.0
 
-  Modified Principles:
-  - 3-Table Rule (三表原則): 補充性能考量與例外情況說明
+  Modified Principles: N/A
 
-  Changes in v1.0.1:
-  - 新增「性能考量」章節：說明索引風險、I/O 風險、查詢計畫、網路傳輸
-  - 擴充「例外情況」：明確非歷史資料、小資料集的豁免條件
-  - 強化理由說明：從設計考量延伸至性能災難預防
-
-  Added Sections: N/A
+  Added Sections:
+  - Core Principles IV: Database Schema Documentation (資料表文件規範)
 
   Removed Sections: N/A
 
+  Changes in v1.1.0:
+  - 新增「Database Schema Documentation」原則：強制查閱 docs/tables 資料表文件
+  - 明確查閱時機：設計、實作、除錯、Code Review 階段
+  - 強調文件為唯一真實來源（Single Source of Truth）
+
   Templates Requiring Updates:
-  - ✅ plan-template.md - Complexity Tracking 表格需參考新增的性能考量與例外情況
-  - ✅ spec-template.md - No changes required
-  - ✅ tasks-template.md - No changes required
+  - ✅ plan-template.md - Technical Context 應包含資料表文件參考檢查
+  - ✅ spec-template.md - Key Entities 應參考 docs/tables 文件
+  - ⚠ tasks-template.md - Implementation tasks 應包含查閱資料表文件的提醒
 
   Follow-up TODOs: None
 
@@ -26,8 +26,11 @@
 
   Version History:
 
+  v1.1.0 (2025-12-17):
+  - 新增 Database Schema Documentation 原則（MINOR: 新原則）
+
   v1.0.1 (2025-12-17):
-  - 補充 3-Table Rule 的性能考量與例外情況
+  - 補充 3-Table Rule 的性能考量與例外情況（PATCH: 澄清）
 
   v1.0.0 (2025-12-17):
   - Initial creation
@@ -82,6 +85,22 @@
 - **測試優先**：複雜的設計必須通過測試證明其必要性
 
 **理由**：簡單的程式碼更容易理解、測試、維護與除錯。過早的抽象與過度設計通常會增加技術債，而非減少。
+
+### IV. Database Schema Documentation (資料表文件規範)
+
+**當對資料表欄位名稱、長度、意義有疑問時，必須查閱 `docs/tables` 目錄：**
+- **強制查閱**：在設計或實作涉及資料庫欄位的功能前，必須先查閱相關資料表的文件
+- **文件位置**：`docs/tables/[TABLE_NAME].html` 包含完整的欄位定義、資料型別、長度限制、註解
+- **避免假設**：不可根據欄位名稱猜測其意義、長度或限制，必須以文件為準
+- **發現不一致**：若發現資料庫實際結構與文件不一致，必須立即記錄並通知團隊更新文件
+
+**查閱時機（When to Consult）：**
+1. **設計階段**：規劃新功能涉及資料表查詢或寫入時
+2. **實作階段**：撰寫 SQL 查詢、Mapper XML 或 Entity 類別時
+3. **除錯階段**：發現資料異常或欄位截斷問題時
+4. **Code Review**：審查涉及資料庫操作的程式碼時
+
+**理由**：資料表文件是資料庫結構的唯一真實來源（Single Source of Truth）。依賴文件而非假設，可避免欄位長度溢位、資料型別錯誤、業務邏輯誤解等常見問題。
 
 ## Architecture Standards
 
@@ -176,4 +195,4 @@ Infrastructure Layer (基礎設施層)
 - **定期審查**：每季度檢視 Constitution 的有效性與適用性
 - **違規處理**：違反 Constitution 的程式碼必須重構或提供明確的違規理由
 
-**Version**: 1.0.1 | **Ratified**: 2025-12-17 | **Last Amended**: 2025-12-17
+**Version**: 1.1.0 | **Ratified**: 2025-12-17 | **Last Amended**: 2025-12-17
