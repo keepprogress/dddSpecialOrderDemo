@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgfc.som.mapper.UserMapper">
+  <resultMap id="BaseResultMap" type="com.tgfc.som.entity.User">
+    <id column="EMP_ID" jdbcType="VARCHAR" property="empId" />
+    <result column="CHANNEL_ID" jdbcType="VARCHAR" property="channelId" />
+    <result column="STORE_ID" jdbcType="VARCHAR" property="storeId" />
+    <result column="EMP_NAME" jdbcType="VARCHAR" property="empName" />
+    <result column="SYSTEM_FLAG" jdbcType="VARCHAR" property="systemFlag" />
+    <result column="DISABLED_FLAG" jdbcType="VARCHAR" property="disabledFlag" />
+    <result column="AUTHORITY_GRADE" jdbcType="NUMERIC" property="authorityGrade" />
+    <result column="START_DATE" jdbcType="TIMESTAMP" property="startDate" />
+    <result column="END_DATE" jdbcType="TIMESTAMP" property="endDate" />
+    <result column="UPDATE_DATE" jdbcType="TIMESTAMP" property="updateDate" />
+    <result column="UPDATE_EMP_ID" jdbcType="VARCHAR" property="updateEmpId" />
+    <result column="UPDATE_EMP_NAME" jdbcType="VARCHAR" property="updateEmpName" />
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from TBL_USER
+    where EMP_ID = #{empId,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.tgfc.som.entity.User">
+    insert into TBL_USER (EMP_ID, CHANNEL_ID, STORE_ID, 
+      EMP_NAME, SYSTEM_FLAG, DISABLED_FLAG, 
+      AUTHORITY_GRADE, START_DATE, END_DATE, 
+      UPDATE_DATE, UPDATE_EMP_ID, UPDATE_EMP_NAME
+      )
+    values (#{empId,jdbcType=VARCHAR}, #{channelId,jdbcType=VARCHAR}, #{storeId,jdbcType=VARCHAR}, 
+      #{empName,jdbcType=VARCHAR}, #{systemFlag,jdbcType=VARCHAR}, #{disabledFlag,jdbcType=VARCHAR}, 
+      #{authorityGrade,jdbcType=NUMERIC}, #{startDate,jdbcType=TIMESTAMP}, #{endDate,jdbcType=TIMESTAMP}, 
+      #{updateDate,jdbcType=TIMESTAMP}, #{updateEmpId,jdbcType=VARCHAR}, #{updateEmpName,jdbcType=VARCHAR}
+      )
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.tgfc.som.entity.User">
+    update TBL_USER
+    set CHANNEL_ID = #{channelId,jdbcType=VARCHAR},
+      STORE_ID = #{storeId,jdbcType=VARCHAR},
+      EMP_NAME = #{empName,jdbcType=VARCHAR},
+      SYSTEM_FLAG = #{systemFlag,jdbcType=VARCHAR},
+      DISABLED_FLAG = #{disabledFlag,jdbcType=VARCHAR},
+      AUTHORITY_GRADE = #{authorityGrade,jdbcType=NUMERIC},
+      START_DATE = #{startDate,jdbcType=TIMESTAMP},
+      END_DATE = #{endDate,jdbcType=TIMESTAMP},
+      UPDATE_DATE = #{updateDate,jdbcType=TIMESTAMP},
+      UPDATE_EMP_ID = #{updateEmpId,jdbcType=VARCHAR},
+      UPDATE_EMP_NAME = #{updateEmpName,jdbcType=VARCHAR}
+    where EMP_ID = #{empId,jdbcType=VARCHAR}
+  </update>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select EMP_ID, CHANNEL_ID, STORE_ID, EMP_NAME, SYSTEM_FLAG, DISABLED_FLAG, AUTHORITY_GRADE, 
+    START_DATE, END_DATE, UPDATE_DATE, UPDATE_EMP_ID, UPDATE_EMP_NAME
+    from TBL_USER
+    where EMP_ID = #{empId,jdbcType=VARCHAR}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select EMP_ID, CHANNEL_ID, STORE_ID, EMP_NAME, SYSTEM_FLAG, DISABLED_FLAG, AUTHORITY_GRADE, 
+    START_DATE, END_DATE, UPDATE_DATE, UPDATE_EMP_ID, UPDATE_EMP_NAME
+    from TBL_USER
+  </select>
+</mapper>

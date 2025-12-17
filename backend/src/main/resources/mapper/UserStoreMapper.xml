@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgfc.som.mapper.UserStoreMapper">
+  <resultMap id="BaseResultMap" type="com.tgfc.som.entity.UserStore">
+    <id column="EMP_ID" jdbcType="VARCHAR" property="empId" />
+    <id column="STORE_ID" jdbcType="VARCHAR" property="storeId" />
+    <result column="CHANNEL_ID" jdbcType="VARCHAR" property="channelId" />
+    <result column="UPDATE_DATE" jdbcType="TIMESTAMP" property="updateDate" />
+    <result column="UPDATE_EMP_ID" jdbcType="VARCHAR" property="updateEmpId" />
+    <result column="UPDATE_EMP_NAME" jdbcType="VARCHAR" property="updateEmpName" />
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="map">
+    delete from TBL_USER_STORE
+    where EMP_ID = #{empId,jdbcType=VARCHAR}
+      and STORE_ID = #{storeId,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.tgfc.som.entity.UserStore">
+    insert into TBL_USER_STORE (EMP_ID, STORE_ID, CHANNEL_ID, 
+      UPDATE_DATE, UPDATE_EMP_ID, UPDATE_EMP_NAME
+      )
+    values (#{empId,jdbcType=VARCHAR}, #{storeId,jdbcType=VARCHAR}, #{channelId,jdbcType=VARCHAR}, 
+      #{updateDate,jdbcType=TIMESTAMP}, #{updateEmpId,jdbcType=VARCHAR}, #{updateEmpName,jdbcType=VARCHAR}
+      )
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.tgfc.som.entity.UserStore">
+    update TBL_USER_STORE
+    set CHANNEL_ID = #{channelId,jdbcType=VARCHAR},
+      UPDATE_DATE = #{updateDate,jdbcType=TIMESTAMP},
+      UPDATE_EMP_ID = #{updateEmpId,jdbcType=VARCHAR},
+      UPDATE_EMP_NAME = #{updateEmpName,jdbcType=VARCHAR}
+    where EMP_ID = #{empId,jdbcType=VARCHAR}
+      and STORE_ID = #{storeId,jdbcType=VARCHAR}
+  </update>
+  <select id="selectByPrimaryKey" parameterType="map" resultMap="BaseResultMap">
+    select EMP_ID, STORE_ID, CHANNEL_ID, UPDATE_DATE, UPDATE_EMP_ID, UPDATE_EMP_NAME
+    from TBL_USER_STORE
+    where EMP_ID = #{empId,jdbcType=VARCHAR}
+      and STORE_ID = #{storeId,jdbcType=VARCHAR}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select EMP_ID, STORE_ID, CHANNEL_ID, UPDATE_DATE, UPDATE_EMP_ID, UPDATE_EMP_NAME
+    from TBL_USER_STORE
+  </select>
+</mapper>

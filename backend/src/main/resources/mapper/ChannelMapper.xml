@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgfc.som.mapper.ChannelMapper">
+  <resultMap id="BaseResultMap" type="com.tgfc.som.entity.Channel">
+    <id column="CHANNEL_ID" jdbcType="VARCHAR" property="channelId" />
+    <result column="CHANNEL_NAME" jdbcType="VARCHAR" property="channelName" />
+    <result column="POS_CHANNEL" jdbcType="VARCHAR" property="posChannel" />
+    <result column="COMPANY_CODE" jdbcType="VARCHAR" property="companyCode" />
+    <result column="SEQUENCE_NUM" jdbcType="NUMERIC" property="sequenceNum" />
+    <result column="SAP_CHANNEL" jdbcType="VARCHAR" property="sapChannel" />
+    <result column="DC_STORE_ID" jdbcType="VARCHAR" property="dcStoreId" />
+    <result column="STATUS" jdbcType="VARCHAR" property="status" />
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from TBL_CHANNEL
+    where CHANNEL_ID = #{channelId,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.tgfc.som.entity.Channel">
+    insert into TBL_CHANNEL (CHANNEL_ID, CHANNEL_NAME, POS_CHANNEL, 
+      COMPANY_CODE, SEQUENCE_NUM, SAP_CHANNEL, 
+      DC_STORE_ID, STATUS)
+    values (#{channelId,jdbcType=VARCHAR}, #{channelName,jdbcType=VARCHAR}, #{posChannel,jdbcType=VARCHAR}, 
+      #{companyCode,jdbcType=VARCHAR}, #{sequenceNum,jdbcType=NUMERIC}, #{sapChannel,jdbcType=VARCHAR}, 
+      #{dcStoreId,jdbcType=VARCHAR}, #{status,jdbcType=VARCHAR})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.tgfc.som.entity.Channel">
+    update TBL_CHANNEL
+    set CHANNEL_NAME = #{channelName,jdbcType=VARCHAR},
+      POS_CHANNEL = #{posChannel,jdbcType=VARCHAR},
+      COMPANY_CODE = #{companyCode,jdbcType=VARCHAR},
+      SEQUENCE_NUM = #{sequenceNum,jdbcType=NUMERIC},
+      SAP_CHANNEL = #{sapChannel,jdbcType=VARCHAR},
+      DC_STORE_ID = #{dcStoreId,jdbcType=VARCHAR},
+      STATUS = #{status,jdbcType=VARCHAR}
+    where CHANNEL_ID = #{channelId,jdbcType=VARCHAR}
+  </update>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select CHANNEL_ID, CHANNEL_NAME, POS_CHANNEL, COMPANY_CODE, SEQUENCE_NUM, SAP_CHANNEL, 
+    DC_STORE_ID, STATUS
+    from TBL_CHANNEL
+    where CHANNEL_ID = #{channelId,jdbcType=VARCHAR}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select CHANNEL_ID, CHANNEL_NAME, POS_CHANNEL, COMPANY_CODE, SEQUENCE_NUM, SAP_CHANNEL, 
+    DC_STORE_ID, STATUS
+    from TBL_CHANNEL
+  </select>
+</mapper>

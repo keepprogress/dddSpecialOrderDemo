@@ -22,7 +22,8 @@
               {
                 "glob": "**/*",
                 "input": "public"
-              }
+              },
+              "src/silent-check-sso.html"
             ],
             "styles": [
               "src/styles.css"
@@ -42,12 +43,40 @@
                   "maximumError": "8kB"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ]
             },
             "development": {
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "sit": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.sit.ts"
+                }
+              ]
+            },
+            "uat": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.uat.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -60,6 +89,12 @@
             },
             "development": {
               "buildTarget": "frontend:build:development"
+            },
+            "sit": {
+              "buildTarget": "frontend:build:sit"
+            },
+            "uat": {
+              "buildTarget": "frontend:build:uat"
             }
           },
           "defaultConfiguration": "development"

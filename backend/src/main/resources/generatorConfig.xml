@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+<!--
+    MyBatis Generator Configuration
+    使用方式:
+    1. mvn process-resources -P generator -Ddb.password=YOUR_PASSWORD
+    2. mvn mybatis-generator:generate -P generator
+    或合併: mvn process-resources mybatis-generator:generate -P generator -Ddb.password=YOUR_PASSWORD
+-->
+<generatorConfiguration>
+    <context id="OracleContext" targetRuntime="MyBatis3Simple">
+        <!-- 不產生註解 -->
+        <commentGenerator>
+            <property name="suppressAllComments" value="true"/>
+            <property name="suppressDate" value="true"/>
+        </commentGenerator>
+
+        <!-- 資料庫連線設定 (Maven profile filtering) -->
+        <jdbcConnection driverClass="${db.driver}"
+                        connectionURL="${db.url}"
+                        userId="${db.username}"
+                        password="${db.password}">
+            <!-- Oracle 需要這個設定以正確取得 schema 資訊 -->
+            <property name="remarksReporting" value="true"/>
+        </jdbcConnection>
+
+        <!-- Java 類型解析器 -->
+        <javaTypeResolver>
+            <property name="forceBigDecimals" value="false"/>
+            <!-- Oracle NUMBER 對應到 Java Integer/Long -->
+            <property name="useJSR310Types" value="false"/>
+        </javaTypeResolver>
+
+        <!-- Entity 產生設定 -->
+        <javaModelGenerator targetPackage="com.tgfc.som.entity"
+                            targetProject="src/main/java">
+            <property name="enableSubPackages" value="false"/>
+            <property name="trimStrings" value="true"/>
+        </javaModelGenerator>
+
+        <!-- Mapper XML 產生設定 -->
+        <sqlMapGenerator targetPackage="mapper"
+                         targetProject="src/main/resources">
+            <property name="enableSubPackages" value="false"/>
+        </sqlMapGenerator>
+
+        <!-- Mapper Interface 產生設定 -->
+        <javaClientGenerator type="XMLMAPPER"
+                             targetPackage="com.tgfc.som.mapper"
+                             targetProject="src/main/java">
+            <property name="enableSubPackages" value="false"/>
+        </javaClientGenerator>
+
+        <!-- 5 張表的配置 -->
+        <!-- TBL_USER -->
+        <table tableName="TBL_USER" domainObjectName="User">
+            <property name="useActualColumnNames" value="false"/>
+            <generatedKey column="USER_ID" sqlStatement="SELECT SEQ_USER.NEXTVAL FROM DUAL" identity="false"/>
+        </table>
+
+        <!-- TBL_CHANNEL -->
+        <table tableName="TBL_CHANNEL" domainObjectName="Channel">
+            <property name="useActualColumnNames" value="false"/>
+        </table>
+
+        <!-- TBL_STORE -->
+        <table tableName="TBL_STORE" domainObjectName="Store">
+            <property name="useActualColumnNames" value="false"/>
+        </table>
+
+        <!-- TBL_USER_MAST_STORE -->
+        <table tableName="TBL_USER_MAST_STORE" domainObjectName="UserMastStore">
+            <property name="useActualColumnNames" value="false"/>
+        </table>
+
+        <!-- TBL_USER_STORE -->
+        <table tableName="TBL_USER_STORE" domainObjectName="UserStore">
+            <property name="useActualColumnNames" value="false"/>
+        </table>
+    </context>
+</generatorConfiguration>

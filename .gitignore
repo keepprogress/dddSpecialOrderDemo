@@ -35,3 +35,4 @@ application-secret.properties
 mybatis-generator/src/main/resources/generator-local.properties
 mybatis-generator/run-generator.bat
 mybatis-generator/run-generator.sh
+backend/src/main/resources/generator-local.properties

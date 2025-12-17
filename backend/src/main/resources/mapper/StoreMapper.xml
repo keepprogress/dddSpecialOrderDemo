@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgfc.som.mapper.StoreMapper">
+  <resultMap id="BaseResultMap" type="com.tgfc.som.entity.Store">
+    <id column="STORE_ID" jdbcType="VARCHAR" property="storeId" />
+    <result column="CHANNEL_ID" jdbcType="VARCHAR" property="channelId" />
+    <result column="STORE_NAME" jdbcType="VARCHAR" property="storeName" />
+    <result column="SHORT_NAME" jdbcType="VARCHAR" property="shortName" />
+    <result column="CREATE_DATE" jdbcType="TIMESTAMP" property="createDate" />
+    <result column="CLOSE_DATE" jdbcType="TIMESTAMP" property="closeDate" />
+    <result column="STORE_ADDR" jdbcType="VARCHAR" property="storeAddr" />
+    <result column="STORE_TEL" jdbcType="VARCHAR" property="storeTel" />
+    <result column="STORE_FAX" jdbcType="VARCHAR" property="storeFax" />
+    <result column="STATUS" jdbcType="VARCHAR" property="status" />
+    <result column="COMPANY_ID" jdbcType="VARCHAR" property="companyId" />
+    <result column="SITE_ID" jdbcType="VARCHAR" property="siteId" />
+    <result column="AREA_ID" jdbcType="VARCHAR" property="areaId" />
+    <result column="COST_CENTER" jdbcType="VARCHAR" property="costCenter" />
+    <result column="ZIP_CODE" jdbcType="VARCHAR" property="zipCode" />
+    <result column="TXN_TYPE" jdbcType="VARCHAR" property="txnType" />
+    <result column="STORE_TYPE" jdbcType="VARCHAR" property="storeType" />
+    <result column="GUI_TYPE" jdbcType="VARCHAR" property="guiType" />
+    <result column="EMAIL" jdbcType="VARCHAR" property="email" />
+    <result column="POS_STORE_NAME" jdbcType="VARCHAR" property="posStoreName" />
+    <result column="INV_TITLE" jdbcType="VARCHAR" property="invTitle" />
+    <result column="TTS_AUTO_EMAIL" jdbcType="VARCHAR" property="ttsAutoEmail" />
+    <result column="HCT_ID" jdbcType="VARCHAR" property="hctId" />
+    <result column="PAYPAGE_EMAIL" jdbcType="VARCHAR" property="paypageEmail" />
+    <result column="JSGO_KEY" jdbcType="VARCHAR" property="jsgoKey" />
+    <result column="UPDATE_DATE" jdbcType="TIMESTAMP" property="updateDate" />
+    <result column="UPDATE_EMP_ID" jdbcType="VARCHAR" property="updateEmpId" />
+    <result column="UPDATE_EMP_NAME" jdbcType="VARCHAR" property="updateEmpName" />
+    <result column="SHOW_FLAG" jdbcType="VARCHAR" property="showFlag" />
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from TBL_STORE
+    where STORE_ID = #{storeId,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.tgfc.som.entity.Store">
+    insert into TBL_STORE (STORE_ID, CHANNEL_ID, STORE_NAME, 
+      SHORT_NAME, CREATE_DATE, CLOSE_DATE, 
+      STORE_ADDR, STORE_TEL, STORE_FAX, 
+      STATUS, COMPANY_ID, SITE_ID, 
+      AREA_ID, COST_CENTER, ZIP_CODE, 
+      TXN_TYPE, STORE_TYPE, GUI_TYPE, 
+      EMAIL, POS_STORE_NAME, INV_TITLE, 
+      TTS_AUTO_EMAIL, HCT_ID, PAYPAGE_EMAIL, 
+      JSGO_KEY, UPDATE_DATE, UPDATE_EMP_ID, 
+      UPDATE_EMP_NAME, SHOW_FLAG)
+    values (#{storeId,jdbcType=VARCHAR}, #{channelId,jdbcType=VARCHAR}, #{storeName,jdbcType=VARCHAR}, 
+      #{shortName,jdbcType=VARCHAR}, #{createDate,jdbcType=TIMESTAMP}, #{closeDate,jdbcType=TIMESTAMP}, 
+      #{storeAddr,jdbcType=VARCHAR}, #{storeTel,jdbcType=VARCHAR}, #{storeFax,jdbcType=VARCHAR}, 
+      #{status,jdbcType=VARCHAR}, #{companyId,jdbcType=VARCHAR}, #{siteId,jdbcType=VARCHAR}, 
+      #{areaId,jdbcType=VARCHAR}, #{costCenter,jdbcType=VARCHAR}, #{zipCode,jdbcType=VARCHAR}, 
+      #{txnType,jdbcType=VARCHAR}, #{storeType,jdbcType=VARCHAR}, #{guiType,jdbcType=VARCHAR}, 
+      #{email,jdbcType=VARCHAR}, #{posStoreName,jdbcType=VARCHAR}, #{invTitle,jdbcType=VARCHAR}, 
+      #{ttsAutoEmail,jdbcType=VARCHAR}, #{hctId,jdbcType=VARCHAR}, #{paypageEmail,jdbcType=VARCHAR}, 
+      #{jsgoKey,jdbcType=VARCHAR}, #{updateDate,jdbcType=TIMESTAMP}, #{updateEmpId,jdbcType=VARCHAR}, 
+      #{updateEmpName,jdbcType=VARCHAR}, #{showFlag,jdbcType=VARCHAR})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.tgfc.som.entity.Store">
+    update TBL_STORE
+    set CHANNEL_ID = #{channelId,jdbcType=VARCHAR},
+      STORE_NAME = #{storeName,jdbcType=VARCHAR},
+      SHORT_NAME = #{shortName,jdbcType=VARCHAR},
+      CREATE_DATE = #{createDate,jdbcType=TIMESTAMP},
+      CLOSE_DATE = #{closeDate,jdbcType=TIMESTAMP},
+      STORE_ADDR = #{storeAddr,jdbcType=VARCHAR},
+      STORE_TEL = #{storeTel,jdbcType=VARCHAR},
+      STORE_FAX = #{storeFax,jdbcType=VARCHAR},
+      STATUS = #{status,jdbcType=VARCHAR},
+      COMPANY_ID = #{companyId,jdbcType=VARCHAR},
+      SITE_ID = #{siteId,jdbcType=VARCHAR},
+      AREA_ID = #{areaId,jdbcType=VARCHAR},
+      COST_CENTER = #{costCenter,jdbcType=VARCHAR},
+      ZIP_CODE = #{zipCode,jdbcType=VARCHAR},
+      TXN_TYPE = #{txnType,jdbcType=VARCHAR},
+      STORE_TYPE = #{storeType,jdbcType=VARCHAR},
+      GUI_TYPE = #{guiType,jdbcType=VARCHAR},
+      EMAIL = #{email,jdbcType=VARCHAR},
+      POS_STORE_NAME = #{posStoreName,jdbcType=VARCHAR},
+      INV_TITLE = #{invTitle,jdbcType=VARCHAR},
+      TTS_AUTO_EMAIL = #{ttsAutoEmail,jdbcType=VARCHAR},
+      HCT_ID = #{hctId,jdbcType=VARCHAR},
+      PAYPAGE_EMAIL = #{paypageEmail,jdbcType=VARCHAR},
+      JSGO_KEY = #{jsgoKey,jdbcType=VARCHAR},
+      UPDATE_DATE = #{updateDate,jdbcType=TIMESTAMP},
+      UPDATE_EMP_ID = #{updateEmpId,jdbcType=VARCHAR},
+      UPDATE_EMP_NAME = #{updateEmpName,jdbcType=VARCHAR},
+      SHOW_FLAG = #{showFlag,jdbcType=VARCHAR}
+    where STORE_ID = #{storeId,jdbcType=VARCHAR}
+  </update>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select STORE_ID, CHANNEL_ID, STORE_NAME, SHORT_NAME, CREATE_DATE, CLOSE_DATE, STORE_ADDR, 
+    STORE_TEL, STORE_FAX, STATUS, COMPANY_ID, SITE_ID, AREA_ID, COST_CENTER, ZIP_CODE, 
+    TXN_TYPE, STORE_TYPE, GUI_TYPE, EMAIL, POS_STORE_NAME, INV_TITLE, TTS_AUTO_EMAIL, 
+    HCT_ID, PAYPAGE_EMAIL, JSGO_KEY, UPDATE_DATE, UPDATE_EMP_ID, UPDATE_EMP_NAME, SHOW_FLAG
+    from TBL_STORE
+    where STORE_ID = #{storeId,jdbcType=VARCHAR}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select STORE_ID, CHANNEL_ID, STORE_NAME, SHORT_NAME, CREATE_DATE, CLOSE_DATE, STORE_ADDR, 
+    STORE_TEL, STORE_FAX, STATUS, COMPANY_ID, SITE_ID, AREA_ID, COST_CENTER, ZIP_CODE, 
+    TXN_TYPE, STORE_TYPE, GUI_TYPE, EMAIL, POS_STORE_NAME, INV_TITLE, TTS_AUTO_EMAIL, 
+    HCT_ID, PAYPAGE_EMAIL, JSGO_KEY, UPDATE_DATE, UPDATE_EMP_ID, UPDATE_EMP_NAME, SHOW_FLAG
+    from TBL_STORE
+  </select>
+</mapper>

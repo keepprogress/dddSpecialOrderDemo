@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgfc.som.mapper.UserMastStoreMapper">
+  <resultMap id="BaseResultMap" type="com.tgfc.som.entity.UserMastStore">
+    <result column="EMP_ID" jdbcType="VARCHAR" property="empId" />
+    <result column="STORE_ID" jdbcType="VARCHAR" property="storeId" />
+    <result column="CHANNEL_ID" jdbcType="VARCHAR" property="channelId" />
+    <result column="UPDATE_DATE" jdbcType="TIMESTAMP" property="updateDate" />
+    <result column="UPDATE_EMP_ID" jdbcType="VARCHAR" property="updateEmpId" />
+    <result column="UPDATE_EMP_NAME" jdbcType="VARCHAR" property="updateEmpName" />
+  </resultMap>
+  <insert id="insert" parameterType="com.tgfc.som.entity.UserMastStore">
+    insert into TBL_USER_MAST_STORE (EMP_ID, STORE_ID, CHANNEL_ID, 
+      UPDATE_DATE, UPDATE_EMP_ID, UPDATE_EMP_NAME
+      )
+    values (#{empId,jdbcType=VARCHAR}, #{storeId,jdbcType=VARCHAR}, #{channelId,jdbcType=VARCHAR}, 
+      #{updateDate,jdbcType=TIMESTAMP}, #{updateEmpId,jdbcType=VARCHAR}, #{updateEmpName,jdbcType=VARCHAR}
+      )
+  </insert>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select EMP_ID, STORE_ID, CHANNEL_ID, UPDATE_DATE, UPDATE_EMP_ID, UPDATE_EMP_NAME
+    from TBL_USER_MAST_STORE
+  </select>
+</mapper>
