@@ -19,7 +19,7 @@
 
 **Storage**:
 - Production: Oracle 21c
-- Development: H2
+- Development: Oracle 21c / H2 (oracle21ch2)
 - Frontend: Local Storage (Token, 選擇狀態)
 
 **Testing**:
