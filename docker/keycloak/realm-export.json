@@ -87,6 +87,21 @@
           "temporary": false
         }
       ]
+    },
+    {
+      "username": "H00199",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "SIT",
+      "lastName": "測試人員",
+      "email": "H00199@test.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Aa123456",
+          "temporary": false
+        }
+      ]
     }
   ]
 }

@@ -1,7 +1,12 @@
-import { HttpInterceptorFn, HttpRequest, HttpHandlerFn, HttpErrorResponse } from '@angular/common/http';
+import {
+  HttpInterceptorFn,
+  HttpRequest,
+  HttpHandlerFn,
+  HttpErrorResponse,
+} from '@angular/common/http';
 import { inject } from '@angular/core';
 import { from, switchMap, catchError, throwError } from 'rxjs';
-import { KeycloakService } from 'keycloak-angular';
+import Keycloak from 'keycloak-js';
 import { Router } from '@angular/router';
 import { ErrorHandlerService } from '../../core/services/error-handler.service';
 
@@ -9,12 +14,13 @@ import { ErrorHandlerService } from '../../core/services/error-handler.service';
  * Auth Interceptor (Angular 21+ Functional Interceptor)
  * 自動附加 Bearer Token 到 HTTP 請求
  * 處理 401/403 錯誤並使用統一錯誤處理
+ * 使用新的 keycloak-angular API (注入 Keycloak 而非 deprecated KeycloakService)
  */
 export const authInterceptor: HttpInterceptorFn = (
   req: HttpRequest<unknown>,
   next: HttpHandlerFn
 ) => {
-  const keycloak = inject(KeycloakService);
+  const keycloak = inject(Keycloak);
   const router = inject(Router);
   const errorHandler = inject(ErrorHandlerService);
 
@@ -23,8 +29,10 @@ export const authInterceptor: HttpInterceptorFn = (
     return next(req);
   }
 
-  return from(keycloak.getToken()).pipe(
-    switchMap((token) => {
+  // 使用 updateToken 確保 token 有效（如果需要會自動刷新）
+  return from(keycloak.updateToken(30)).pipe(
+    switchMap(() => {
+      const token = keycloak.token;
       if (token) {
         const authReq = req.clone({
           setHeaders: {

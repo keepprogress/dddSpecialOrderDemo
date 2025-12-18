@@ -15,19 +15,22 @@ public final class JwtUtils {
     /**
      * 從 JWT 提取使用者名稱
      * Keycloak 預設使用 preferred_username claim
+     * 注意: Keycloak 會將 username 轉為小寫，但 UAT Oracle 中 EMP_ID 是大寫
      *
      * @param jwt JWT Token
-     * @return 使用者名稱
+     * @return 使用者名稱 (大寫)
      */
     public static String extractUsername(Jwt jwt) {
         // 優先使用 preferred_username (Keycloak 標準)
         String username = jwt.getClaimAsString("preferred_username");
         if (username != null && !username.isEmpty()) {
-            return username;
+            // 轉大寫以匹配 UAT Oracle 的 EMP_ID 格式
+            return username.toUpperCase();
         }
 
         // 備援: 使用 sub (subject)
-        return jwt.getSubject();
+        String subject = jwt.getSubject();
+        return subject != null ? subject.toUpperCase() : null;
     }
 
     /**

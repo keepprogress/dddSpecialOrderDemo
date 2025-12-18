@@ -1,10 +1,11 @@
 import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
-import { KeycloakService } from 'keycloak-angular';
+import Keycloak from 'keycloak-js';
 
 /**
  * 登入元件 (Angular 21+ Standalone, OnPush)
  * 檢查登入狀態並導向 Keycloak 或進行驗證
+ * 使用新的 keycloak-angular API (注入 Keycloak 而非 deprecated KeycloakService)
  */
 @Component({
   selector: 'app-login',
@@ -70,11 +71,11 @@ import { KeycloakService } from 'keycloak-angular';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent implements OnInit {
-  private readonly keycloak = inject(KeycloakService);
+  private readonly keycloak = inject(Keycloak);
   private readonly router = inject(Router);
 
   async ngOnInit(): Promise<void> {
-    const isLoggedIn = this.keycloak.isLoggedIn();
+    const isLoggedIn = this.keycloak.authenticated ?? false;
 
     if (!isLoggedIn) {
       // 未登入，導向 Keycloak 登入頁

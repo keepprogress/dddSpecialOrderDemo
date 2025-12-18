@@ -1,7 +1,7 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { KeycloakService } from 'keycloak-angular';
+import Keycloak from 'keycloak-js';
 import { Observable, tap, catchError, throwError } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
@@ -18,11 +18,12 @@ const LOGIN_CONTEXT_KEY = 'som_login_context';
 /**
  * 認證服務 (Angular 21+ Signals)
  * 管理使用者認證狀態和 LoginContext
+ * 使用新的 keycloak-angular API (注入 Keycloak 而非 deprecated KeycloakService)
  */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
-  private readonly keycloak = inject(KeycloakService);
+  private readonly keycloak = inject(Keycloak);
   private readonly router = inject(Router);
 
   // Signals
@@ -61,8 +62,9 @@ export class AuthService {
 
           if (response.success && response.data) {
             // 建立初始 LoginContext
+            // 使用 keycloak.tokenParsed 取得使用者名稱
             const context: LoginContext = {
-              userId: this.keycloak.getUsername() || '',
+              userId: this.keycloak.tokenParsed?.['preferred_username'] || '',
               userName: response.data.userName,
               systemFlags: response.data.systemFlags,
               selectedStore: null,
@@ -122,7 +124,7 @@ export class AuthService {
    */
   async logout(): Promise<void> {
     this.clearLoginContext();
-    await this.keycloak.logout(window.location.origin);
+    await this.keycloak.logout({ redirectUri: window.location.origin });
   }
 
   /**

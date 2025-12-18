@@ -12,6 +12,10 @@
 - Q: 同一帳號是否允許開多個分頁？ → A: 限制單一分頁，避免狀態落差或單據衝突
 - Q: 首頁佈局與導航列規格？ → A: Nav Bar 含訂單管理、退貨管理、安運單管理、主檔維護、報表；右上角顯示登入者資訊、登出、切換系統按鈕
 
+### Session 2025-12-18
+
+- Q: SIT 測試帳號設定 → A: EMP_ID=H00199, 密碼=Aa123456, 權限=SO/TTS/APP, 主店別=S001, 支援店別=S002/S003
+
 ## Technical Context (from Logical Schema)
 
 本功能基於既有系統的 Authentication & Authorization Logical Schema 設計，以下為關鍵技術背景：

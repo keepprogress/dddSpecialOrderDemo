@@ -1,16 +1,17 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { KeycloakService } from 'keycloak-angular';
+import Keycloak from 'keycloak-js';
 
 /**
  * Auth Guard (Angular 21+ Functional Guard)
  * 驗證使用者是否已登入
+ * 使用新的 keycloak-angular API (注入 Keycloak 而非 deprecated KeycloakService)
  */
 export const authGuard: CanActivateFn = async () => {
-  const keycloak = inject(KeycloakService);
+  const keycloak = inject(Keycloak);
   const router = inject(Router);
 
-  const isLoggedIn = keycloak.isLoggedIn();
+  const isLoggedIn = keycloak.authenticated ?? false;
 
   if (!isLoggedIn) {
     // 未登入，導向 Keycloak 登入頁
@@ -63,10 +64,10 @@ export const loginContextGuard: CanActivateFn = () => {
  */
 export const storeSelectionGuard: CanActivateFn = () => {
   const router = inject(Router);
-  const keycloak = inject(KeycloakService);
+  const keycloak = inject(Keycloak);
 
   // 必須先登入
-  if (!keycloak.isLoggedIn()) {
+  if (!(keycloak.authenticated ?? false)) {
     router.navigate(['/login']);
     return false;
   }

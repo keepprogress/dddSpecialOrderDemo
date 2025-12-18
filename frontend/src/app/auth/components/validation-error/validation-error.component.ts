@@ -1,10 +1,11 @@
 import { Component, inject, input, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
-import { KeycloakService } from 'keycloak-angular';
+import Keycloak from 'keycloak-js';
 
 /**
  * 驗證錯誤元件 (Angular 21+ Standalone, OnPush, Signal Inputs)
  * 顯示 6-checkpoint 驗證失敗訊息
+ * 使用新的 keycloak-angular API (注入 Keycloak 而非 deprecated KeycloakService)
  */
 @Component({
   selector: 'app-validation-error',
@@ -125,7 +126,7 @@ import { KeycloakService } from 'keycloak-angular';
 })
 export class ValidationErrorComponent {
   private readonly router = inject(Router);
-  private readonly keycloak = inject(KeycloakService);
+  private readonly keycloak = inject(Keycloak);
 
   // Signal Inputs
   errorCode = input<string>('');
@@ -142,6 +143,6 @@ export class ValidationErrorComponent {
    * 登出
    */
   async logout(): Promise<void> {
-    await this.keycloak.logout(window.location.origin);
+    await this.keycloak.logout({ redirectUri: window.location.origin });
   }
 }
