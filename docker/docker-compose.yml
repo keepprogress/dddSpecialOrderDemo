@@ -1,0 +1,26 @@
+# SIT 環境 Docker Compose
+# 用於本地開發和 E2E 測試
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: som-keycloak
+    environment:
+      # Admin 帳號
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      # 開發模式
+      KC_HEALTH_ENABLED: true
+    ports:
+      - "8180:8080"
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
+    command:
+      - start-dev
+      - --import-realm
+    networks:
+      - som-network
+
+networks:
+  som-network:
+    driver: bridge

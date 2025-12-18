@@ -2,15 +2,11 @@ import {
   ApplicationConfig,
   provideBrowserGlobalErrorListeners,
   provideAppInitializer,
+  inject,
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import {
-  provideKeycloak,
-  withAutoRefreshToken,
-  AutoRefreshTokenService,
-  UserActivityService,
-} from 'keycloak-angular';
+import { provideKeycloak, withAutoRefreshToken, KEYCLOAK_EVENT_SIGNAL } from 'keycloak-angular';
 
 import { routes } from './app.routes';
 import { environment } from '../environments/environment';
@@ -33,16 +29,18 @@ export const appConfig: ApplicationConfig = {
           window.location.origin + '/silent-check-sso.html',
         checkLoginIframe: false,
       },
-    }),
-    withAutoRefreshToken({
-      onInactivityTimeout: 'logout',
-      sessionTimeout: 60000 * 60, // 60 minutes
+      features: [
+        withAutoRefreshToken({
+          onInactivityTimeout: 'logout',
+          sessionTimeout: 60000 * 60, // 60 minutes
+        }),
+      ],
     }),
     provideAppInitializer(() => {
-      // Initialize auto refresh token services
-      const autoRefresh = new AutoRefreshTokenService();
-      const userActivity = new UserActivityService();
-      return () => Promise.resolve();
+      // Listen to Keycloak events for logging/debugging
+      const keycloakSignal = inject(KEYCLOAK_EVENT_SIGNAL);
+      console.log('[Keycloak] App initializer completed');
+      return Promise.resolve();
     }),
   ],
 };
