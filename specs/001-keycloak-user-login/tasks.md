@@ -85,7 +85,7 @@
 - [x] T066 [P] Create store-selection.spec.ts
 - [x] T067 [P] Create channel-selection.spec.ts
 - [x] T068 [P] Create homepage.spec.ts
-- [ ] T069 Run full Playwright test suite
+- [x] T069 Run full Playwright test suite
 - [ ] T070 Verify quickstart.md scenarios
 - [x] T071 Code cleanup
 - [x] T072 Update CLAUDE.md
@@ -96,5 +96,13 @@ Total: 72 tasks
 MVP (US1): 29 tasks (T001-T029)
 US1: 12 tasks | US2: 13 tasks | US3: 10 tasks | US4: 9 tasks
 
-**Completed**: 70/72 tasks
-**Remaining**: T069 (Run Playwright tests), T070 (Verify quickstart.md scenarios)
+**Completed**: 71/72 tasks
+**Remaining**: T070 (Verify quickstart.md scenarios)
+
+## E2E Test Status
+
+**All 17 tests passing** (2025-12-18)
+- Login Flow: 3 tests
+- Store Selection: 4 tests
+- Channel Selection: 5 tests
+- Navigation Bar: 5 tests
