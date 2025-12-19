@@ -59,6 +59,9 @@ public class SecurityConfig {
                 // 公開端點
                 .requestMatchers("/health", "/actuator/health").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
+                // SpringDoc OpenAPI / Swagger UI
+                .requestMatchers("/swagger-ui.html", "/swagger-ui/**").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
                 // 認證相關端點需要 JWT
                 .requestMatchers("/auth/**").authenticated()
                 .requestMatchers("/stores/**").authenticated()
