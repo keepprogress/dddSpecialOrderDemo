@@ -664,43 +664,173 @@ public enum WorkCategory {
 
 ## 6. Database Entity Mapping
 
-### 6.1 TBL_ORDER_MAST 對應
+> **重要**: 以下對應來自 `docs/tables/*.html` 實際資料表定義，非幻覺欄位
 
-| Entity Field | Table Column | Type | Description |
-|--------------|--------------|------|-------------|
-| id.value | ORDER_ID | VARCHAR2(10) | 訂單編號 |
-| projectId.value | PROJECT_ID | VARCHAR2(16) | 專案代號 |
-| customer.memberId | MEMBER_CARD_ID | VARCHAR2(20) | 會員卡號 |
-| customer.name | MEMBER_NAME | VARCHAR2(100) | 會員姓名 |
-| deliveryAddress.zipCode | INSTALL_ZIP | VARCHAR2(3) | 郵遞區號 |
-| deliveryAddress.fullAddress | INSTALL_ADDR | VARCHAR2(200) | 安運地址 |
-| storeId | STORE_ID | VARCHAR2(5) | 出貨店 |
-| channelId | CHANNEL_ID | VARCHAR2(4) | 通路代號 |
-| status.code | ORDER_STATUS | VARCHAR2(1) | 訂單狀態 |
-| calculation.grandTotal.amount | TOTAL_AMT | NUMBER(10) | 應付總額 |
+### 6.1 TBL_ORDER 對應 (訂單主檔)
 
-### 6.2 TBL_ORDER_DETL 對應
+**PK**: ORDER_ID
 
-| Entity Field | Table Column | Type | Description |
-|--------------|--------------|------|-------------|
-| id.value | LINE_ID | VARCHAR2(20) | 行項編號 |
-| skuNo | SKU_NO | VARCHAR2(20) | 商品編號 |
-| quantity | QUANTITY | NUMBER(5) | 數量 |
-| unitPrice.amount | POS_AMT | NUMBER(10) | 原始單價 |
-| actualUnitPrice.amount | ACT_POS_AMT | NUMBER(10) | 實際單價 |
-| deliveryMethod.code | DELIVERY_FLAG | VARCHAR2(1) | 運送方式 |
-| stockMethod.code | STOCK_METHOD | VARCHAR2(1) | 備貨方式 |
-| memberDisc.amount | MEMBER_DISC | NUMBER(10) | 會員折扣 |
+| Entity Field | Table Column | Type | Nullable | Description |
+|--------------|--------------|------|----------|-------------|
+| orderId | ORDER_ID | VARCHAR2(10) | NOT NULL | 訂單單號 (流水號從3000000000開始) |
+| projectId | PROJECT_ID | VARCHAR2(20) | NOT NULL | 專案代號 店別(5碼)+年(2碼)+月日(4碼)+流水號(5碼) |
+| channelId | CHANNEL_ID | VARCHAR2(5) | NOT NULL | 通路別 |
+| storeId | STORE_ID | VARCHAR2(5) | NOT NULL | 店別 |
+| systemFlag | SYSTEM_FLAG | VARCHAR2(5) | NOT NULL | 系統別 |
+| orderStatusId | ORDER_STATUS_ID | VARCHAR2(5) | NOT NULL | 客戶訂單狀態代碼 |
+| outStoreId | OUT_STORE_ID | VARCHAR2(5) | NOT NULL | 出貨店別 |
+| handleEmpId | HANDLE_EMP_ID | VARCHAR2(20) | NULL | 接單人工號 |
+| handleEmpName | HANDLE_EMP_NAME | VARCHAR2(40) | NULL | 接單人姓名 |
+| specialistEmpId | SPECIALIST_EMP_ID | VARCHAR2(20) | NULL | 專區專員工號 |
+| specialistEmpName | SPECIALIST_EMP_NAME | VARCHAR2(40) | NULL | 專區專員姓名 |
+| memberCardId | MEMBER_CARD_ID | VARCHAR2(13) | NULL | 會員卡號 |
+| memberCardType | MEMBER_CARD_TYPE | VARCHAR2(1) | NULL | 會員卡別 |
+| memberName | MEMBER_NAME | VARCHAR2(40) | NULL | 會員姓名 |
+| memberBirthday | MEMBER_BIRTHDAY | DATE | NULL | 會員生日 YYYYMMDD |
+| memberGender | MEMBER_GENDER | VARCHAR2(1) | NULL | 會員姓別 |
+| memberContact | MEMBER_CONTACT | VARCHAR2(45) | NULL | 會員聯絡人 |
+| memberContactPhone | MEMBER_CONTACT_PHONE | VARCHAR2(20) | NULL | 聯絡電話 |
+| memberPhone | MEMBER_PHONE | VARCHAR2(20) | NULL | 會員電話 |
+| memberCellPhone | MEMBER_CELL_PHONE | VARCHAR2(20) | NULL | 會員手機 |
+| memberAddrZip | MEMBER_ADDR_ZIP | VARCHAR2(3) | NULL | 會員地址郵編 |
+| memberAddr | MEMBER_ADDR | VARCHAR2(60) | NULL | 會員地址 |
+| installAddrZip | INSTALL_ADDR_ZIP | VARCHAR2(3) | NULL | 安運地址郵編 |
+| installAddr | INSTALL_ADDR | VARCHAR2(60) | NULL | 安運地址 |
+| orderSource | ORDER_SOURCE | VARCHAR2(5) | NULL | 訂單來源 |
+| expiredDate | EXPIRED_DATE | DATE | NULL | 過期日期 |
+| remark | REMARK | VARCHAR2(2000) | NULL | 訂單備註 |
+| totalPrice | TOTAL_PRICE | NUMBER(9,2) | NULL | 訂單總金額_應稅 |
+| totalPriceNtx | TOTAL_PRICE_NTX | NUMBER(9,2) | NULL | 訂單總金額_免稅/零稅 |
+| ecFlag | EC_FLAG | VARCHAR2(1) | NULL | EC 訂單註記 Y/N |
+| paymentType | PAYMENT_TYPE | VARCHAR2(2) | NULL | EC 付款別 |
+| createDate | CREATE_DATE | DATE | NULL | 建立日期時間 |
+| createEmpId | CREATE_EMP_ID | VARCHAR2(20) | NULL | 建立人員工號 |
+| createEmpName | CREATE_EMP_NAME | VARCHAR2(40) | NULL | 建立人員姓名 |
+| updateDate | UPDATE_DATE | DATE | NULL | 更新日期時間 |
+| updateEmpId | UPDATE_EMP_ID | VARCHAR2(20) | NULL | 更新人員工號 |
+| updateEmpName | UPDATE_EMP_NAME | VARCHAR2(40) | NULL | 更新人員姓名 |
 
-### 6.3 TBL_ORDER_COMPUTE 對應
+### 6.2 TBL_ORDER_DETL 對應 (訂單商品明細檔)
 
-| Entity Field | Table Column | Type | Description |
-|--------------|--------------|------|-------------|
-| computeType | COMPUTE_TYPE | VARCHAR2(1) | 試算類型 |
-| computeName | COMPUTE_NAME | VARCHAR2(50) | 類型名稱 |
-| totalPrice.amount | TOTAL_PRICE | NUMBER(10) | 原始價格 |
-| discount.amount | DISCOUNT | NUMBER(10) | 折扣金額 |
-| actTotalPrice.amount | ACT_TOTAL_PRICE | NUMBER(10) | 實際價格 |
+**PK**: ORDER_ID + DETL_SEQ_ID
+
+| Entity Field | Table Column | Type | Nullable | Description |
+|--------------|--------------|------|----------|-------------|
+| orderId | ORDER_ID | VARCHAR2(10) | NOT NULL | 客戶訂單編號 |
+| detlSeqId | DETL_SEQ_ID | VARCHAR2(5) | NOT NULL | 流水號 |
+| storeId | STORE_ID | VARCHAR2(5) | NULL | 店別 |
+| skuNo | SKU_NO | VARCHAR2(9) | NULL | SKU_NO |
+| skuName | SKU_NAME | VARCHAR2(50) | NULL | 品名 |
+| subDeptId | SUB_DEPT_ID | VARCHAR2(3) | NULL | 次部門 |
+| classId | CLASS_ID | VARCHAR2(3) | NULL | 主類別 |
+| subClassId | SUB_CLASS_ID | VARCHAR2(3) | NULL | 次類別 |
+| taxType | TAX_TYPE | VARCHAR2(1) | NULL | 稅別 (0=零稅,1=應稅,2=免稅) |
+| worktypeId | WORKTYPE_ID | VARCHAR2(4) | NULL | 工種 |
+| worktypeName | WORKTYPE_NAME | VARCHAR2(60) | NULL | 工種名稱 |
+| deliveryWorktypeId | DELIVERY_WORKTYPE_ID | VARCHAR2(4) | NULL | 運送工種 |
+| deliveryDate | DELIVERY_DATE | DATE | NULL | 出貨日 |
+| tradeStatus | TRADE_STATUS | VARCHAR2(1) | NULL | 備貨方式 (X=現貨, Y=訂購) |
+| quantity | QUANTITY | NUMBER(8) | NULL | 數量 |
+| unitCost | UNIT_COST | NUMBER(9,2) | NULL | 成本 |
+| installFlag | INSTALL_FLAG | VARCHAR2(1) | NULL | 安裝註記 (Y/N) |
+| deliveryFlag | DELIVERY_FLAG | VARCHAR2(1) | NULL | 運送註記 (N=運送, D=純運, V=直送, C=當場自取, P=下次自取) |
+| parentSeqId | PARENT_SEQ_ID | VARCHAR2(5) | NULL | 母流水號 |
+| goodsType | GOODS_TYPE | VARCHAR2(3) | NULL | 商品性質分類 (P/I/IA/IC/IS/IE/D/DD/VD/VT/CP/CK/CI/BP/TT/FI) |
+| mktAmt | MKT_AMT | NUMBER(9,2) | NULL | 市場價 |
+| regAmt | REG_AMT | NUMBER(9,2) | NULL | 一般售價 |
+| posAmt | POS_AMT | NUMBER(9,2) | NULL | 原POS售價 |
+| actPosAmt | ACT_POS_AMT | NUMBER(9,2) | NULL | POS售價 (實際售價) |
+| installPrice | INSTALL_PRICE | NUMBER(9,2) | NULL | 安裝金額小計 |
+| deliveryPrice | DELIVERY_PRICE | NUMBER(9,2) | NULL | 運送金額小計 |
+| actInstallPrice | ACT_INSTALL_PRICE | NUMBER(9,2) | NULL | 實際安裝金額小計 |
+| actDeliveryPrice | ACT_DELIVERY_PRICE | NUMBER(9,2) | NULL | 實際運送金額小計 |
+| openPrice | OPEN_PRICE | VARCHAR2(1) | NULL | 是否可變價商品 (Y/N) |
+| totalPrice | TOTAL_PRICE | NUMBER(9,2) | NULL | 商品售價小計 |
+| discountAmt | DISCOUNT_AMT | NUMBER(9,2) | NULL | 折扣金額 (組促用) |
+| discountQty | DISCOUNT_QTY | NUMBER(8) | NULL | 折扣數量 (組促用) |
+| discountType | DISCOUNT_TYPE | VARCHAR2(2) | NULL | 折扣類型 (組促Code) |
+| worktypeDiscountBase | WORKTYPE_DISCOUNT_BASE | NUMBER(9,2) | NULL | 標安工種成本折數 |
+| worktypeDiscountExtra | WORKTYPE_DISCOUNT_EXTRA | NUMBER(9,2) | NULL | 非標工種成本折數 |
+| deliveryDiscount | DELIVERY_DISCOUNT | NUMBER(9,2) | NULL | 運送成本折數 |
+| eventNos | EVENT_NOS | VARCHAR2(10) | NULL | 降價促銷 Event |
+| eventNosp | EVENT_NOSP | VARCHAR2(10) | NULL | 多重促銷 Event |
+| crmDiscountId | CRM_DISCOUNT_ID | VARCHAR2(12) | NULL | 會員折扣ID |
+| bonusPoints | BONUS_POINTS | NUMBER(8) | NULL | 商品紅利使用點數 |
+| dmPointsAmt | DM_POINTS_AMT | NUMBER(9,2) | NULL | 商品紅利點數折扣總金額 |
+| createDate | CREATE_DATE | DATE | NULL | 建立日期時間 |
+| updateDate | UPDATE_DATE | DATE | NULL | 更新日期時間 |
+
+### 6.3 TBL_ORDER_COMPUTE 對應 (訂單試算記錄檔)
+
+**PK**: ORDER_ID + COMPUTE_TYPE
+
+| Entity Field | Table Column | Type | Nullable | Description |
+|--------------|--------------|------|----------|-------------|
+| orderId | ORDER_ID | VARCHAR2(10) | NOT NULL | 訂單 |
+| computeType | COMPUTE_TYPE | VARCHAR2(1) | NOT NULL | 試算項目分類碼 (1=商品, 2=安裝, 3=運送, 4=會員卡折扣, 5=直送費用, 6=折價券) |
+| storeId | STORE_ID | VARCHAR2(5) | NULL | 店別 |
+| totalPrice | TOTAL_PRICE | NUMBER(9,2) | NULL | 總額 |
+| discount | DISCOUNT | NUMBER(9,2) | NULL | 折扣 |
+| actTotalPrice | ACT_TOTAL_PRICE | NUMBER(9,2) | NULL | 實際總額 |
+| actTotalPriceTx | ACT_TOTAL_PRICE_TX | NUMBER(9,2) | NULL | 應稅總額 |
+| actTotalPriceNtx | ACT_TOTAL_PRICE_NTX | NUMBER(9,2) | NULL | 免稅/零稅總額 |
+| authorizedEmpId | AUTHORIZED_EMP_ID | VARCHAR2(20) | NULL | 總額折扣授權者工號 |
+| authorizedEmpName | AUTHORIZED_EMP_NAME | VARCHAR2(40) | NULL | 總額折扣授權者姓名 |
+| authorizedReason | AUTHORIZED_REASON | VARCHAR2(5) | NULL | 總額折扣原因 |
+| authorizedDate | AUTHORIZED_DATE | DATE | NULL | 總額折扣日期 |
+| updateDate | UPDATE_DATE | DATE | NULL | 更新日期 |
+
+### 6.4 TBL_SKU 對應 (商品檔)
+
+**PK**: SKU_NO
+
+| Entity Field | Table Column | Type | Nullable | Description |
+|--------------|--------------|------|----------|-------------|
+| skuNo | SKU_NO | VARCHAR2(9) | NOT NULL | 商品編號 |
+| skuName | SKU_NAME | VARCHAR2(50) | NULL | 商品名稱 |
+| barcode | BARCODE | VARCHAR2(14) | NULL | 條碼 (商品主條碼) |
+| skuType | SKU_TYPE | VARCHAR2(10) | NULL | 商品類型 |
+| subDeptId | SUB_DEPT_ID | VARCHAR2(3) | NULL | 子部門 |
+| classId | CLASS_ID | VARCHAR2(3) | NULL | 類別 |
+| subClassId | SUB_CLASS_ID | VARCHAR2(3) | NULL | 子類別 |
+| soFlag | SO_FLAG | VARCHAR2(1) | NULL | 特別訂購商品 (N/Y) |
+| vendorId | VENDOR_ID | VARCHAR2(10) | NULL | 主要供應商 |
+| skuStatus | SKU_STATUS | VARCHAR2(10) | NULL | 商品狀態 (A=正常, D=停止採購但可銷售) |
+| taxType | TAX_TYPE | VARCHAR2(1) | NULL | 稅別 (0=零稅, 1=應稅, 2=免稅) |
+| dangerFlag | DANGER_FLAG | VARCHAR2(1) | NULL | 危險商品 (N/Y) |
+| openPrice | OPEN_PRICE | VARCHAR2(1) | NULL | 是否開放售價 (N/Y) |
+| freeDeliver | FREE_DELIVER | VARCHAR2(1) | NULL | 免費宅配 (N/Y) |
+| skuUnit | SKU_UNIT | VARCHAR2(10) | NULL | 基本單位 |
+| height | HEIGHT | NUMBER(9,2) | NULL | 高 |
+| width | WIDTH | NUMBER(9,2) | NULL | 寬 |
+| deepth | DEEPTH | NUMBER(9,2) | NULL | 深 |
+| weight | WEIGHT | NUMBER(9,2) | NULL | 重 |
+| dcType | DC_TYPE | VARCHAR2(2) | NULL | 採購屬性 (XD/DC/VD) |
+| skuCat | SKU_CAT | VARCHAR2(2) | NULL | 物料種類 |
+| modifyTime | MODIFY_TIME | DATE | NULL | 最後修改日期 |
+
+### 6.5 TBL_SKU_STORE 對應 (門店商品檔)
+
+**PK**: SKU_NO + STORE_ID
+
+| Entity Field | Table Column | Type | Nullable | Description |
+|--------------|--------------|------|----------|-------------|
+| storeId | STORE_ID | VARCHAR2(5) | NOT NULL | 店別代碼 |
+| skuNo | SKU_NO | VARCHAR2(9) | NOT NULL | 商品編號 |
+| channelId | CHANNEL_ID | VARCHAR2(5) | NULL | 通路代碼 |
+| marketPrice | MARKET_PRICE | NUMBER(9,2) | NULL | 市價 |
+| regularPrice | REGULAR_PRICE | NUMBER(9,2) | NULL | 原價 |
+| posAmt | POS_AMT | NUMBER(9,2) | NULL | POS價 |
+| avgCost | AVG_COST | NUMBER(9,2) | NULL | 成本 |
+| skuStatus | SKU_STATUS | VARCHAR2(10) | NULL | 商品狀態 (A/D) |
+| allowReturn | ALLOW_RETURN | VARCHAR2(10) | NULL | 允許退貨 (A/B/C) |
+| holdOrder | HOLD_ORDER | VARCHAR2(1) | NULL | 不可採購 (A/B/C/D/E/N) |
+| eventNo | EVENT_NO | VARCHAR2(10) | NULL | 降價促銷檔期編號 |
+| promEventNo | PROM_EVENT_NO | VARCHAR2(10) | NULL | 組合促銷檔期編號 |
+| stampEventNo | STAMP_EVENT_NO | VARCHAR2(10) | NULL | 印花促銷檔期編號 |
+| displayFlag | DISPLAY_FLAG | VARCHAR2(1) | NULL | 展示品旗標 (N/Y) |
+| allowSales | ALLOW_SALES | VARCHAR2(1) | NULL | 允許銷售 (N/Y) |
+| modifyTime | MODIFY_TIME | DATE | NULL | 最後修改日期 |
 
 ---
 

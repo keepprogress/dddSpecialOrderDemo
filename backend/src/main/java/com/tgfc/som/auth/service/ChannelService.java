@@ -58,7 +58,7 @@ public class ChannelService {
 
         // 查詢所有系統別並過濾
         List<String> channelIds = Arrays.asList(flags);
-        List<Channel> allChannels = channelMapper.selectAll();
+        List<Channel> allChannels = channelMapper.selectByExample(null);
 
         return allChannels.stream()
             .filter(channel -> channelIds.contains(channel.getChannelId()))

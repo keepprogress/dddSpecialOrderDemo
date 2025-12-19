@@ -63,13 +63,22 @@
     </profiles>
 
     <build>
+        <!-- 啟用 Resource Filtering 以替換 properties 中的 Maven 變數 -->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.mybatis.generator</groupId>
                 <artifactId>mybatis-generator-maven-plugin</artifactId>
                 <version>${mybatis-generator.version}</version>
                 <configuration>
-                    <configurationFile>src/main/resources/generatorConfig.xml</configurationFile>
+                    <!-- 使用過濾後的 properties 檔案 -->
+                    <configurationFile>${project.build.outputDirectory}/generatorConfig.xml</configurationFile>
                     <overwrite>true</overwrite>
                     <verbose>true</verbose>
                 </configuration>
