@@ -1,30 +1,37 @@
 <!--
   Sync Impact Report:
 
-  Version Change: 1.8.0 → 1.9.0
+  Version Change: 1.9.0 → 1.10.0
 
   Modified Principles: N/A
 
   Added Sections:
-  - Core Principles XII: Angular 21+ Frontend Standard (Angular 21+ 前端規範)
+  - Core Principles XIII: Code Coverage Requirement (程式碼覆蓋率要求)
 
   Removed Sections: N/A
 
-  Changes in v1.9.0:
-  - 新增「Angular 21+ Frontend Standard」原則
-  - 強制使用 Standalone Components、Signals、新控制流語法
-  - 定義 inject() 依賴注入、OnPush 變更偵測策略
-  - 建立前端檔案命名規範與專案結構
+  Changes in v1.10.0:
+  - 新增「Code Coverage Requirement」原則
+  - 強制所有功能達到 80% 以上的程式碼覆蓋率
+  - 定義 JaCoCo (Backend) 與 Jest/Karma (Frontend) 工具配置
+  - 建立覆蓋率排除規則與 CI/CD 整合要求
+  - 更新 Testing Strategy 區段，整合覆蓋率要求
 
   Templates Requiring Updates:
-  - 無需更新，此為前端開發指導原則
+  - .specify/templates/tasks-template.md: 建議在 Polish Phase 加入覆蓋率驗證任務 (⚠ 可選更新)
+  - .specify/templates/plan-template.md: 無需更新
 
   Follow-up TODOs:
-  - 確認 frontend 專案已升級至 Angular 21+
+  - 確認 backend 已配置 JaCoCo Maven plugin
+  - 確認 frontend 已配置 Jest 或 Karma coverage reporter
+  - 建議在 CI/CD pipeline 加入覆蓋率 gate
 
   ---
 
   Version History:
+
+  v1.10.0 (2025-12-19):
+  - 新增 Code Coverage Requirement 原則（MINOR: 新原則）
 
   v1.9.0 (2025-12-17):
   - 新增 Angular 21+ Frontend Standard 原則（MINOR: 新原則）
@@ -792,6 +799,187 @@ frontend/src/app/
 
 **理由**：Angular 21+ 引入的 Standalone Components、Signals 與新控制流語法大幅簡化了開發模式，減少樣板程式碼。Signals 提供更直觀的狀態管理，搭配 OnPush 策略可顯著提升效能。統一的程式碼風格與架構模式有助於團隊協作與程式碼維護。
 
+### XIII. Code Coverage Requirement (程式碼覆蓋率要求)
+
+**本專案所有功能必須達到 80% 以上的程式碼覆蓋率：**
+
+**覆蓋率要求（Coverage Requirements）：**
+
+| 指標 | 最低要求 | 說明 |
+|------|----------|------|
+| **Line Coverage** | ≥ 80% | 程式碼行覆蓋率 |
+| **Branch Coverage** | ≥ 80% | 分支覆蓋率（if/else, switch, 三元運算子） |
+| **Class Coverage** | ≥ 80% | 類別覆蓋率（建議，非強制） |
+| **Method Coverage** | ≥ 80% | 方法覆蓋率（建議，非強制） |
+
+**工具配置（Tool Configuration）：**
+
+**Backend (Java - JaCoCo)：**
+
+```xml
+<!-- pom.xml -->
+<plugin>
+    <groupId>org.jacoco</groupId>
+    <artifactId>jacoco-maven-plugin</artifactId>
+    <version>0.8.11</version>
+    <executions>
+        <execution>
+            <goals>
+                <goal>prepare-agent</goal>
+            </goals>
+        </execution>
+        <execution>
+            <id>report</id>
+            <phase>test</phase>
+            <goals>
+                <goal>report</goal>
+            </goals>
+        </execution>
+        <execution>
+            <id>check</id>
+            <goals>
+                <goal>check</goal>
+            </goals>
+            <configuration>
+                <rules>
+                    <rule>
+                        <element>BUNDLE</element>
+                        <limits>
+                            <limit>
+                                <counter>LINE</counter>
+                                <value>COVEREDRATIO</value>
+                                <minimum>0.80</minimum>
+                            </limit>
+                            <limit>
+                                <counter>BRANCH</counter>
+                                <value>COVEREDRATIO</value>
+                                <minimum>0.80</minimum>
+                            </limit>
+                        </limits>
+                    </rule>
+                </rules>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
+
+**Frontend (Angular - Jest/Karma)：**
+
+```javascript
+// jest.config.js
+module.exports = {
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80
+    }
+  }
+};
+
+// karma.conf.js
+coverageReporter: {
+  check: {
+    global: {
+      statements: 80,
+      branches: 80,
+      functions: 80,
+      lines: 80
+    }
+  }
+}
+```
+
+**覆蓋率排除規則（Exclusion Rules）：**
+
+可排除計算的程式碼類型：
+
+| 類型 | 說明 | 排除原因 |
+|------|------|----------|
+| **自動產生的程式碼** | MyBatisGenerator 產生的 Entity/Mapper | 由工具產生，無需測試 |
+| **配置類別** | `*Config.java`, `*Configuration.java` | 主要為 Bean 定義，無業務邏輯 |
+| **DTO/Record** | 純資料類別，無邏輯 | getter/setter/constructor 無測試價值 |
+| **Exception 類別** | 自定義例外類別 | 通常只有建構子 |
+| **Main Application** | `*Application.java` | Spring Boot 啟動類別 |
+
+**JaCoCo 排除設定：**
+
+```xml
+<configuration>
+    <excludes>
+        <exclude>**/entity/**</exclude>
+        <exclude>**/mapper/**</exclude>
+        <exclude>**/*Config.class</exclude>
+        <exclude>**/*Configuration.class</exclude>
+        <exclude>**/*Application.class</exclude>
+        <exclude>**/*Request.class</exclude>
+        <exclude>**/*Response.class</exclude>
+        <exclude>**/*DTO.class</exclude>
+        <exclude>**/*Exception.class</exclude>
+    </excludes>
+</configuration>
+```
+
+**驗證時機（When to Verify）：**
+
+| 時機 | 動作 | 阻擋規則 |
+|------|------|----------|
+| **本地開發** | `mvn test` / `npm test` | 可選執行 |
+| **Pull Request** | CI/CD pipeline 自動執行 | 未達 80% 則 PR 無法合併 |
+| **主分支推送** | CI/CD pipeline 自動執行 | 未達 80% 則建置失敗 |
+
+**CI/CD 整合範例（GitHub Actions）：**
+
+```yaml
+# .github/workflows/ci.yml
+- name: Run Backend Tests with Coverage
+  run: mvn test jacoco:report jacoco:check
+
+- name: Run Frontend Tests with Coverage
+  run: npm run test:coverage -- --coverage-threshold='{"global":{"lines":80,"branches":80}}'
+
+- name: Upload Coverage Report
+  uses: codecov/codecov-action@v3
+  with:
+    files: ./backend/target/site/jacoco/jacoco.xml,./frontend/coverage/lcov.info
+```
+
+**例外申請流程（Exception Request）：**
+
+若特定程式碼無法達到 80% 覆蓋率，必須：
+
+1. **說明原因**：在 PR 描述中說明為何無法達到覆蓋率
+2. **技術評估**：說明該程式碼的測試困難點（例如：第三方整合、硬體相依）
+3. **替代方案**：說明如何透過其他方式確保品質（例如：整合測試、手動測試）
+4. **審核批准**：需技術負責人書面批准
+5. **記錄追蹤**：在 `plan.md` 的 Complexity Tracking 表格中記錄
+
+**Code Review 檢查項目（Review Checklist）：**
+
+- [ ] PR 包含對應的單元測試
+- [ ] 覆蓋率報告顯示 Line Coverage ≥ 80%
+- [ ] 覆蓋率報告顯示 Branch Coverage ≥ 80%
+- [ ] 新增的商業邏輯有對應的測試案例
+- [ ] 邊界條件與錯誤處理有測試覆蓋
+- [ ] 若低於 80%，已提供正當理由並獲批准
+
+**報告位置（Report Locations）：**
+
+```
+backend/target/site/jacoco/index.html    # JaCoCo HTML 報告
+frontend/coverage/lcov-report/index.html # Jest/Karma HTML 報告
+```
+
+**理由**：80% 程式碼覆蓋率是業界公認的品質基準線。足夠的測試覆蓋率可以：
+- **降低迴歸風險**：重構或修改時，測試可及早發現問題
+- **提升信心**：開發者對程式碼變更更有信心
+- **文件化行為**：測試案例本身就是程式碼行為的文件
+- **促進良好設計**：難以測試的程式碼通常意味著設計問題
+
+過高的覆蓋率要求（如 95%+）可能導致測試價值降低（為覆蓋率而測試），80% 是效益與成本的最佳平衡點。
+
 ## Architecture Standards
 
 ### Technology Stack Requirements
@@ -804,6 +992,7 @@ frontend/src/app/
 - Security: Jasypt encryption for sensitive configuration
 - Data Access: MyBatis + MyBatisGenerator (without Lombok)
 - API Documentation: springdoc-openapi (OpenAPI 3.0+)
+- Test Coverage: JaCoCo (≥ 80% line & branch coverage)
 
 **Frontend (前端)**：
 - Framework: Angular 21+ (Standalone, Signals, Zoneless-ready)
@@ -811,6 +1000,7 @@ frontend/src/app/
 - Build Tool: Angular CLI (Esbuild/Vite)
 - State Management: Angular Signals (preferred) + RxJS (async operations)
 - Change Detection: OnPush by default
+- Test Coverage: Jest/Karma (≥ 80% line & branch coverage)
 
 ### DDD Layer Architecture
 
@@ -858,17 +1048,19 @@ Infrastructure Layer (基礎設施層)
 3. 拒絕未通過 Constitution Check 的 Pull Request
 4. 確認自動產生的 Mapper/Entity 未被手動修改
 5. 確認無 Lombok 依賴與註解
+6. **確認程式碼覆蓋率達到 80% 以上**
 
 ### Testing Strategy
 
-- **單元測試 (Unit Tests)**：測試領域層的業務邏輯
+- **單元測試 (Unit Tests)**：測試領域層的業務邏輯，確保 80% 以上覆蓋率
 - **整合測試 (Integration Tests)**：測試跨層的互動與資料庫操作
 - **契約測試 (Contract Tests)**：測試 API 契約的一致性
 - **E2E 測試 (Playwright)**：實作階段完成後，透過 Playwright 進行端對端驗證，截圖確認畫面狀態與錯誤訊息
+- **覆蓋率驗證**：PR 合併前必須通過 JaCoCo (Backend) / Jest (Frontend) 80% 覆蓋率檢查
 
 ### Complexity Justification
 
-任何違反 Constitution 的設計（例如：超過 3-Table 關聯、過度抽象、CustomMapper 使用）必須在 `plan.md` 的 **Complexity Tracking** 表格中記錄：
+任何違反 Constitution 的設計（例如：超過 3-Table 關聯、過度抽象、CustomMapper 使用、覆蓋率低於 80%）必須在 `plan.md` 的 **Complexity Tracking** 表格中記錄：
 - 違反的原則
 - 為何需要此複雜度
 - 為何較簡單的替代方案不可行
@@ -894,4 +1086,4 @@ Infrastructure Layer (基礎設施層)
 - **定期審查**：每季度檢視 Constitution 的有效性與適用性
 - **違規處理**：違反 Constitution 的程式碼必須重構或提供明確的違規理由
 
-**Version**: 1.9.0 | **Ratified**: 2025-12-17 | **Last Amended**: 2025-12-17
+**Version**: 1.10.0 | **Ratified**: 2025-12-17 | **Last Amended**: 2025-12-19

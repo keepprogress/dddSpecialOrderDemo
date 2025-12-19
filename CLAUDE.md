@@ -1,4 +1,4 @@
-# Claude Code - DDD Special Order Demo
+﻿# Claude Code - DDD Special Order Demo
 
 ## Current Feature
 

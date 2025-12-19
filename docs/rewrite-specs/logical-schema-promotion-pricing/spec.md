@@ -432,7 +432,7 @@ JOIN TBL_CRM_COUPON cc ON oc.COUPON_ID = cc.GRNO;
 -- TBL_PROM_SET
 EVENT_NO | GROUP_NO | SET_NO | SKU_NO_LIST
 ---------|----------|--------|------------------
-EVT001   | GRP01    | SET01  | SKU001,SKU002,SKU003
+EVT001   | GRP01    | SET01  | 014014014,015015015,016016016
 ```
 
 **查詢困難**：

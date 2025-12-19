@@ -1,0 +1,880 @@
+openapi: 3.0.3
+info:
+  title: DDD Special Order API - Create Order
+  description: |
+    新增訂單頁面 API 規格
+
+    ## 功能概述
+    - 會員查詢與資料帶入
+    - 商品資格驗證（6 層驗證）
+    - 安裝/運送服務配置
+    - 12 步驟價格試算
+    - 會員折扣計算（Type 0/1/2）
+    - 優惠券與紅利折抵
+    - 訂單建立與提交
+
+    ## 認證方式
+    所有 API 需攜帶 Keycloak Access Token（Bearer Token）
+  version: 1.0.0
+  contact:
+    name: DDD Special Order Team
+servers:
+  - url: http://localhost:8080/api/v1
+    description: 開發環境
+  - url: https://api.example.com/api/v1
+    description: 生產環境
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Orders
+    description: 訂單管理
+  - name: Members
+    description: 會員服務
+  - name: Products
+    description: 商品服務
+  - name: Pricing
+    description: 價格計算
+
+paths:
+  /orders:
+    post:
+      tags:
+        - Orders
+      summary: 建立新訂單
+      description: |
+        建立新的特殊訂單
+
+        **防重複提交機制**:
+        - 使用 X-Idempotency-Key header
+        - 5 秒內重複請求返回 409 Conflict
+      operationId: createOrder
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          required: true
+          description: 冪等鍵（UUID 格式）
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+      responses:
+        '201':
+          description: 訂單建立成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        '400':
+          description: 請求驗證失敗
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: 重複提交
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: 業務邏輯驗證失敗
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /orders/{orderId}:
+    get:
+      tags:
+        - Orders
+      summary: 取得訂單詳情
+      operationId: getOrder
+      parameters:
+        - $ref: '#/components/parameters/OrderIdPath'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDetailResponse'
+        '404':
+          description: 訂單不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /orders/{orderId}/lines:
+    post:
+      tags:
+        - Orders
+      summary: 新增訂單行項
+      description: |
+        新增商品至訂單
+
+        **限制**:
+        - 訂單最多 50 項商品
+        - 商品需通過 6 層資格驗證
+      operationId: addOrderLine
+      parameters:
+        - $ref: '#/components/parameters/OrderIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddOrderLineRequest'
+      responses:
+        '201':
+          description: 行項新增成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderLineResponse'
+        '400':
+          description: 請求驗證失敗
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: 商品資格驗證失敗或超過上限
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EligibilityErrorResponse'
+
+  /orders/{orderId}/lines/{lineId}:
+    put:
+      tags:
+        - Orders
+      summary: 更新訂單行項
+      operationId: updateOrderLine
+      parameters:
+        - $ref: '#/components/parameters/OrderIdPath'
+        - $ref: '#/components/parameters/LineIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrderLineRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderLineResponse'
+        '404':
+          description: 行項不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Orders
+      summary: 刪除訂單行項
+      operationId: removeOrderLine
+      parameters:
+        - $ref: '#/components/parameters/OrderIdPath'
+        - $ref: '#/components/parameters/LineIdPath'
+      responses:
+        '204':
+          description: 刪除成功
+        '404':
+          description: 行項不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /orders/{orderId}/calculate:
+    post:
+      tags:
+        - Pricing
+      summary: 執行價格試算
+      description: |
+        執行 12 步驟價格試算
+
+        **執行順序**:
+        1. 還原銷售單價
+        2. 工種變價分攤
+        3. 商品分類
+        4. 設定序號
+        5. 計算免安總額
+        6. Cost Markup (Type 2)
+        7. 多重促銷
+        8. Discounting (Type 0)
+        9. Down Margin (Type 1)
+        10. 特殊會員折扣
+        11. 計算總折扣
+        12. 生成 6 種 ComputeType
+
+        **效能目標**: ≤ 3 秒（50 項商品以內）
+      operationId: calculatePrice
+      parameters:
+        - $ref: '#/components/parameters/OrderIdPath'
+      responses:
+        '200':
+          description: 試算成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalculationResponse'
+        '404':
+          description: 訂單不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /orders/{orderId}/coupons:
+    post:
+      tags:
+        - Pricing
+      summary: 套用優惠券
+      operationId: applyCoupon
+      parameters:
+        - $ref: '#/components/parameters/OrderIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplyCouponRequest'
+      responses:
+        '200':
+          description: 套用成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalculationResponse'
+        '422':
+          description: 優惠券驗證失敗
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /orders/{orderId}/bonus:
+    post:
+      tags:
+        - Pricing
+      summary: 使用紅利點數
+      description: |
+        使用會員紅利點數折抵
+
+        **限制**:
+        - 訂單狀態必須為 Active（非 Draft/Quotation）
+        - 特定通路限 APP 會員
+      operationId: redeemBonusPoints
+      parameters:
+        - $ref: '#/components/parameters/OrderIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RedeemBonusRequest'
+      responses:
+        '200':
+          description: 折抵成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalculationResponse'
+        '422':
+          description: 紅利折抵驗證失敗
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /orders/{orderId}/submit:
+    post:
+      tags:
+        - Orders
+      summary: 提交訂單
+      description: |
+        提交訂單確認
+
+        **前置條件**:
+        - 訂單必須完成價格試算
+        - 所有必填欄位已填寫
+        - 訂單至少包含一項商品
+      operationId: submitOrder
+      parameters:
+        - $ref: '#/components/parameters/OrderIdPath'
+      responses:
+        '200':
+          description: 提交成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        '422':
+          description: 驗證失敗
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /members/{memberId}:
+    get:
+      tags:
+        - Members
+      summary: 查詢會員資訊
+      description: |
+        查詢會員基本資料與折扣類型
+
+        **Mock 策略**:
+        - H00199 返回寫死假資料
+        - 其他帳號走正常 CRM API
+      operationId: getMember
+      parameters:
+        - name: memberId
+          in: path
+          required: true
+          description: 會員卡號
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 查詢成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemberResponse'
+        '404':
+          description: 會員不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /products/{skuNo}/eligibility:
+    get:
+      tags:
+        - Products
+      summary: 驗證商品銷售資格
+      description: |
+        執行 6 層商品資格驗證
+
+        **驗證層級**:
+        1. 格式驗證
+        2. 存在性驗證
+        3. 系統商品排除
+        4. 稅別驗證
+        5. 銷售禁止檢查
+        6. 類別限制
+
+        **效能目標**: ≤ 500ms
+      operationId: checkProductEligibility
+      parameters:
+        - name: skuNo
+          in: path
+          required: true
+          description: 商品編號
+          schema:
+            type: string
+        - name: channelId
+          in: query
+          required: true
+          description: 通路代號
+          schema:
+            type: string
+        - name: storeId
+          in: query
+          required: true
+          description: 店別
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 驗證結果
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EligibilityResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Keycloak Access Token
+
+  parameters:
+    OrderIdPath:
+      name: orderId
+      in: path
+      required: true
+      description: 訂單編號（10 位數字）
+      schema:
+        type: string
+        pattern: '^\d{10}$'
+    LineIdPath:
+      name: lineId
+      in: path
+      required: true
+      description: 行項編號
+      schema:
+        type: string
+
+  schemas:
+    CreateOrderRequest:
+      type: object
+      required:
+        - storeId
+        - channelId
+        - customer
+      properties:
+        storeId:
+          type: string
+          description: 出貨店
+          example: "12345"
+        channelId:
+          type: string
+          description: 通路代號
+          example: "0001"
+        customer:
+          $ref: '#/components/schemas/CustomerInfo'
+        deliveryAddress:
+          $ref: '#/components/schemas/DeliveryAddress'
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderLineInput'
+          maxItems: 50
+
+    CustomerInfo:
+      type: object
+      properties:
+        memberId:
+          type: string
+          description: 會員卡號
+          example: "H00199"
+        name:
+          type: string
+          description: 姓名
+          example: "劉芒果"
+        cellPhone:
+          type: string
+          description: 手機
+          example: "0912345678"
+        contactName:
+          type: string
+          description: 聯絡人
+        contactPhone:
+          type: string
+          description: 聯絡電話
+
+    DeliveryAddress:
+      type: object
+      required:
+        - zipCode
+        - fullAddress
+      properties:
+        zipCode:
+          type: string
+          description: 郵遞區號（3 碼）
+          pattern: '^\d{3}$'
+          example: "114"
+        fullAddress:
+          type: string
+          description: 完整地址
+          example: "台北市內湖區瑞光路100號"
+
+    OrderLineInput:
+      type: object
+      required:
+        - skuNo
+        - quantity
+      properties:
+        skuNo:
+          type: string
+          description: 商品編號
+        quantity:
+          type: integer
+          minimum: 1
+          description: 數量
+        deliveryMethod:
+          type: string
+          enum: [N, D, V, C, F, P]
+          description: |
+            運送方式
+            - N: 代運
+            - D: 純運
+            - V: 直送
+            - C: 當場自取
+            - F: 免運
+            - P: 下次自取
+        stockMethod:
+          type: string
+          enum: [X, Y]
+          description: |
+            備貨方式
+            - X: 現貨
+            - Y: 訂購
+
+    AddOrderLineRequest:
+      type: object
+      required:
+        - skuNo
+        - quantity
+      properties:
+        skuNo:
+          type: string
+        quantity:
+          type: integer
+          minimum: 1
+        deliveryMethod:
+          type: string
+          enum: [N, D, V, C, F, P]
+        stockMethod:
+          type: string
+          enum: [X, Y]
+        workTypeId:
+          type: string
+          description: 工種 ID（代運時必填）
+        installationServices:
+          type: array
+          items:
+            type: string
+          description: 安裝服務類型清單（I, IA, IE, IC, IS, FI）
+
+    UpdateOrderLineRequest:
+      type: object
+      properties:
+        quantity:
+          type: integer
+          minimum: 1
+        deliveryMethod:
+          type: string
+          enum: [N, D, V, C, F, P]
+        stockMethod:
+          type: string
+          enum: [X, Y]
+        workTypeId:
+          type: string
+        installationServices:
+          type: array
+          items:
+            type: string
+
+    OrderResponse:
+      type: object
+      properties:
+        orderId:
+          type: string
+          description: 訂單編號
+          example: "3000000001"
+        projectId:
+          type: string
+          description: 專案代號
+          example: "1234524121800001"
+        status:
+          type: string
+          enum: [D, Q, A, P, C, X]
+          description: 訂單狀態
+        grandTotal:
+          type: integer
+          description: 應付總額
+        createdAt:
+          type: string
+          format: date-time
+
+    OrderDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/OrderResponse'
+        - type: object
+          properties:
+            customer:
+              $ref: '#/components/schemas/CustomerInfo'
+            deliveryAddress:
+              $ref: '#/components/schemas/DeliveryAddress'
+            lines:
+              type: array
+              items:
+                $ref: '#/components/schemas/OrderLineResponse'
+            calculation:
+              $ref: '#/components/schemas/CalculationResponse'
+
+    OrderLineResponse:
+      type: object
+      properties:
+        lineId:
+          type: string
+        skuNo:
+          type: string
+        skuName:
+          type: string
+        quantity:
+          type: integer
+        unitPrice:
+          type: integer
+        actualUnitPrice:
+          type: integer
+        subtotal:
+          type: integer
+        deliveryMethod:
+          type: string
+        stockMethod:
+          type: string
+        workTypeId:
+          type: string
+        workTypeName:
+          type: string
+        installationServices:
+          type: array
+          items:
+            $ref: '#/components/schemas/InstallationServiceInfo'
+
+    InstallationServiceInfo:
+      type: object
+      properties:
+        serviceType:
+          type: string
+          enum: [I, IA, IE, IC, IS, FI]
+        serviceName:
+          type: string
+        price:
+          type: integer
+
+    CalculationResponse:
+      type: object
+      properties:
+        orderId:
+          type: string
+        computeTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComputeTypeVO'
+        memberDiscounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/MemberDiscVO'
+        grandTotal:
+          type: integer
+        warnings:
+          type: array
+          items:
+            type: string
+          description: 警告訊息（外部服務逾時時顯示）
+        promotionSkipped:
+          type: boolean
+          description: 是否跳過促銷計算
+        calculatedAt:
+          type: string
+          format: date-time
+
+    ComputeTypeVO:
+      type: object
+      properties:
+        computeType:
+          type: string
+          enum: ['1', '2', '3', '4', '5', '6']
+          description: |
+            試算類型
+            - 1: 商品小計
+            - 2: 安裝小計
+            - 3: 運送小計
+            - 4: 會員卡折扣
+            - 5: 直送費用小計
+            - 6: 折價券折扣
+        computeName:
+          type: string
+        totalPrice:
+          type: integer
+          description: 原始價格
+        discount:
+          type: integer
+          description: 折扣金額（負數）
+        actTotalPrice:
+          type: integer
+          description: 實際價格
+
+    MemberDiscVO:
+      type: object
+      properties:
+        skuNo:
+          type: string
+        discType:
+          type: string
+          enum: ['0', '1', '2', 'SPECIAL']
+        discTypeName:
+          type: string
+        originalPrice:
+          type: integer
+        discountPrice:
+          type: integer
+        discAmt:
+          type: integer
+        discRate:
+          type: number
+          description: 折扣率（Type 0 用）
+        markupRate:
+          type: number
+          description: 加成比例（Type 2 用）
+
+    ApplyCouponRequest:
+      type: object
+      required:
+        - couponId
+      properties:
+        couponId:
+          type: string
+          description: 優惠券編號
+        quantity:
+          type: integer
+          minimum: 1
+          default: 1
+          description: 使用張數
+
+    RedeemBonusRequest:
+      type: object
+      required:
+        - skuNo
+        - points
+      properties:
+        skuNo:
+          type: string
+          description: 折抵商品編號
+        points:
+          type: integer
+          minimum: 1
+          description: 使用點數
+
+    MemberResponse:
+      type: object
+      properties:
+        memberId:
+          type: string
+          example: "H00199"
+        cardType:
+          type: string
+          example: "0"
+        name:
+          type: string
+          example: "劉芒果"
+        birthday:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum: [M, F]
+        cellPhone:
+          type: string
+        address:
+          type: string
+        discType:
+          type: string
+          enum: ['0', '1', '2']
+          description: |
+            折扣類型
+            - 0: Discounting（折扣率）
+            - 1: Down Margin（固定折扣）
+            - 2: Cost Markup（成本加成）
+        discTypeName:
+          type: string
+        discRate:
+          type: number
+          description: 折扣率（Type 0 用）
+        markupRate:
+          type: number
+          description: 加成比例（Type 2 用）
+
+    EligibilityResponse:
+      type: object
+      properties:
+        eligible:
+          type: boolean
+        failureReason:
+          type: string
+          description: 失敗原因（若不合格）
+        failureLevel:
+          type: integer
+          minimum: 0
+          maximum: 6
+          description: 失敗層級（1-6，0 表示通過）
+        product:
+          $ref: '#/components/schemas/ProductInfo'
+        availableServices:
+          type: array
+          items:
+            $ref: '#/components/schemas/InstallationServiceInfo'
+        availableStockMethods:
+          type: array
+          items:
+            type: string
+            enum: [X, Y]
+        availableDeliveryMethods:
+          type: array
+          items:
+            type: string
+            enum: [N, D, V, C, F, P]
+
+    ProductInfo:
+      type: object
+      properties:
+        skuNo:
+          type: string
+        skuName:
+          type: string
+        category:
+          type: string
+        taxType:
+          type: string
+        marketPrice:
+          type: integer
+        posPrice:
+          type: integer
+
+    EligibilityErrorResponse:
+      type: object
+      properties:
+        errorCode:
+          type: string
+        message:
+          type: string
+        failureLevel:
+          type: integer
+        failureReason:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        errorCode:
+          type: string
+        message:
+          type: string
+        fieldErrors:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldError'
+        timestamp:
+          type: string
+          format: date-time
+
+    FieldError:
+      type: object
+      properties:
+        field:
+          type: string
+        message:
+          type: string

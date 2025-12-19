@@ -114,5 +114,69 @@
             <columnOverride column="STORE_ID" javaType="String"/>
         </table>
 
+        <!-- ================================================================== -->
+        <!-- Feature: 002-create-order 資料表配置                                 -->
+        <!-- ================================================================== -->
+
+        <!-- 訂單主檔 -->
+        <table tableName="TBL_ORDER_MAST" domainObjectName="OrderMast">
+            <property name="useActualColumnNames" value="false"/>
+            <columnOverride column="ORDER_ID" javaType="String"/>
+            <columnOverride column="PROJECT_ID" javaType="String"/>
+            <columnOverride column="MEMBER_CARD_ID" javaType="String"/>
+            <columnOverride column="STORE_ID" javaType="String"/>
+            <columnOverride column="CHANNEL_ID" javaType="String"/>
+            <columnOverride column="ORDER_STATUS" javaType="String"/>
+            <columnOverride column="TOTAL_AMT" javaType="Integer"/>
+            <columnOverride column="DISC_AMT" javaType="Integer"/>
+            <columnOverride column="TAX_AMT" javaType="Integer"/>
+            <columnOverride column="PAYABLE_AMT" javaType="Integer"/>
+            <columnOverride column="CREATE_DATE" javaType="java.time.LocalDateTime"/>
+            <columnOverride column="UPDATE_DATE" javaType="java.time.LocalDateTime"/>
+        </table>
+
+        <!-- 訂單明細 -->
+        <table tableName="TBL_ORDER_DETL" domainObjectName="OrderDetl">
+            <property name="useActualColumnNames" value="false"/>
+            <columnOverride column="LINE_ID" javaType="String"/>
+            <columnOverride column="ORDER_ID" javaType="String"/>
+            <columnOverride column="SKU_NO" javaType="String"/>
+            <columnOverride column="POS_AMT" javaType="Integer"/>
+            <columnOverride column="ACT_POS_AMT" javaType="Integer"/>
+            <columnOverride column="TAX_TYPE" javaType="String"/>
+            <columnOverride column="DELIVERY_FLAG" javaType="String"/>
+            <columnOverride column="TRADE_STATUS" javaType="String"/>
+            <columnOverride column="DELIVERY_DATE" javaType="java.time.LocalDate"/>
+            <columnOverride column="MEMBER_DISC" javaType="Integer"/>
+            <columnOverride column="BONUS_DISC" javaType="Integer"/>
+            <columnOverride column="COUPON_DISC" javaType="Integer"/>
+            <columnOverride column="CREATE_DATE" javaType="java.time.LocalDateTime"/>
+            <columnOverride column="UPDATE_DATE" javaType="java.time.LocalDateTime"/>
+        </table>
+
+        <!-- 訂單試算結果 -->
+        <table tableName="TBL_ORDER_COMPUTE" domainObjectName="OrderCompute">
+            <property name="useActualColumnNames" value="false"/>
+            <columnOverride column="ORDER_ID" javaType="String"/>
+            <columnOverride column="COMPUTE_TYPE" javaType="String"/>
+            <columnOverride column="TOTAL_PRICE" javaType="Integer"/>
+            <columnOverride column="DISCOUNT" javaType="Integer"/>
+            <columnOverride column="ACT_TOTAL_PRICE" javaType="Integer"/>
+            <columnOverride column="CREATE_DATE" javaType="java.time.LocalDateTime"/>
+        </table>
+
+        <!-- 商品主檔 -->
+        <table tableName="TBL_SKU_MAST" domainObjectName="SkuMast">
+            <property name="useActualColumnNames" value="false"/>
+            <columnOverride column="SKU_NO" javaType="String"/>
+            <columnOverride column="CATEGORY_ID" javaType="String"/>
+            <columnOverride column="TAX_TYPE" javaType="String"/>
+            <columnOverride column="MARKET_PRICE" javaType="Integer"/>
+            <columnOverride column="REG_PRICE" javaType="Integer"/>
+            <columnOverride column="POS_PRICE" javaType="Integer"/>
+            <columnOverride column="COST" javaType="Integer"/>
+            <columnOverride column="UPDATE_DATE" javaType="java.time.LocalDateTime"/>
+        </table>
+
     </context>
 </generatorConfiguration>

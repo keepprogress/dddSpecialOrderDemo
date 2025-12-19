@@ -979,7 +979,7 @@ describe('會員折扣執行順序', () => {
   it('應該先執行 Type 2，再執行促銷', () => {
     const order = {
       items: [{
-        skuNo: 'SKU001',
+        skuNo: '014014014',
         quantity: 1,
         posAmt: 1000,  // 原價
         unitCost: 500   // 成本
@@ -1002,7 +1002,7 @@ describe('會員折扣執行順序', () => {
 ```typescript
 it('Type 0 不應該修改 actPosAmt', () => {
   const item = {
-    skuNo: 'SKU002',
+    skuNo: '015015015',
     actPosAmt: 1000,
     quantity: 1
   };
@@ -1015,7 +1015,7 @@ it('Type 0 不應該修改 actPosAmt', () => {
 
 it('Type 1 應該修改 actPosAmt', () => {
   const item = {
-    skuNo: 'SKU002',
+    skuNo: '015015015',
     actPosAmt: 1000,
     quantity: 1,
     discountAmt: 200  // 組促折扣

@@ -191,7 +191,7 @@ function createSoBO() {
 ```javascript
 var lstSkuInfo = [
     {
-        skuNo: 'SKU001',                  // 商品編號
+        skuNo: '014014014',                  // 商品編號
         skuName: '商品名稱',                // 商品名稱
         quantity: '2',                    // 數量
         posAmt: '1999.00',                // 單價

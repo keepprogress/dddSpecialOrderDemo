@@ -63,6 +63,24 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * 處理重複提交例外
+     */
+    @ExceptionHandler(DuplicateSubmissionException.class)
+    public ResponseEntity<Map<String, Object>> handleDuplicateSubmissionException(DuplicateSubmissionException ex) {
+        logger.warn("Duplicate submission: idempotencyKey={}, existingOrderId={}",
+                ex.getIdempotencyKey(), ex.getExistingOrderId());
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now().toString());
+        body.put("status", HttpStatus.CONFLICT.value());
+        body.put("errorCode", "DUPLICATE_SUBMISSION");
+        body.put("message", ex.getMessage());
+        if (ex.getExistingOrderId() != null) {
+            body.put("existingOrderId", ex.getExistingOrderId());
+        }
+        return new ResponseEntity<>(body, HttpStatus.CONFLICT);
+    }
+
+    /**
      * 處理其他未預期例外
      */
     @ExceptionHandler(Exception.class)

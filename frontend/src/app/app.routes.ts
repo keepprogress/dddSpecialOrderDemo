@@ -58,15 +58,27 @@ export const routes: Routes = [
       import('./core/home/home.component').then((m) => m.HomeComponent),
     canActivate: [authGuard, loginContextGuard],
   },
-  // 導航列選單項目 (功能開發中)
+  // 訂單管理模組
   {
     path: 'orders',
-    loadComponent: () =>
-      import('./shared/components/placeholder/placeholder.component').then(
-        (m) => m.PlaceholderComponent
-      ),
     canActivate: [authGuard, loginContextGuard],
-    data: { title: '訂單管理' },
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/order/order-list/order-list.component').then(
+            (m) => m.OrderListComponent
+          ),
+        title: '訂單管理',
+      },
+      {
+        path: 'create',
+        loadChildren: () =>
+          import('./features/order/create-order/create-order.routes').then(
+            (m) => m.CREATE_ORDER_ROUTES
+          ),
+      },
+    ],
   },
   {
     path: 'returns',
