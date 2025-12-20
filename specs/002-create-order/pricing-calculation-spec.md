@@ -1405,3 +1405,499 @@ public class SkuValidationService {
 | 金額計算來源 | 3 處 | 1 處 (後端) |
 | 可繞過的驗證 | 6 項 | 0 項 |
 | 程式碼維護點 | JSP + Angular + Java | Java only |
+
+---
+
+## 21. Performance Optimization for 860K+ SKUs
+
+> **驗證日期**: 2025-12-20
+> **資料規模**: TBL_SKU 約 86 萬筆、TBL_SKU_STORE 約 2000 萬筆
+
+### 21.1 現有效能優化機制
+
+#### Legacy 系統已實作的優化
+
+```mermaid
+flowchart TB
+    subgraph "查詢層優化"
+        A[SKU_COMPUTE_LIMIT<br/>試算上限 500 筆]
+        B[PAGE_SIZE<br/>分頁大小 15 筆]
+        C[Oracle INDEX Hint<br/>強制使用索引]
+    end
+
+    subgraph "批次處理優化"
+        D[MERGE INTO<br/>批次 Upsert]
+        E[foreach IN<br/>批次查詢]
+        F[三階段查詢<br/>精準→分類→通用]
+    end
+
+    subgraph "快取機制"
+        G[OrderDetlVOMap<br/>O(1) 查找]
+        H[會員快取<br/>TTL 30分鐘]
+        I[全域快取<br/>Channel/Store/District]
+    end
+
+    A --> J[防止大量試算]
+    B --> K[控制回傳資料量]
+    C --> L[加速 SQL 查詢]
+    D --> M[減少 DB 往返]
+    E --> N[批次 IN 查詢]
+    F --> O[漸進式查詢]
+    G --> P[避免 O(n²)]
+    H --> Q[CRM 降級]
+    I --> R[減少重複查詢]
+```
+
+### 21.2 Oracle 1000 元素 IN 限制處理
+
+**問題**: Oracle IN 子句最多 1000 元素
+
+**Legacy 解決方案** (BzSoServices.java):
+```java
+// 方案 1: 分批查詢
+List<List<String>> batches = Lists.partition(skuNos, 999);
+for (List<String> batch : batches) {
+    criteria.andSkuNoIn(batch);  // 每批 999 筆
+    results.addAll(mapper.selectByCriteria(criteria));
+}
+
+// 方案 2: 試算上限 500 筆 (避免問題發生)
+if (lstSkuInfo.size() > SKU_COMPUTE_LIMIT) {
+    throw new BusinessException("商品明細超過 " + SKU_COMPUTE_LIMIT + " 筆無法試算");
+}
+```
+
+**DDD 重構方案**:
+```java
+// 使用 SQL WITH 子句或臨時表
+@Query("""
+    WITH sku_batch AS (
+        SELECT column_value AS sku_no
+        FROM TABLE(SYS.ODCIVARCHAR2LIST(:skuNos))
+    )
+    SELECT s.* FROM TBL_SKU s
+    JOIN sku_batch b ON s.SKU_NO = b.sku_no
+    """)
+List<TblSku> findBySkuNosUnlimited(Collection<String> skuNos);
+```
+
+### 21.3 三階段會員折扣查詢策略
+
+**來源**: `SoFunctionMemberDisServices.java:297-360`
+
+```mermaid
+flowchart TD
+    A[開始查詢會員折扣] --> B{階段 1: 精準 SKU 匹配}
+    B -->|找到| C[返回折扣資訊]
+    B -->|未找到| D{階段 2: 商品分類匹配}
+
+    D -->|SQL| E["SKU_NO = '000000000'<br/>+ SUB_DEPT_ID<br/>+ CLASS_ID<br/>+ SUB_CLASS_ID"]
+    E -->|找到| C
+    E -->|未找到| F{階段 3: 通用折扣}
+
+    F -->|SQL| G["SKU_NO = '000000000'<br/>無分類條件"]
+    G -->|找到| C
+    G -->|未找到| H[無折扣]
+
+    style B fill:#90EE90
+    style D fill:#FFE4B5
+    style F fill:#FFB6C1
+```
+
+**查詢效能分析**:
+
+| 階段 | 查詢條件 | 預期命中率 | 索引使用 |
+|------|---------|-----------|---------|
+| 1 | SKU_NO IN (:skus) | 高 (常見商品) | PK 索引 |
+| 2 | SKU_NO='000000000' + 分類 | 中 (類別折扣) | 複合索引 |
+| 3 | SKU_NO='000000000' only | 低 (全館折扣) | 部分索引 |
+
+### 21.4 促銷計算的 OMS 決策機制
+
+**關鍵發現**: SOM 系統**沒有**促銷優先級解決邏輯，OMS 是唯一決策者
+
+```mermaid
+sequenceDiagram
+    participant OMS as OMS 促銷引擎
+    participant Batch as 批次同步<br/>(每日 9:00-23:59)
+    participant DB as TBL_SKU_STORE
+    participant SOM as SOM 計價
+
+    Note over OMS: 每個 SKU 只能有一個促銷
+    OMS->>OMS: 決定 SKU 的 MP_EVENT
+    OMS->>Batch: bs_sku_store@oms
+
+    loop 每 10 分鐘
+        Batch->>DB: MERGE INTO TBL_SKU_STORE<br/>SET PROM_EVENT_NO = :mpEvent
+    end
+
+    SOM->>DB: SELECT PROM_EVENT_NO<br/>WHERE SKU_NO = :sku
+    DB-->>SOM: 單一促銷編號
+    SOM->>SOM: 執行對應 Event 計算
+```
+
+**風險**: 促銷過期窗口
+
+```
+時間線:
+23:59 ─────────────────────────────────────────── 09:30 (隔天)
+  │                                                   │
+  │  促銷 A 過期                                       │
+  │  但 TBL_SKU_STORE.PROM_EVENT_NO 仍為 A            │
+  │                                                   │
+  └─────────── 過期促銷仍被使用的風險窗口 ──────────────┘
+```
+
+**DDD 重構建議**: 加入促銷效期驗證
+```java
+public boolean isPromotionValid(String eventNo) {
+    TblPromEvent event = promEventMapper.selectByEventNo(eventNo);
+    if (event == null) return false;
+
+    LocalDate today = LocalDate.now();
+    return !today.isBefore(event.getStartDate())
+        && !today.isAfter(event.getEndDate());
+}
+```
+
+### 21.5 工種變價分攤餘數處理
+
+**來源**: `BzSoServices.java:5375-5572`
+
+**問題**: 四捨五入會產生累計誤差
+
+```mermaid
+flowchart LR
+    subgraph "分攤計算"
+        A["變價總額: 100 元<br/>3 筆商品"]
+        B["商品 1: ROUND(33.33) = 33"]
+        C["商品 2: ROUND(33.33) = 33"]
+        D["商品 3: 100 - 33 - 33 = 34"]
+    end
+
+    A --> B
+    A --> C
+    A --> D
+
+    style D fill:#FFE4B5
+```
+
+**Legacy 解決方案**:
+```java
+// 排序商品（金額小到大）
+Collections.sort(lstInstallSkuByWorkType, comparator);
+
+int totalApportionmentPrice = 0;
+for (int i = 0; i < lstInstallSkuByWorkType.size(); i++) {
+    OrderDetlVO sku = lstInstallSkuByWorkType.get(i);
+    int ratio = sku.getActInstallPrice() / totalInstallPrice;
+    int apportionmentPrice;
+
+    if (i + 1 == lstInstallSkuByWorkType.size()) {
+        // 最後一筆：承擔餘數
+        apportionmentPrice = changePriceForInstall - totalApportionmentPrice;
+    } else {
+        // 其他筆：四捨五入
+        apportionmentPrice = Math.round(ratio * changePriceForInstall);
+    }
+
+    totalApportionmentPrice += apportionmentPrice;
+    sku.setWorkTypeChangPriceDisc(apportionmentPrice);
+}
+```
+
+### 21.6 快取機制詳細說明
+
+#### 21.6.1 會員快取 (CRM Fallback)
+
+**來源**: `MemberService.java`
+
+```java
+private final Map<String, CachedMember> memberCache = new ConcurrentHashMap<>();
+private static final Duration CACHE_TTL = Duration.ofMinutes(30);
+
+// Timeout 時自動 Fallback
+private Optional<MemberResponse> callCrmWithTimeout(String memberId) {
+    Future<Optional<MemberResponse>> future = executor.submit(() -> callCrmApi(memberId));
+
+    try {
+        return future.get(timeoutMillis, TimeUnit.MILLISECONDS);
+    } catch (TimeoutException e) {
+        future.cancel(true);
+        return getCachedMember(memberId);  // Fallback 到快取
+    }
+}
+```
+
+#### 21.6.2 冪等鍵快取 (防重複提交)
+
+**來源**: `IdempotencyService.java`
+
+```java
+private final ConcurrentHashMap<String, IdempotencyRecord> keyStore = new ConcurrentHashMap<>();
+private static final int TTL_SECONDS = 5;
+private static final int CLEANUP_INTERVAL_SECONDS = 10;
+
+// 定期清理
+private void cleanupExpiredKeys() {
+    keyStore.entrySet().removeIf(entry -> entry.getValue().isExpired());
+}
+```
+
+#### 21.6.3 商品查找快取 (O(1) 優化)
+
+**來源**: `SoFunctionMemberDisServices.java:361`
+
+```java
+// 建立 HashMap 快速查找
+private class OrderDetlVOMap extends HashMap<String, OrderDetlVO> {
+    public OrderDetlVOMap(List<OrderDetlVO> list) {
+        for (OrderDetlVO vo : list) {
+            this.put(vo.getDetlSeqId(), vo);  // O(1) 插入
+        }
+    }
+
+    public OrderDetlVO getByDetlSeqId(String id) {
+        return this.get(id);  // O(1) 查找
+    }
+}
+
+// 使用場景：避免 O(n²) 巢狀迴圈
+OrderDetlVOMap map = new OrderDetlVOMap(items);
+for (MemberDiscVO disc : discounts) {
+    OrderDetlVO sku = map.getByDetlSeqId(disc.getSeqId());  // O(1)
+    // 而非 items.stream().filter(...).findFirst()  // O(n)
+}
+```
+
+### 21.7 8 種促銷類型詳細計算
+
+```mermaid
+flowchart TB
+    subgraph "促銷類型分類"
+        direction LR
+        A[單品促銷]
+        B[滿額/滿件]
+        C[合購促銷]
+    end
+
+    subgraph "Event A-H"
+        A1[A: 印花價<br/>單品特定售價]
+        B1[B: 滿額加價購<br/>發票金額達標]
+        B2[C: 滿金額優惠<br/>全面折扣]
+        B3[D: 買M享N<br/>重複促銷]
+        C1[E: A群組享B優惠<br/>跨群組]
+        C2[F: 合購價<br/>多群組條件]
+        C3[G: 共用商品合購<br/>最複雜]
+        C4[H: 拆價合購<br/>多級距]
+    end
+
+    A --> A1
+    B --> B1
+    B --> B2
+    B --> B3
+    C --> C1
+    C --> C2
+    C --> C3
+    C --> C4
+```
+
+**各類型計算公式**:
+
+| Type | 公式 | 短路條件 |
+|------|------|---------|
+| A | `newPrice = CEIL(posAmt × (1 - discRate))` 或 `fixedPrice` | 無符合商品 |
+| B | `優惠組數 = FLOOR(發票金額 / 條件金額)` | 金額未達標 |
+| C | `全商品折扣 = 達標後統一折扣率` | 金額/數量未達標 |
+| D | `優惠數量 = (總數量 / M) × N` | 數量不足 M |
+| E | `A群組達標 → B群組享折扣` | A群組未達標 |
+| F | `所有群組達標 → 合購價` | 任一群組未達標 |
+| G | `多級距共用商品 → 取最大級距` | 無符合級距 |
+| H | `單品拆價 → 多級距合購` | 無符合群組 |
+
+---
+
+## 22. DDD Refactoring Strategy
+
+### 22.1 簡化目標
+
+```mermaid
+flowchart LR
+    subgraph "Before (疊床架屋)"
+        L1[Legacy JSP<br/>計算+驗證]
+        L2[Angular<br/>計算+驗證]
+        L3[Spring<br/>計算+驗證]
+    end
+
+    subgraph "After (單一職責)"
+        N1[Angular<br/>格式驗證+展示]
+        N2[Spring<br/>所有計算+驗證]
+    end
+
+    L1 -.->|移除| N2
+    L2 -.->|簡化| N1
+    L3 -.->|強化| N2
+```
+
+### 22.2 效能優化策略
+
+#### 86 萬 SKU 查詢優化
+
+| 策略 | 實作方式 | 預期效益 |
+|------|---------|---------|
+| **索引優化** | SKU_NO + STORE_ID 複合索引 | 查詢 < 10ms |
+| **批次查詢** | IN 子句分批 999 筆 | 避免 ORA-01795 |
+| **分頁控制** | SKU_COMPUTE_LIMIT = 500 | 控制記憶體 |
+| **快取層** | Redis/Caffeine 商品快取 | 減少 DB 查詢 |
+| **預載入** | 啟動時載入熱門 SKU | 加速首次查詢 |
+
+#### 試算效能優化
+
+```mermaid
+flowchart TB
+    subgraph "現有問題"
+        P1[500 SKU 試算 > 3秒]
+        P2[促銷查詢 N+1]
+        P3[會員折扣三階段]
+    end
+
+    subgraph "優化方案"
+        S1[批次預載入促銷]
+        S2[並行計算 ComputeType]
+        S3[快取會員折扣結果]
+    end
+
+    P1 --> S1
+    P2 --> S1
+    P3 --> S3
+
+    S1 --> R1[試算 < 1.5秒]
+    S2 --> R1
+    S3 --> R1
+```
+
+### 22.3 DDD 領域服務設計
+
+```mermaid
+classDiagram
+    class OrderPricingService {
+        +calculate(Order): PriceCalculation
+        -revertAllSkuAmt(lines)
+        -apportionmentDiscount(lines, workTypes)
+        -assortSku(lines): AssortedSkus
+    }
+
+    class MemberDiscountService {
+        +calculateDiscount(lines, member): List~MemberDiscVO~
+        -calculateType0(lines, discRate)
+        -calculateType1(lines, discRate)
+        -calculateType2(lines, markupRate, cost)
+    }
+
+    class PromotionService {
+        +applyPromotions(lines): List~PromotionResult~
+        -getEventCalculator(eventType): EventCalculator
+        -validatePromotionDate(eventNo): boolean
+    }
+
+    class CouponService {
+        +validateAndApply(couponId, order): CouponResult
+        -allocateDiscount(lines, amount)
+        -applyCap(discount, maxAmount)
+    }
+
+    OrderPricingService --> MemberDiscountService
+    OrderPricingService --> PromotionService
+    OrderPricingService --> CouponService
+```
+
+### 22.4 SQL 優化建議
+
+#### 索引設計
+
+```sql
+-- SKU 查詢索引
+CREATE INDEX IDX_SKU_STORE_LOOKUP
+ON TBL_SKU_STORE (STORE_ID, SKU_NO, ALLOW_SALES);
+
+-- 促銷查詢索引
+CREATE INDEX IDX_PROM_EVENT_ACTIVE
+ON TBL_PROM_EVENT (EVENT_NO, START_DATE, END_DATE);
+
+-- 會員折扣索引
+CREATE INDEX IDX_CDISC_MEMBER_SKU
+ON TBL_CDISC (CHANNEL_ID, DISCOUNT_ID, SKU_NO, START_DATE, END_DATE);
+```
+
+#### 批次查詢模式
+
+```java
+// MyBatis 批次查詢
+@Select("""
+    <script>
+    SELECT * FROM TBL_SKU_STORE
+    WHERE STORE_ID = #{storeId}
+    AND SKU_NO IN
+    <foreach item="sku" collection="skuNos" open="(" separator="," close=")">
+        #{sku}
+    </foreach>
+    </script>
+    """)
+List<TblSkuStore> findBySkuNos(@Param("storeId") String storeId,
+                                @Param("skuNos") List<String> skuNos);
+
+// 使用時分批
+public List<TblSkuStore> findAllBySkuNos(String storeId, List<String> skuNos) {
+    return Lists.partition(skuNos, 999).stream()
+        .flatMap(batch -> mapper.findBySkuNos(storeId, batch).stream())
+        .toList();
+}
+```
+
+---
+
+## 23. Verification Summary
+
+### 23.1 規格與程式碼一致性
+
+| 規格項目 | Legacy 程式碼 | 一致性 | 備註 |
+|---------|-------------|--------|------|
+| 12 步驟計價流程 | `BzSoServices.java:4367-4512` | ✅ 完全一致 | - |
+| 會員折扣 Type 0/1/2 | `SoFunctionMemberDisServices.java` | ✅ 完全一致 | - |
+| 工種變價分攤 | `BzSoServices.java:5375-5572` | ✅ 完全一致 | 餘數處理已補充 |
+| 8 種促銷類型 | `SoEvent[A-H].java` | ✅ 完全一致 | OMS 決策機制已補充 |
+| 折價券分攤 | 規格已定義 | ✅ 一致 | - |
+| 稅額計算 | 規格已定義 | ✅ 一致 | - |
+
+### 23.2 遺漏細節補充
+
+| 遺漏項目 | 補充位置 | 說明 |
+|---------|---------|------|
+| Oracle 1000 IN 限制 | Section 21.2 | 分批查詢策略 |
+| 三階段會員折扣查詢 | Section 21.3 | 精準→分類→通用 |
+| OMS 促銷決策機制 | Section 21.4 | SOM 無優先級邏輯 |
+| 促銷過期風險窗口 | Section 21.4 | 午夜到 9:30 |
+| 工種變價餘數處理 | Section 21.5 | 最後一筆承擔餘數 |
+| 快取機制詳細說明 | Section 21.6 | 三種快取類型 |
+| 促銷計算公式 | Section 21.7 | 8 種 Event 公式 |
+
+### 23.3 DDD 重構 vs Legacy 差異
+
+| 面向 | Legacy | DDD 重構 | 理由 |
+|------|--------|---------|------|
+| 促銷優先級 | OMS 決定 | 維持 OMS | 不重複實作 |
+| 計算位置 | 三處重複 | 後端唯一 | 避免不一致 |
+| 快取策略 | 各自實作 | 統一 Spring Cache | 可維護性 |
+| 批次處理 | 分批 IN | WITH 子句或臨時表 | 效能提升 |
+| 驗證邏輯 | 前後端重複 | 後端唯一 | 安全性 |
+
+### 23.4 效能基準目標
+
+| 操作 | Legacy | 目標 | 優化方式 |
+|------|--------|------|---------|
+| 商品查詢 (單筆) | ~50ms | <20ms | 索引優化 |
+| 商品查詢 (100筆) | ~500ms | <100ms | 批次+快取 |
+| 試算 (100 SKU) | ~1s | <500ms | 並行計算 |
+| 試算 (500 SKU) | ~3s | <1.5s | 批次預載入 |
+| 促銷計算 | ~500ms | <200ms | 快取促銷資料 |
+| 會員折扣 | ~300ms | <100ms | 快取三階段結果 |
