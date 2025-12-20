@@ -729,3 +729,679 @@ public static final String SKU_TAX_TYPE_0 = "0";  // 零稅
 public static final String SKU_TAX_TYPE_1 = "1";  // 應稅
 public static final String SKU_TAX_TYPE_2 = "2";  // 免稅
 ```
+
+---
+
+## 13. Frontend/Backend Responsibility Analysis
+
+> **分析日期**: 2025-12-20
+> **來源**: Angular 前端、Spring 後端、Legacy JSP 逆向工程
+
+### 13.1 現況問題總覽
+
+```mermaid
+flowchart TB
+    subgraph "問題類型"
+        A[疊床架屋<br/>Frontend + Backend + JSP<br/>三重計算]
+        B[N+1 查詢<br/>多次 API 呼叫<br/>效能問題]
+        C[責任不清<br/>前端做後端該做的事<br/>安全風險]
+    end
+
+    A --> D[金額不一致風險]
+    B --> E[回應時間過長]
+    C --> F[可被繞過/篡改]
+```
+
+### 13.2 Calculation Layer Comparison
+
+#### 三層計算邏輯比對
+
+| 計算項目 | Legacy JSP | Angular Frontend | Spring Backend | 問題 |
+|---------|------------|------------------|----------------|------|
+| 商品小計 `posAmt × qty` | ✅ `soSKUSubPage.jsp:1042` | ✅ `order-summary:65` | ✅ `PriceCalculationService:62` | **三重計算** |
+| 紅利點數 `bonus × qty` | ✅ `soSKUSubPage.jsp:998` | ❌ | ✅ `BonusService` | 二重計算 |
+| 優惠券單位攤提 | ✅ `soSKUSubPage.jsp:1044` | ❌ | ✅ `CouponService:206` | 二重計算 |
+| 安裝費總額 | ✅ `soSKUSubPage.jsp:1190` | ✅ `order-summary:93` | ✅ `PriceCalculationService:65` | **三重計算** |
+| 運送費總額 | ✅ JSP | ✅ `order-summary:100` | ✅ `PriceCalculationService:68` | **三重計算** |
+| 會員折扣總額 | ✅ JSP | ✅ `order-summary:72` | ✅ `MemberDiscountService` | **三重計算** |
+| 應付總額 | ✅ `soComputeSubPage.jsp` | ✅ `order-summary:107` (Fallback) | ✅ `PriceCalculationService:91` | **三重計算 + Fallback 風險** |
+| 試算後回填計算 | ✅ `soSKUSubPage.jsp:2163` | ❌ | ✅ (來源) | 畫蛇添足 |
+
+### 13.3 Validation Layer Comparison
+
+#### 檢核邏輯比對
+
+| 檢核項目 | Legacy JSP | Angular Frontend | Spring Backend | 建議保留 |
+|---------|------------|------------------|----------------|----------|
+| SKU 格式驗證 | ❌ | ✅ `product.service:45` | ✅ `ProductEligibilityService:88` | **後端唯一** |
+| SKU 存在性驗證 | ✅ (AJAX) | ✅ `product-list:417` | ✅ `ProductEligibilityService:94` | **後端唯一** |
+| 變價條碼重複 | ✅ `soSKUSubPage.jsp:125` | ❌ | ❌ | **後端新增** |
+| 票券訂單商品 | ✅ `soSKUSubPage.jsp:132` | ❌ | ❌ | **後端新增** |
+| DC 商品庫存 | ✅ `soSKUSubPage.jsp:156` | ❌ | ❌ | **後端新增** |
+| 商品數量限制 500 | ✅ `soComputeSubPage.jsp:40` | ❌ | ✅ (應有) | **後端唯一** |
+| 會員卡號格式 | ❌ | ✅ `member.service:56` | ✅ | 前端 + 後端 |
+| 手機號碼格式 | ❌ | ✅ `member.service:65` | ✅ | 前端 + 後端 |
+| 運送/備貨相容性 | ❌ | ✅ `service-config:362` (Effect) | ✅ `OrderService:597` | **後端唯一** |
+| 紅利點數足夠 | ❌ | ✅ `order-summary:228` | ✅ `BonusService:105` | **後端唯一** |
+| 紅利最低 10 點 | ❌ | ✅ `order-summary:223` | ✅ `BonusService:113` | **後端唯一** |
+| 優惠券門檻 | ❌ | ❌ | ✅ `CouponService:135` | 後端唯一 |
+| 安裝費最低工資 | ❌ | ❌ | ✅ `PriceCalculationService:272` | 後端唯一 |
+| Type 2 負數歸零 | ❌ | ❌ | ✅ `MemberDiscountService:127` | 後端唯一 |
+
+---
+
+## 14. Redundancy & N+1 Issues
+
+### 14.1 疊床架屋問題清單
+
+```mermaid
+flowchart LR
+    subgraph "問題 #1: 商品金額三重計算"
+        JSP1[JSP computePosAmt<br/>soSKUSubPage:1042]
+        ANG1[Angular computed<br/>order-summary:65]
+        BE1[Backend calculate<br/>PriceCalculationService]
+
+        JSP1 -.->|重複| ANG1
+        ANG1 -.->|重複| BE1
+    end
+```
+
+#### 問題 #1: 商品金額三重計算 (Critical)
+
+| 位置 | 程式碼 | 計算公式 |
+|------|--------|----------|
+| JSP | `soSKUSubPage.jsp:1042` | `totalPosAmt = posAmt × quantity` |
+| Angular | `order-summary.component.ts:65-67` | `lines.reduce((sum, line) => sum + line.subtotal, 0)` |
+| Backend | `PriceCalculationService.java:62` | ComputeType 1 generation |
+
+**風險**: 三處邏輯不同步時金額不一致
+**解決**: 移除前端計算，信任後端 `CalculationResponse.grandTotal`
+
+---
+
+#### 問題 #2: 試算後回填再計算 (High)
+
+| 位置 | 程式碼 | 問題 |
+|------|--------|------|
+| JSP | `soSKUSubPage.jsp:2163-2177` | 後端回傳後，前端又計算 `actPosAmt + (bonusTotal/quantity)` |
+
+```javascript
+// 問題程式碼 (soSKUSubPage.jsp:2163-2177)
+var eachSkuBonusTotal = Math.abs(bonusTotal / quantity);
+var actPosAmtInSku = parseFloat(actPosAmt) + eachSkuBonusTotal;
+el.find('[name="actPosAmt"]').val(actPosAmtInSku);  // 覆蓋後端值！
+```
+
+**風險**: 覆蓋後端正確計算結果
+**解決**: 直接使用後端回傳值，不再前端計算
+
+---
+
+#### 問題 #3: Angular grandTotal Fallback (High)
+
+| 位置 | 程式碼 | 問題 |
+|------|--------|------|
+| Angular | `order-summary.component.ts:107-118` | 無 CalculationResponse 時自行計算 |
+
+```typescript
+// 問題程式碼 (order-summary.component.ts:107-118)
+grandTotal = computed(() => {
+  const calc = this.calculation();
+  if (calc) {
+    return calc.grandTotal;  // 正確：使用後端值
+  }
+  // 問題：Fallback 自行計算
+  return this.productTotal() + this.installationTotal() + this.deliveryTotal()
+         - Math.abs(this.memberDiscountTotal())
+         - Math.abs(this.couponDiscountTotal())
+         - Math.abs(this.bonusDiscountTotal());
+});
+```
+
+**風險**: Fallback 計算結果與後端不一致
+**解決**: 移除 Fallback，強制要求先試算
+
+---
+
+### 14.2 N+1 API 呼叫問題
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant B as Backend
+
+    Note over U,B: 問題 #1: 試算後重複查詢
+    U->>F: 點擊試算
+    F->>B: POST /orders/{id}/calculate
+    B-->>F: CalculationResponse
+    F->>B: GET /orders/{id}
+    Note right of F: 重複查詢！<br/>calculate 已含結果
+    B-->>F: OrderResponse
+
+    Note over U,B: 問題 #2: 優惠券操作後重複查詢
+    U->>F: 套用優惠券
+    F->>B: POST /orders/{id}/coupons
+    B-->>F: CouponResponse
+    F->>B: GET /orders/{id}
+    Note right of F: 重複查詢！
+    B-->>F: OrderResponse
+
+    Note over U,B: 問題 #3: 服務設定雙重呼叫
+    U->>F: 儲存服務設定
+    F->>B: POST attachInstallation
+    B-->>F: Response
+    F->>B: POST attachDelivery
+    Note right of F: 應合併為<br/>單一 API
+    B-->>F: Response
+```
+
+#### N+1 問題清單
+
+| # | 場景 | 涉及 API | 位置 | 解決方案 |
+|---|------|----------|------|----------|
+| 1 | 試算後查詢訂單 | `calculate` + `getOrder` | `create-order:281,285` | calculate 回傳完整資料 |
+| 2 | 優惠券後查詢 | `applyCoupon` + `refreshOrder` | `order-summary:171,335` | applyCoupon 回傳更新後訂單 |
+| 3 | 紅利取消後查詢 | `cancelBonus` + `loadBonusPoints` | `order-summary:267,277` | cancelBonus 回傳剩餘點數 |
+| 4 | 服務設定儲存 | `attachInstallation` + `attachDelivery` | `service-config:516,539` | 合併為 `updateLineServices` |
+
+---
+
+## 15. Unified Validation Rules (取聯集)
+
+### 15.1 Validation Classification
+
+```mermaid
+stateDiagram-v2
+    [*] --> Frontend: 格式/UX 驗證
+    [*] --> Backend: 商業邏輯驗證
+
+    Frontend --> F1: 格式驗證 (即時回饋)
+    Frontend --> F2: UX 輔助 (Toast/提示)
+
+    Backend --> B1: 資格驗證 (必須)
+    Backend --> B2: 商業規則 (必須)
+    Backend --> B3: 金額計算 (唯一來源)
+
+    F1 --> Pass: SKU/電話/郵遞區號格式
+    F2 --> Pass: 運送備貨相容提示
+
+    B1 --> Pass: 8層商品資格驗證
+    B2 --> Pass: 優惠券/紅利條件
+    B3 --> Pass: 12步驟計價
+```
+
+### 15.2 Final Validation Rules (Unified)
+
+#### 前端驗證 (Frontend Only)
+
+| 規則 ID | 驗證項目 | 目的 | 後端是否重複 |
+|---------|----------|------|--------------|
+| FE-001 | SKU 格式 `^[A-Za-z0-9]{5,}$` | UX 即時回饋 | 是 (可接受) |
+| FE-002 | 會員卡號格式 `^[A-Za-z]\d{5,}$` | UX 即時回饋 | 是 (可接受) |
+| FE-003 | 手機格式 `^09\d{8}$` | UX 即時回饋 | 是 (可接受) |
+| FE-004 | 郵遞區號格式 `^\d{3}$` | UX 即時回饋 | 是 (可接受) |
+| FE-005 | 運送/備貨相容性提示 | Toast 提醒 | 是 (後端強制) |
+
+#### 後端驗證 (Backend Authoritative)
+
+| 規則 ID | 驗證項目 | 來源 | 前端是否重複 | 建議 |
+|---------|----------|------|--------------|------|
+| BE-001 | 8 層商品資格驗證 | `ProductEligibilityService` | 部分 | **後端唯一** |
+| BE-002 | 變價條碼唯一性 | (待新增) | JSP 有 | **後端新增** |
+| BE-003 | 票券訂單商品限制 | (待新增) | JSP 有 | **後端新增** |
+| BE-004 | DC 商品庫存檢查 | (待新增) | JSP 有 | **後端新增** |
+| BE-005 | 商品數量限制 500/1000 | `OrderService` | JSP 有 | **後端唯一** |
+| BE-006 | 優惠券 8 層驗證 | `CouponService:88-154` | 否 | 後端唯一 |
+| BE-007 | 紅利 5 層驗證 | `BonusService:91-160` | 部分 | **後端唯一** |
+| BE-008 | 運送/備貨相容性 | `OrderService:597-607` | 是 | **後端強制** |
+| BE-009 | 安裝費最低工資 | `PriceCalculationService:272` | 否 | 後端唯一 |
+| BE-010 | Type 2 負數處理 | `MemberDiscountService:127` | 否 | 後端唯一 |
+| BE-011 | 變價授權驗證 | `AuthorizationService` | JSP 有 | **後端唯一** |
+
+#### 應移除的前端驗證 (Deprecated)
+
+| 規則 ID | 驗證項目 | 原位置 | 移除原因 |
+|---------|----------|--------|----------|
+| ~~DEP-001~~ | 紅利最低 10 點 | `order-summary:223` | 後端已驗證 |
+| ~~DEP-002~~ | 紅利點數足夠 | `order-summary:228` | 後端已驗證 |
+| ~~DEP-003~~ | grandTotal Fallback | `order-summary:107-118` | 禁止前端計算 |
+| ~~DEP-004~~ | 商品小計計算 | `order-summary:65-67` | 使用後端值 |
+| ~~DEP-005~~ | 安裝費總額計算 | `order-summary:93-95` | 使用後端值 |
+| ~~DEP-006~~ | 運送費總額計算 | `order-summary:100-102` | 使用後端值 |
+
+---
+
+## 16. Optimized Calculation Flow
+
+### 16.1 Target Architecture
+
+```mermaid
+flowchart TB
+    subgraph Frontend ["Frontend (Display Only)"]
+        F1[格式驗證<br/>即時回饋]
+        F2[資料組裝<br/>提交後端]
+        F3[結果展示<br/>信任後端]
+    end
+
+    subgraph Backend ["Backend (Single Source of Truth)"]
+        B1[商品資格<br/>8 層驗證]
+        B2[12 步驟<br/>計價流程]
+        B3[檢核驗證<br/>商業規則]
+        B4[回應組裝<br/>完整結果]
+    end
+
+    F1 --> F2
+    F2 -->|POST /calculate| B1
+    B1 --> B2
+    B2 --> B3
+    B3 --> B4
+    B4 -->|CalculationResponse| F3
+```
+
+### 16.2 API Consolidation
+
+#### Before (N+1 問題)
+
+```mermaid
+sequenceDiagram
+    participant F as Frontend
+    participant B as Backend
+
+    F->>B: POST /calculate
+    B-->>F: CalculationResponse
+    F->>B: GET /orders/{id}
+    Note right of F: 重複查詢
+    B-->>F: OrderResponse
+```
+
+#### After (單一查詢)
+
+```mermaid
+sequenceDiagram
+    participant F as Frontend
+    participant B as Backend
+
+    F->>B: POST /calculate
+    Note right of B: 回傳完整資料<br/>含更新後 order
+    B-->>F: CalculationResponse + Order
+```
+
+### 16.3 Service Configuration API Merge
+
+#### Before
+
+```typescript
+// 兩次 API 呼叫
+await orderService.attachInstallation(orderId, lineId, { workTypeId, serviceTypes });
+await orderService.attachDelivery(orderId, lineId, { stockMethod, deliveryMethod });
+```
+
+#### After
+
+```typescript
+// 單一 API 呼叫
+await orderService.updateLineServices(orderId, lineId, {
+  workTypeId,
+  serviceTypes,
+  stockMethod,
+  deliveryMethod,
+  receiverInfo
+});
+```
+
+---
+
+## 17. State Machine Diagrams
+
+### 17.1 Order Calculation State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> Draft: 建立訂單
+
+    Draft --> HasProduct: 新增商品
+    HasProduct --> Draft: 移除全部商品
+
+    HasProduct --> Calculating: 點擊試算
+    Calculating --> Calculated: 試算成功
+    Calculating --> HasProduct: 試算失敗
+
+    Calculated --> HasProduct: 修改商品/數量
+    Calculated --> Calculated: 套用優惠券
+    Calculated --> Calculated: 使用紅利
+
+    Calculated --> Submitting: 提交訂單
+    Submitting --> Submitted: 提交成功
+    Submitting --> Calculated: 提交失敗
+
+    Submitted --> [*]
+
+    note right of Draft
+        無法試算
+        無法提交
+    end note
+
+    note right of HasProduct
+        可試算
+        無法提交
+    end note
+
+    note right of Calculated
+        可修改
+        可提交
+    end note
+```
+
+### 17.2 Member Discount Type State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> CheckType: 載入會員折扣
+
+    CheckType --> Type2: discType == '2'
+    CheckType --> Type0: discType == '0'
+    CheckType --> Type1: discType == '1'
+    CheckType --> Special: discType == 'SPECIAL'
+    CheckType --> None: discType == null
+
+    Type2 --> CostMarkup: 計算成本加價
+    CostMarkup --> CheckNegative: 檢查結果
+    CheckNegative --> ReAssort: result >= 0
+    CheckNegative --> Alert: result < 0
+    Alert --> ReAssort: 歸零並告警
+    ReAssort --> Promotion: 重新分類商品
+
+    Type0 --> Discounting: 計算折價率
+    Discounting --> RecordOnly: 不改價，僅記錄
+
+    Type1 --> DownMargin: 計算固定降價
+    DownMargin --> ModifyPrice: 直接修改 actPosAmt
+
+    Special --> VipCalc: VIP/員工價計算
+
+    None --> [*]: 無會員折扣
+
+    Promotion --> Type0
+    RecordOnly --> Type1
+    ModifyPrice --> Special
+    VipCalc --> [*]
+    ReAssort --> [*]: Type2 執行完畢
+```
+
+### 17.3 Coupon Validation State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> CheckExist: 輸入優惠券
+
+    CheckExist --> NotFound: 不存在
+    CheckExist --> CheckDate: 存在
+
+    NotFound --> [*]: 錯誤：優惠券不存在
+
+    CheckDate --> Expired: 已過期
+    CheckDate --> NotStarted: 未生效
+    CheckDate --> CheckQuantity: 效期內
+
+    Expired --> [*]: 錯誤：優惠券已過期
+    NotStarted --> [*]: 錯誤：優惠券未生效
+
+    CheckQuantity --> NoStock: 無剩餘數量
+    CheckQuantity --> CheckProduct: 有剩餘
+
+    NoStock --> [*]: 錯誤：優惠券已用完
+
+    CheckProduct --> NoMatch: 無適用商品
+    CheckProduct --> CheckAmount: 有適用商品
+
+    NoMatch --> [*]: 錯誤：無適用商品
+
+    CheckAmount --> BelowThreshold: 未達門檻
+    CheckAmount --> Calculate: 達到門檻
+
+    BelowThreshold --> [*]: 錯誤：未達使用門檻
+
+    Calculate --> CheckCap: 計算折扣
+    CheckCap --> Capped: 超過商品總額
+    CheckCap --> Applied: 未超過
+
+    Capped --> Applied: 封頂處理
+    Applied --> [*]: 成功套用
+```
+
+---
+
+## 18. ER Diagram (Calculation Related)
+
+### 18.1 Core Calculation Entities
+
+```mermaid
+erDiagram
+    TBL_ORDER ||--o{ TBL_ORDER_DETL : contains
+    TBL_ORDER ||--o{ TBL_ORDER_COMPUTE : has
+    TBL_ORDER_DETL ||--o{ TBL_ORDER_INSTALL : has
+
+    TBL_ORDER {
+        string ORDER_ID PK "訂單編號"
+        string PROJECT_ID "專案代號"
+        string MEMBER_CARD_ID "會員卡號"
+        string DISC_TYPE "折扣類型 0/1/2"
+        decimal DISC_PER "折扣率"
+        boolean TAX_ZERO "零稅訂單"
+        string ORDER_STATUS "訂單狀態"
+    }
+
+    TBL_ORDER_DETL {
+        string ORDER_ID PK,FK
+        string DETL_SEQ_ID PK "明細序號"
+        string SKU_NO "商品編號"
+        string GOODS_TYPE "商品類型 P/I/FI/DD/VD"
+        int QUANTITY "數量"
+        decimal POS_AMT "原始單價"
+        decimal ACT_POS_AMT "實際單價"
+        decimal TOTAL_PRICE "商品總價"
+        decimal INSTALL_PRICE "安裝單價"
+        decimal ACT_INSTALL_PRICE "實際安裝費"
+        decimal DELIVERY_PRICE "運送單價"
+        decimal ACT_DELIVERY_PRICE "實際運送費"
+        decimal MEMBER_DISC "會員折扣"
+        decimal DISCOUNT_AMT "組促折扣"
+        decimal COUPON_0_DISC "固定券折扣"
+        decimal COUPON_1_DISC "折扣券折扣"
+        decimal BONUS_TOTAL "紅利折抵"
+        decimal PRE_APPORTION "分攤前金額"
+        decimal WORKTYPE_CHANGE_PRICE "工種變價分攤"
+        string TAX_TYPE "稅別 0/1/2"
+    }
+
+    TBL_ORDER_COMPUTE {
+        string ORDER_ID PK,FK
+        string COMPUTE_TYPE PK "類型 1-6"
+        string STORE_ID "店別"
+        decimal TOTAL_PRICE "總額"
+        decimal DISCOUNT "折扣"
+        decimal ACT_TOTAL_PRICE "實際總額"
+        decimal ACT_TOTAL_PRICE_TX "應稅"
+        decimal ACT_TOTAL_PRICE_NTX "免稅"
+        string AUTH_EMP_ID "授權人"
+        string AUTH_REASON "授權原因"
+    }
+
+    TBL_ORDER_INSTALL {
+        string ORDER_ID PK,FK
+        string DETL_SEQ_ID PK,FK
+        string INSTALL_TYPE PK "安裝類型"
+        decimal INSTALL_PRICE "安裝單價"
+        decimal ACT_INSTALL_PRICE "實際安裝費"
+        boolean INSTALL_SELECTED "是否選取"
+    }
+```
+
+### 18.2 Member Discount Related
+
+```mermaid
+erDiagram
+    TBL_MEMBER ||--o{ TBL_MEMBER_DISCOUNT : has
+    TBL_ORDER }o--|| TBL_MEMBER : references
+
+    TBL_MEMBER {
+        string MEMBER_CARD_ID PK "會員卡號"
+        string MEMBER_NAME "會員姓名"
+        string DISC_TYPE "折扣類型"
+        decimal DISC_PER "折扣率"
+        string VIP_TYPE "VIP 類型"
+    }
+
+    TBL_MEMBER_DISCOUNT {
+        string DISCOUNT_ID PK "折扣代號"
+        string MEMBER_CARD_ID FK "會員卡號"
+        string DISC_TYPE "折扣類型 0/1/2"
+        decimal DISC_PER "折扣率"
+        date START_DATE "生效日"
+        date END_DATE "失效日"
+        string SKU_NO "適用商品"
+        string CATEGORY "適用類別"
+    }
+```
+
+### 18.3 Coupon & Bonus Related
+
+```mermaid
+erDiagram
+    TBL_COUPON ||--o{ TBL_ORDER_COUPON : used_in
+    TBL_ORDER ||--o{ TBL_ORDER_COUPON : has
+    TBL_MEMBER ||--o{ TBL_MEMBER_BONUS : has
+    TBL_ORDER_DETL ||--o{ TBL_ORDER_BONUS : has
+
+    TBL_COUPON {
+        string COUPON_ID PK "優惠券代號"
+        string COUPON_TYPE "類型 0=固定/1=折扣"
+        decimal COUPON_AMT "面額/折扣率"
+        decimal MIN_ORDER_AMT "最低訂單金額"
+        int REMAINING_QTY "剩餘數量"
+        date START_DATE "生效日"
+        date END_DATE "失效日"
+    }
+
+    TBL_ORDER_COUPON {
+        string ORDER_ID PK,FK
+        string COUPON_ID PK,FK
+        decimal DISCOUNT_AMT "折扣金額"
+        decimal TAX_DISC "應稅折扣"
+        decimal FREE_TAX_DISC "免稅折扣"
+    }
+
+    TBL_MEMBER_BONUS {
+        string MEMBER_CARD_ID PK,FK
+        int AVAILABLE_POINTS "可用點數"
+        date EXPIRE_DATE "到期日"
+    }
+
+    TBL_ORDER_BONUS {
+        string ORDER_ID PK,FK
+        string DETL_SEQ_ID PK,FK
+        string SKU_NO "折抵商品"
+        int POINTS_USED "使用點數"
+        decimal DISCOUNT_AMT "折抵金額"
+    }
+```
+
+---
+
+## 19. Implementation Recommendations
+
+### 19.1 優先級排序
+
+| 優先級 | 項目 | 影響 | 工作量 |
+|--------|------|------|--------|
+| P0 | 移除 Angular grandTotal Fallback | 防止金額不一致 | 小 |
+| P0 | 移除 JSP 試算後回填計算 | 防止覆蓋後端值 | 小 |
+| P1 | 後端新增變價條碼唯一性驗證 | 防止重複使用 | 中 |
+| P1 | 後端新增票券訂單商品驗證 | 防止篡改 | 中 |
+| P1 | 合併 calculate + getOrder API | 減少 N+1 | 中 |
+| P2 | 合併 attachInstallation + attachDelivery | 減少 N+1 | 中 |
+| P2 | 移除前端金額計算 (order-summary) | 統一來源 | 小 |
+| P3 | 前端紅利驗證改為提示 | 保留後端強制 | 小 |
+
+### 19.2 Code Changes Summary
+
+#### Angular Frontend
+
+```typescript
+// order-summary.component.ts - 移除 Fallback
+grandTotal = computed(() => {
+  const calc = this.calculation();
+  if (!calc) {
+    return 0;  // 或顯示「請先試算」
+  }
+  return calc.grandTotal;  // 永遠使用後端值
+});
+
+// 移除這些 computed，改用後端值
+// productTotal, memberDiscountTotal, couponDiscountTotal,
+// bonusDiscountTotal, installationTotal, deliveryTotal
+```
+
+#### Legacy JSP
+
+```javascript
+// soSKUSubPage.jsp:2163-2177 - 移除重複計算
+function setComputeInfo2Sku(jsonData) {
+  // 直接使用後端值，不再計算
+  el.find('[name="actPosAmt"]').val(jsonData.actPosAmt);
+  // 移除: var actPosAmtInSku = parseFloat(actPosAmt) + eachSkuBonusTotal;
+}
+```
+
+#### Spring Backend
+
+```java
+// OrderController.java - 合併 API 回應
+@PostMapping("/api/v1/orders/{orderId}/calculate")
+public CalculationWithOrderResponse calculate(@PathVariable String orderId) {
+    CalculationResponse calc = orderService.calculate(orderId);
+    Order order = orderService.getOrder(orderId);
+    return new CalculationWithOrderResponse(calc, order);  // 合併回傳
+}
+
+// 新增驗證
+@Component
+public class SkuValidationService {
+    public void validateQrcodeUnique(String qrcode, String orderId) {
+        // 資料庫級別驗證條碼唯一性
+    }
+
+    public void validateTicketOrderProduct(String orderSource, String subDeptId, String classId) {
+        // 票券訂單只能添加票券商品
+    }
+}
+```
+
+### 19.3 Testing Checklist
+
+- [ ] 試算結果與 Legacy 系統一致 (誤差 ±1 元)
+- [ ] 移除 Fallback 後無回歸問題
+- [ ] 合併 API 後效能提升
+- [ ] 後端驗證可阻擋前端繞過
+- [ ] N+1 問題消除確認
+
+---
+
+## 20. Summary
+
+### 20.1 關鍵發現
+
+1. **三重計算問題**: JSP + Angular + Backend 重複計算商品金額，風險高
+2. **N+1 查詢**: 試算/優惠券/服務設定後都有額外查詢
+3. **前端過度檢驗**: 紅利點數、金額計算應由後端唯一控制
+4. **JSP 遺留問題**: 變價條碼、票券商品驗證僅在 JSP，後端未實作
+
+### 20.2 優化效益
+
+| 指標 | 優化前 | 優化後 |
+|------|--------|--------|
+| API 呼叫次數 (試算) | 2 | 1 |
+| 金額計算來源 | 3 處 | 1 處 (後端) |
+| 可繞過的驗證 | 6 項 | 0 項 |
+| 程式碼維護點 | JSP + Angular + Java | Java only |
