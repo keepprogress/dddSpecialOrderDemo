@@ -664,7 +664,14 @@ public enum WorkCategory {
 
 ## 6. Database Entity Mapping
 
-> **重要**: 以下對應來自 `docs/tables/*.html` 實際資料表定義，非幻覺欄位
+> **重要**: 以下對應來自 MyBatisGenerator 產生的 Entity 檔案，欄位已驗證
+>
+> **驗證來源**:
+> - `backend/src/main/java/com/tgfc/som/entity/TblOrder.java`
+> - `backend/src/main/java/com/tgfc/som/entity/TblOrderDetl.java`
+> - `backend/src/main/java/com/tgfc/som/entity/TblOrderCompute.java`
+> - `backend/src/main/java/com/tgfc/som/entity/TblSku.java`
+> - `backend/src/main/java/com/tgfc/som/entity/TblSkuStore.java`
 
 ### 6.1 TBL_ORDER 對應 (訂單主檔)
 
@@ -697,12 +704,37 @@ public enum WorkCategory {
 | installAddrZip | INSTALL_ADDR_ZIP | VARCHAR2(3) | NULL | 安運地址郵編 |
 | installAddr | INSTALL_ADDR | VARCHAR2(60) | NULL | 安運地址 |
 | orderSource | ORDER_SOURCE | VARCHAR2(5) | NULL | 訂單來源 |
+| installCreatedFlag | INSTALL_CREATED_FLAG | VARCHAR2(1) | NULL | 產生安運單flag |
+| poCreatedFlag | PO_CREATED_FLAG | VARCHAR2(1) | NULL | 產生PO單flag |
 | expiredDate | EXPIRED_DATE | DATE | NULL | 過期日期 |
 | remark | REMARK | VARCHAR2(2000) | NULL | 訂單備註 |
+| trackingNo | TRACKING_NO | VARCHAR2(20) | NULL | 客怨單號 (FROM CRM) |
 | totalPrice | TOTAL_PRICE | NUMBER(9,2) | NULL | 訂單總金額_應稅 |
 | totalPriceNtx | TOTAL_PRICE_NTX | NUMBER(9,2) | NULL | 訂單總金額_免稅/零稅 |
+| taxZero | TAX_ZERO | VARCHAR2(1) | NULL | 是否零稅 |
+| reinstall | REINSTALL | VARCHAR2(1) | NULL | 二安單註記 (Y=二安訂單, N=一般訂單) |
+| parentOrderId | PARENT_ORDER_ID | VARCHAR2(10) | NULL | 原訂單單號 (二安) |
+| reinstallReason | REINSTALL_REASON | VARCHAR2(20) | NULL | 二安原因 |
 | ecFlag | EC_FLAG | VARCHAR2(1) | NULL | EC 訂單註記 Y/N |
+| ecOrderId | EC_ORDER_ID | VARCHAR2(20) | NULL | EC 主訂單號碼 |
 | paymentType | PAYMENT_TYPE | VARCHAR2(2) | NULL | EC 付款別 |
+| payOnDelivery | PAY_ON_DELIVERY | VARCHAR2(1) | NULL | 貨到付款 (Y/N) |
+| companyCode | COMPANY_CODE | VARCHAR2(8) | NULL | 統一編號 |
+| isDonate | IS_DONATE | VARCHAR2(1) | NULL | EC 是否捐贈發票 (Y/N) |
+| donateCompnayCode | DONATE_COMPNAY_CODE | VARCHAR2(10) | NULL | EC 愛心碼/社福統編 |
+| prnInvoice | PRN_INVOICE | VARCHAR2(1) | NULL | EC 是否列印發票 |
+| prnDetl | PRN_DETL | VARCHAR2(1) | NULL | 是否列印明細 (Y/N) |
+| commonId | COMMON_ID | VARCHAR2(20) | NULL | EC 共通載具 |
+| closeEmpId | CLOSE_EMP_ID | VARCHAR2(20) | NULL | 結案人員工號 |
+| closeEmpName | CLOSE_EMP_NAME | VARCHAR2(40) | NULL | 結案人員姓名 |
+| closeDate | CLOSE_DATE | DATE | NULL | 結案日期 |
+| closeReasonId | CLOSE_REASON_ID | VARCHAR2(5) | NULL | SO結案原因 |
+| invalidReasonId | INVALID_REASON_ID | VARCHAR2(5) | NULL | SO作廢原因 |
+| invalidDate | INVALID_DATE | DATE | NULL | SO作廢日期 |
+| invalidEmpId | INVALID_EMP_ID | VARCHAR2(20) | NULL | 作廢者工號 |
+| invalidEmpName | INVALID_EMP_NAME | VARCHAR2(40) | NULL | 作廢者姓名 |
+| tzAuthEmpId | TZ_AUTH_EMP_ID | VARCHAR2(20) | NULL | 零稅授權者工號 |
+| tzAuthEmpName | TZ_AUTH_EMP_NAME | VARCHAR2(40) | NULL | 零稅授權者姓名 |
 | createDate | CREATE_DATE | DATE | NULL | 建立日期時間 |
 | createEmpId | CREATE_EMP_ID | VARCHAR2(20) | NULL | 建立人員工號 |
 | createEmpName | CREATE_EMP_NAME | VARCHAR2(40) | NULL | 建立人員姓名 |
@@ -736,6 +768,11 @@ public enum WorkCategory {
 | deliveryFlag | DELIVERY_FLAG | VARCHAR2(1) | NULL | 運送註記 (N=運送, D=純運, V=直送, C=當場自取, P=下次自取) |
 | parentSeqId | PARENT_SEQ_ID | VARCHAR2(5) | NULL | 母流水號 |
 | goodsType | GOODS_TYPE | VARCHAR2(3) | NULL | 商品性質分類 (P/I/IA/IC/IS/IE/D/DD/VD/VT/CP/CK/CI/BP/TT/FI) |
+| barcode | BARCODE | VARCHAR2(14) | NULL | 國際碼 |
+| skuStatus | SKU_STATUS | VARCHAR2(1) | NULL | 商品狀態 (A/D) |
+| holdOrder | HOLD_ORDER | VARCHAR2(1) | NULL | 不可採購 (A/B/C/N) |
+| remark | REMARK | VARCHAR2(200) | NULL | 商品備註 |
+| vendorId | VENDOR_ID | VARCHAR2(10) | NULL | 廠商代號 |
 | mktAmt | MKT_AMT | NUMBER(9,2) | NULL | 市場價 |
 | regAmt | REG_AMT | NUMBER(9,2) | NULL | 一般售價 |
 | posAmt | POS_AMT | NUMBER(9,2) | NULL | 原POS售價 |
@@ -757,8 +794,40 @@ public enum WorkCategory {
 | crmDiscountId | CRM_DISCOUNT_ID | VARCHAR2(12) | NULL | 會員折扣ID |
 | bonusPoints | BONUS_POINTS | NUMBER(8) | NULL | 商品紅利使用點數 |
 | dmPointsAmt | DM_POINTS_AMT | NUMBER(9,2) | NULL | 商品紅利點數折扣總金額 |
+| height | HEIGHT | NUMBER(9,2) | NULL | 高 |
+| width | WIDTH | NUMBER(9,2) | NULL | 寬 |
+| deep | DEEP | NUMBER(9,2) | NULL | 深 |
+| weight | WEIGHT | NUMBER(9,2) | NULL | 重量 |
+| totalVolume | TOTAL_VOLUME | NUMBER(9,2) | NULL | 總材積 (單元材積*數量) |
+| totalWeight | TOTAL_WEIGHT | NUMBER(9,2) | NULL | 總重量 (重量*數量) |
+| discountCode | DISCOUNT_CODE | VARCHAR2(20) | NULL | 折扣碼 (手動輸入) |
+| limitFlag | LIMIT_FLAG | VARCHAR2(1) | NULL | 商品限量註記 (Y/N) |
+| goodsAuthEmpId | GOODS_AUTH_EMP_ID | VARCHAR2(20) | NULL | 商品變價授權者工號 |
+| goodsAuthEmpName | GOODS_AUTH_EMP_NAME | VARCHAR2(40) | NULL | 商品變價授權者姓名 |
+| goodsAuthReason | GOODS_AUTH_REASON | VARCHAR2(5) | NULL | 商品變價原因 |
+| goodsAuthDate | GOODS_AUTH_DATE | DATE | NULL | 商品變價日期 |
+| installAuthEmpId | INSTALL_AUTH_EMP_ID | VARCHAR2(20) | NULL | 安裝變價授權者工號 |
+| installAuthEmpName | INSTALL_AUTH_EMP_NAME | VARCHAR2(40) | NULL | 安裝變價授權者姓名 |
+| installAuthReason | INSTALL_AUTH_REASON | VARCHAR2(5) | NULL | 安裝變價原因 |
+| installAuthDate | INSTALL_AUTH_DATE | DATE | NULL | 安裝變價日期 |
+| deliveryAuthEmpId | DELIVERY_AUTH_EMP_ID | VARCHAR2(20) | NULL | 運送變價授權者工號 |
+| deliveryAuthEmpName | DELIVERY_AUTH_EMP_NAME | VARCHAR2(40) | NULL | 運送變價授權者姓名 |
+| deliveryAuthReason | DELIVERY_AUTH_REASON | VARCHAR2(5) | NULL | 運送變價原因 |
+| deliveryAuthDate | DELIVERY_AUTH_DATE | DATE | NULL | 運送變價日期 |
+| stampFlag | STAMP_FLAG | VARCHAR2(1) | NULL | 印花價格使用標記 |
+| salesType | SALES_TYPE | VARCHAR2(1) | NULL | 業績別 (0=訂金, 1=業績) |
+| eventNosStamp | EVENT_NOS_STAMP | VARCHAR2(10) | NULL | 選擇印花商品之Event |
+| nskuFlag | NSKU_FLAG | VARCHAR2(1) | NULL | 負向SKU標記 (Y/N, 預設N) |
+| nskuDetlSeqId | NSKU_DETL_SEQ_ID | VARCHAR2(5) | NULL | 負向SKU對應的原SKU DETL_SEQ_ID |
+| poInQueue | PO_IN_QUEUE | VARCHAR2(1) | NULL | 是否已轉PO但未呼叫完成WS (Y/N) |
+| preApportion | PRE_APPORTION | NUMBER(9,2) | NULL | 分攤前安運金額 |
+| dmCouponAmt | DM_COUPON_AMT | NUMBER(9,2) | NULL | Down Margin折價券分攤金額 |
 | createDate | CREATE_DATE | DATE | NULL | 建立日期時間 |
+| createEmpId | CREATE_EMP_ID | VARCHAR2(20) | NULL | 建立人員工號 |
+| createEmpName | CREATE_EMP_NAME | VARCHAR2(40) | NULL | 建立人員姓名 |
 | updateDate | UPDATE_DATE | DATE | NULL | 更新日期時間 |
+| updateEmpId | UPDATE_EMP_ID | VARCHAR2(20) | NULL | 更新人員工號 |
+| updateEmpName | UPDATE_EMP_NAME | VARCHAR2(40) | NULL | 更新人員姓名 |
 
 ### 6.3 TBL_ORDER_COMPUTE 對應 (訂單試算記錄檔)
 
@@ -830,7 +899,126 @@ public enum WorkCategory {
 | stampEventNo | STAMP_EVENT_NO | VARCHAR2(10) | NULL | 印花促銷檔期編號 |
 | displayFlag | DISPLAY_FLAG | VARCHAR2(1) | NULL | 展示品旗標 (N/Y) |
 | allowSales | ALLOW_SALES | VARCHAR2(1) | NULL | 允許銷售 (N/Y) |
+| mdSelection | MD_SELECTION | VARCHAR2(1) | NULL | 採購自選 (N/Y, 5選1) |
+| promotion | PROMOTION | VARCHAR2(1) | NULL | 促銷中 (N/Y, 5選1) |
+| futurePromotion | FUTURE_PROMOTION | VARCHAR2(1) | NULL | 即將促銷 (N/Y, 5選1) |
+| storeSelection | STORE_SELECTION | VARCHAR2(1) | NULL | 門店自選 (N/Y, 5選1) |
+| pogFlag | POG_FLAG | VARCHAR2(1) | NULL | POG商品旗標 (N/Y, 5選1) |
 | modifyTime | MODIFY_TIME | DATE | NULL | 最後修改日期 |
+
+### 6.6 TBL_ORDER_COMPUTE 補充欄位
+
+| Entity Field | Table Column | Type | Nullable | Description |
+|--------------|--------------|------|----------|-------------|
+| discountFrcms | DISCOUNT_FRCMS | NUMBER(9,2) | NULL | 加盟折扣 |
+
+---
+
+## 6.7 SQL JOIN Reference (Implicit Key)
+
+> **來源**: 從 C:/projects/som Legacy 程式碼的 MyBatis XML Mapper 檔案中提取
+
+### 6.7.1 資料表關聯圖
+
+```text
+┌─────────────────┐       SKU_NO        ┌─────────────────────┐
+│    TBL_SKU      │◄──────────────────►│   TBL_SKU_STORE     │
+│  (商品主檔)      │      1 : M         │  (門店商品檔)        │
+│                 │                     │                      │
+│  PK: SKU_NO     │                     │  PK: SKU_NO,        │
+│                 │                     │      STORE_ID        │
+└─────────────────┘                     └─────────────────────┘
+                                              │
+                                              │ SKU_NO, STORE_ID
+                                              ▼
+┌─────────────────┐      ORDER_ID       ┌─────────────────────┐
+│   TBL_ORDER     │◄───────────────────►│  TBL_ORDER_DETL     │
+│  (訂單主檔)      │      1 : M         │  (訂單明細檔)        │
+│                 │                     │                      │
+│  PK: ORDER_ID   │                     │  PK: ORDER_ID,      │
+│                 │                     │      DETL_SEQ_ID     │
+└─────────────────┘                     └─────────────────────┘
+        │
+        │ ORDER_ID
+        ▼
+┌─────────────────────┐
+│ TBL_ORDER_COMPUTE   │
+│ (訂單試算記錄檔)     │
+│                      │
+│ PK: ORDER_ID,       │
+│     COMPUTE_TYPE     │
+└─────────────────────┘
+```
+
+### 6.7.2 JOIN 條件對照表
+
+| 主表 | 從表 | JOIN 條件 | 關聯類型 | 使用場景 |
+|------|------|-----------|---------|---------|
+| TBL_SKU | TBL_SKU_STORE | `SK.SKU_NO = SKS.SKU_NO` | 1:M | 查詢商品的店鋪級別資訊 |
+| TBL_SKU_STORE | TBL_SKU | `SKS.SKU_NO = SK.SKU_NO` | M:1 | 取得門店商品主檔資料 |
+| TBL_ORDER | TBL_ORDER_DETL | `TOR.ORDER_ID = TOD.ORDER_ID` | 1:M | 查詢訂單明細 |
+| TBL_ORDER | TBL_ORDER_COMPUTE | `TOR.ORDER_ID = TOC.ORDER_ID` | 1:M | 查詢訂單試算 |
+| TBL_ORDER_DETL | TBL_SKU | `TOD.SKU_NO = SK.SKU_NO` | M:1 | 取得明細商品主檔 |
+| TBL_ORDER_DETL | TBL_SKU_STORE | `TOD.SKU_NO = SKS.SKU_NO AND TOD.STORE_ID = SKS.STORE_ID` | M:1 | 取得明細門店商品資料 |
+
+### 6.7.3 常用 SQL 查詢模式
+
+**商品查詢 (SKU + Store 資訊)**:
+
+```sql
+-- Pattern 1: 基本商品店鋪 JOIN (最常用)
+SELECT SK.SKU_NO, SK.SKU_NAME, SKS.POS_AMT, SKS.SKU_STATUS
+FROM TBL_SKU SK
+LEFT OUTER JOIN TBL_SKU_STORE SKS
+    ON SK.SKU_NO = SKS.SKU_NO
+WHERE SKS.STORE_ID = #{storeId}
+  AND SKS.ALLOW_SALES <> 'N'
+
+-- Pattern 2: 含通路過濾
+SELECT SK.SKU_NO, SK.SKU_NAME, SKS.POS_AMT
+FROM TBL_SKU SK
+INNER JOIN TBL_SKU_STORE SKS
+    ON SK.SKU_NO = SKS.SKU_NO
+WHERE SKS.STORE_ID = #{storeId}
+  AND SKS.CHANNEL_ID = #{channelId}
+```
+
+**訂單查詢 (Order + Detail + Compute)**:
+
+```sql
+-- Pattern 1: 訂單含明細
+SELECT TOR.ORDER_ID, TOR.MEMBER_NAME,
+       TOD.SKU_NO, TOD.SKU_NAME, TOD.QUANTITY, TOD.ACT_POS_AMT
+FROM TBL_ORDER TOR
+INNER JOIN TBL_ORDER_DETL TOD
+    ON TOR.ORDER_ID = TOD.ORDER_ID
+WHERE TOR.ORDER_ID = #{orderId}
+
+-- Pattern 2: 訂單含試算總計
+SELECT TOR.ORDER_ID, TOC.COMPUTE_TYPE, TOC.ACT_TOTAL_PRICE
+FROM TBL_ORDER TOR
+INNER JOIN TBL_ORDER_COMPUTE TOC
+    ON TOR.ORDER_ID = TOC.ORDER_ID
+WHERE TOR.ORDER_ID = #{orderId}
+
+-- Pattern 3: 訂單明細含商品主檔
+SELECT TOD.*, SK.SKU_NAME, SK.SKU_TYPE, SKS.POS_AMT
+FROM TBL_ORDER_DETL TOD
+INNER JOIN TBL_SKU SK
+    ON TOD.SKU_NO = SK.SKU_NO
+LEFT OUTER JOIN TBL_SKU_STORE SKS
+    ON TOD.SKU_NO = SKS.SKU_NO
+   AND TOD.STORE_ID = SKS.STORE_ID
+WHERE TOD.ORDER_ID = #{orderId}
+```
+
+### 6.7.4 複合主鍵說明
+
+| 資料表 | 複合主鍵 | 說明 |
+|--------|----------|------|
+| TBL_SKU_STORE | SKU_NO, STORE_ID | 同一商品在不同店別有不同價格/狀態 |
+| TBL_ORDER_DETL | ORDER_ID, DETL_SEQ_ID | DETL_SEQ_ID 為該訂單內的流水號 |
+| TBL_ORDER_COMPUTE | ORDER_ID, COMPUTE_TYPE | COMPUTE_TYPE 區分不同計算項目 |
 
 ---
 
