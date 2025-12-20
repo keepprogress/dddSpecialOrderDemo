@@ -1,0 +1,106 @@
+%% 統一訂購判斷流程圖（重構後）
+%% 整合後端 3 項 + 前端 7 項 = 共 10 項檢查
+
+flowchart TD
+    START[商品查詢/操作] --> CHECK_CHANNEL{1. 通路檢查<br/>RestrictedChannel.contains-channelId-}
+    CHECK_CHANNEL -->|MINI/CASA| REJECT_CHANNEL[RESTRICTED_CHANNEL<br/>MINI/CASA 通路不允許訂購]
+    CHECK_CHANNEL -->|其他| CHECK_SKU_TYPE
+
+    %% ========== 原後端 lockTradeStatusY 3 項檢查 ==========
+    CHECK_SKU_TYPE{2. 商品類型檢查<br/>TBL_SUB_CONFIG.MASTER_CONFIG_ID='C08'}
+    CHECK_SKU_TYPE -->|不在清單| REJECT_SKU_TYPE[SKU_TYPE_NOT_ORDERABLE<br/>商品類型不可訂購]
+    CHECK_SKU_TYPE -->|在清單| CHECK_VENDOR
+
+    CHECK_VENDOR{3. 廠商狀態檢查<br/>TBL_VENDOR_COMPANY.STATUS}
+    CHECK_VENDOR -->|STATUS != 'A'| CHECK_DC_FOR_VENDOR{DC_TYPE = 'DC'?}
+    CHECK_DC_FOR_VENDOR -->|是| SET_DC_VENDOR[設置 isDcVendorStatusD=true]
+    CHECK_DC_FOR_VENDOR -->|否| REJECT_VENDOR[VENDOR_FROZEN<br/>廠商凍結-非DC商品]
+    CHECK_VENDOR -->|STATUS = 'A'| CHECK_PURCHASE_ORG
+    SET_DC_VENDOR --> CHECK_PURCHASE_ORG
+
+    CHECK_PURCHASE_ORG{4. 採購組織檢查<br/>TBL_SKU_COMPANY 存在?}
+    CHECK_PURCHASE_ORG -->|不存在| REJECT_PURCHASE[PURCHASE_ORG_NOT_FOUND<br/>採購組織不存在]
+    CHECK_PURCHASE_ORG -->|存在| CHECK_SKU_STATUS
+    %% ========== 原後端檢查結束 ==========
+
+    %% ========== 原前端 showSkuStatus 3 項檢查 ==========
+    CHECK_SKU_STATUS{5. 商品狀態檢查<br/>skuStatus = 'A'?}
+    CHECK_SKU_STATUS -->|否| REJECT_SKU_INACTIVE[SKU_INACTIVE<br/>商品狀態非 Active]
+    CHECK_SKU_STATUS -->|是| CHECK_STORE_STATUS
+
+    CHECK_STORE_STATUS{6. 門店商品狀態檢查<br/>skuStoreStatus}
+    CHECK_STORE_STATUS -->|='D' 且 dcType≠DC| REJECT_STORE[SKU_STORE_INACTIVE<br/>門店商品已停用]
+    CHECK_STORE_STATUS -->|='A' 或 DC商品| CHECK_HOLD_ORDER
+
+    CHECK_HOLD_ORDER{7. HOLD_ORDER 檢查<br/>依 DC_TYPE 選清單}
+    CHECK_HOLD_ORDER --> DECIDE_ALLOW_LIST{DC_TYPE?}
+    DECIDE_ALLOW_LIST -->|DC| USE_STO[stoAllowList<br/>允許: N, D, E]
+    DECIDE_ALLOW_LIST -->|XD/NULL| USE_PO[poAllowList<br/>允許: N, D]
+    USE_STO --> CHECK_HOLD_IN_LIST{holdOrder 在清單內?}
+    USE_PO --> CHECK_HOLD_IN_LIST
+    CHECK_HOLD_IN_LIST -->|否| REJECT_HOLD[HOLD_ORDER_RESTRICTED<br/>HOLD_ORDER 限制]
+    CHECK_HOLD_IN_LIST -->|是| CHECK_LARGE_FURNITURE
+    %% ========== 原前端 showSkuStatus 檢查結束 ==========
+
+    %% ========== 大型家具判斷 ==========
+    subgraph CHECK_LARGE_FURNITURE[8. 大型家具判斷<br/>LargeFurnitureService]
+        direction TB
+        LF_READ[讀取 TBL_PARM_DETL<br/>PARM='LARGE_FURNITURE']
+        LF_READ --> LF_LOOP{遍歷設定}
+        LF_LOOP --> LF_SUB{SUB_DEPT_ID 符合?}
+        LF_SUB -->|否| LF_NEXT[繼續下一筆]
+        LF_NEXT --> LF_LOOP
+        LF_SUB -->|是| LF_CLASS_NULL{CLASS_ID 為 NULL?}
+        LF_CLASS_NULL -->|是| LF_TRUE[largeFurniture=true]
+        LF_CLASS_NULL -->|否| LF_CLASS{CLASS_ID 符合?}
+        LF_CLASS -->|否| LF_NEXT
+        LF_CLASS -->|是| LF_SUBCLASS_NULL{SUB_CLASS_ID 為 NULL?}
+        LF_SUBCLASS_NULL -->|是| LF_TRUE
+        LF_SUBCLASS_NULL -->|否| LF_SUBCLASS{SUB_CLASS_ID 符合?}
+        LF_SUBCLASS -->|是| LF_TRUE
+        LF_SUBCLASS -->|否| LF_NEXT
+        LF_LOOP -->|遍歷結束| LF_FALSE[largeFurniture=false]
+    end
+    %% ========== 大型家具判斷結束 ==========
+
+    LF_TRUE --> CHECK_DC_VENDOR_STATUS
+    LF_FALSE --> CHECK_DC_VENDOR_STATUS
+
+    %% ========== 原前端 newCheckTradeStatusY 額外 3 項檢查 ==========
+    CHECK_DC_VENDOR_STATUS{9. DC 商品廠商凍結?<br/>isDcVendorStatusD=true?}
+    CHECK_DC_VENDOR_STATUS -->|是| CHECK_DC_AOH{AOH > 0 或 大型家具?}
+    CHECK_DC_AOH -->|否| REJECT_DC_FROZEN[DC_VENDOR_FROZEN_NO_AOH<br/>DC商品廠商凍結無庫存]
+    CHECK_DC_AOH -->|是| CHECK_TLW_G0
+    CHECK_DC_VENDOR_STATUS -->|否| CHECK_TLW_G0
+
+    CHECK_TLW_G0{10. TLW/G0 通路檢查<br/>AohCheckChannel.contains-channelId-}
+    CHECK_TLW_G0 -->|TLW/G0 且 DC 且非大型家具| CHECK_AOH_FINAL{AOH > 0?}
+    CHECK_AOH_FINAL -->|否| REJECT_NO_STOCK[NO_STOCK_FOR_CHANNEL<br/>TLW/G0 通路無庫存]
+    CHECK_AOH_FINAL -->|是| CAN_ORDER
+    CHECK_TLW_G0 -->|其他情況| CAN_ORDER
+    %% ========== 原前端額外檢查結束 ==========
+
+    CAN_ORDER[OrderabilityResult.approved--<br/>可訂購]
+
+    %% ========== 直送額外條件 ==========
+    CAN_ORDER --> CHECK_FREE_DELIVER{11. 免運檢查<br/>freeDeliver = 'Y'?}
+    CHECK_FREE_DELIVER -->|是| CAN_DIRECT[可直送<br/>deliveryFlag='V']
+    CHECK_FREE_DELIVER -->|否| NO_DIRECT[不可直送<br/>deliveryFlag='P'<br/>NOT_FREE_DELIVER]
+
+    %% ========== 拒絕原因匯總 ==========
+    REJECT_CHANNEL --> FINAL_REJECT
+    REJECT_SKU_TYPE --> FINAL_REJECT
+    REJECT_VENDOR --> FINAL_REJECT
+    REJECT_PURCHASE --> FINAL_REJECT
+    REJECT_SKU_INACTIVE --> FINAL_REJECT
+    REJECT_STORE --> FINAL_REJECT
+    REJECT_HOLD --> FINAL_REJECT
+    REJECT_DC_FROZEN --> FINAL_REJECT
+    REJECT_NO_STOCK --> FINAL_REJECT
+
+    FINAL_REJECT[OrderabilityResult.rejected-reasons-<br/>不可訂購<br/>tradeStatus='X']
+
+    %% ========== 最終狀態 ==========
+    CAN_DIRECT --> END_APPROVE[審核通過<br/>tradeStatus='Y'<br/>deliveryFlag='V']
+    NO_DIRECT --> END_APPROVE_NO_DS[審核通過<br/>tradeStatus='Y'<br/>deliveryFlag='P']
+    FINAL_REJECT --> END_REJECT[審核拒絕<br/>tradeStatus='X'<br/>deliveryFlag='P']

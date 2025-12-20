@@ -1,0 +1,88 @@
+%% 商品可訂購規則狀態機
+%% 來源: BzSkuInfoServices.java 行號 237-275
+
+stateDiagram-v2
+    [*] --> ProductQuery: 開始查詢
+
+    ProductQuery --> SkuTypeCheck: 取得商品資訊成功
+    ProductQuery --> NotFound: 查無商品
+
+    state SkuTypeCheck {
+        [*] --> CheckPurchasableType
+        CheckPurchasableType --> TypeValid: 在 PURCHASABLE_SKU_TYPE 清單
+        CheckPurchasableType --> TypeInvalid: 不在清單中
+    }
+
+    SkuTypeCheck --> VendorCheck: 商品類型有效
+    SkuTypeCheck --> NotOrderable: 商品類型無效
+    SkuTypeCheck --> VendorIdError: VENDOR_ID 為空
+
+    state VendorCheck {
+        [*] --> QueryVendorCompany
+        QueryVendorCompany --> VendorActive: STATUS = 'A'
+        QueryVendorCompany --> VendorFrozen: STATUS != 'A'
+        QueryVendorCompany --> VendorNotFound: 查無資料
+    }
+
+    VendorCheck --> PurchaseOrgCheck: 廠商狀態正常
+    VendorCheck --> CheckDcType: 廠商凍結或查無資料
+
+    state CheckDcType {
+        [*] --> IsDcType
+        IsDcType --> NeedCheckAOH: DC_TYPE = 'DC'
+        IsDcType --> NotDcType: DC_TYPE != 'DC'
+    }
+
+    CheckDcType --> DcVendorFrozen: DC 商品廠商凍結
+    CheckDcType --> NotOrderable: 非 DC 商品廠商凍結
+
+    state PurchaseOrgCheck {
+        [*] --> QuerySkuCompany
+        QuerySkuCompany --> InOrg: 在採購組織內
+        QuerySkuCompany --> NotInOrg: 不在採購組織
+    }
+
+    PurchaseOrgCheck --> Orderable: 在採購組織內
+    PurchaseOrgCheck --> NotOrderable: 不在採購組織
+
+    DcVendorFrozen --> CheckAOH: 需查詢 AOH 量
+    CheckAOH --> Orderable: AOH > 0
+    CheckAOH --> NotOrderable: AOH = 0
+
+    state Orderable {
+        [*] --> SetLockN
+        SetLockN: lockTradeStatusY = 'N'
+    }
+
+    state NotOrderable {
+        [*] --> SetLockY
+        SetLockY: lockTradeStatusY = 'Y'
+    }
+
+    state DcVendorFrozen {
+        [*] --> SetDcFlag
+        SetDcFlag: isDcVendorStatusD = true
+    }
+
+    Orderable --> [*]: 商品可訂購
+    NotOrderable --> [*]: 商品不可訂購
+    VendorIdError --> [*]: 顯示錯誤
+    NotFound --> [*]: 查無商品
+
+    note right of VendorCheck
+        TBL_VENDOR_COMPANY
+        主鍵: VENDOR_ID + COMPANY_CODE
+        STATUS: A=正常, D=凍結
+    end note
+
+    note right of CheckDcType
+        DC_TYPE 值:
+        XD = Cross Docking
+        DC = Stock Holding
+        VD = Vendor Direct
+    end note
+
+    note right of PurchaseOrgCheck
+        TBL_SKU_COMPANY
+        主鍵: SKU_NO + COMPANY_CODE
+    end note

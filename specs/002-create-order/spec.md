@@ -277,10 +277,26 @@ if ("TEMP001".equals(memberId)) {
 
 #### 商品資格驗證 (Product Eligibility)
 
-- **FR-010**: 系統 MUST 執行 6 層商品資格驗證（格式、存在性、系統商品、稅別、銷售禁止、類別限制）
+- **FR-010**: 系統 MUST 執行 8 層商品資格驗證：
+  - L1: 格式驗證（SKU 符合編碼規則）
+  - L2: 存在性驗證（SKU 存在於商品主檔 TBL_SKU）
+  - L3: 系統商品排除（allowSales ≠ 'N'）
+  - L4: 稅別驗證（taxType 為有效值 0/1/2）
+  - L5: 銷售禁止（allowSales = true AND holdOrder = false）
+  - L6: 類別限制（類別不在禁售清單）
+  - L7: 廠商凍結（TBL_VENDOR_COMPANY.STATUS = 'A' 或 DC 商品有 AOH）
+  - L8: 採購組織（商品在 TBL_SKU_COMPANY 門市公司採購組織內）
+  - 詳見: [product-query-spec.md](./product-query-spec.md#二可訂購規則-orderability-rules)
 - **FR-011**: 系統 MUST 根據商品類別查詢安運類別並關聯可用安裝服務
 - **FR-012**: 系統 MUST 根據供應商狀態與採購組織決定可用備貨方式（現貨/訂購）
+  - 規則 OD-001: 商品類型不在 TBL_SUB_CONFIG.PURCHASABLE_SKU_TYPE → lockTradeStatusY='Y'
+  - 規則 OD-002: TBL_VENDOR_COMPANY.STATUS ≠ 'A' AND DC_TYPE ≠ 'DC' → lockTradeStatusY='Y'
+  - 規則 OD-003: TBL_VENDOR_COMPANY.STATUS ≠ 'A' AND DC_TYPE = 'DC' → isDcVendorStatusD=true (需查 AOH)
+  - 規則 OD-004: SKU 不在 TBL_SKU_COMPANY → lockTradeStatusY='Y'
+  - 詳見: [product-query-spec.md](./product-query-spec.md#22-可訂購規則明細)
 - **FR-013**: 系統 MUST 驗證運送方式與備貨方式的相容性（直送僅限訂購、當場自取僅限現貨）
+- **FR-014**: 系統 MUST 識別大型家具商品（透過 TBL_PARM_DETL.PARM='LARGE_FURNITURE' 設定）
+- **FR-015**: 系統 MUST 識別外包純服務商品（SUB_DEPT_ID='026' AND CLASS_ID='888'）並執行特殊處理
 
 #### 價格計算 (Price Calculation)
 
@@ -579,11 +595,34 @@ record EligibilityResponse(
 - `docs/tables/*.html` - 資料表結構文件
 - `C:/projects/som` - 既有系統程式碼參考
 
+### Product Query Specification
+
+商品查詢相關完整規格請參考:
+
+- **[product-query-spec.md](./product-query-spec.md)** - 商品查詢完整規格，包含:
+  - 商品 UI 顯示欄位 (TBL_SKU, TBL_SKU_STORE)
+  - 可訂購規則 (Orderability Rules) 與程式碼證據
+  - 直送條件 (Direct Shipment)
+  - 大型家具判斷邏輯
+  - 外包純服務商品 (026-888) 處理
+  - 採購組織設定
+  - 寫死常數整理與 Enum 化建議
+
+### Mermaid Diagrams
+
+商品查詢相關圖表:
+
+| 圖表名稱 | 檔案位置 | 說明 |
+|----------|----------|------|
+| 統一流程圖 | [diagrams/product-query-unified-flowchart.mmd](./diagrams/product-query-unified-flowchart.mmd) | 商品查詢完整流程 (含大型家具、廠商凍結、採購組織) |
+| 可訂購規則狀態機 | [diagrams/product-orderability-state-machine.mmd](./diagrams/product-orderability-state-machine.mmd) | lockTradeStatusY 判斷狀態機 |
+| 商品 ER 圖 | [diagrams/product-erd.mmd](./diagrams/product-erd.mmd) | 商品相關資料表關聯 |
+
 ---
 
 ## Legacy Code Verification Report
 
-**驗證日期**: 2025-12-19
+**驗證日期**: 2025-12-20
 **驗證範圍**: 整份規格與 `C:/projects/som` 既有系統程式碼比對
 
 ### 驗證結果摘要
@@ -592,14 +631,19 @@ record EligibilityResponse(
 |------|------|----------|
 | FR-001 訂單編號格式 | ✅ 已驗證 | `SO_ORDER_ID_SEQ` 起始 3000000000 |
 | FR-002 專案代號格式 | ✅ 已驗證 | 16 位複合編碼 (店別5+年2+月日4+流水5) |
-| FR-010 6層商品驗證 | ⚠️ 部分實作 | 層級 1-3 完整，層級 4-6 分散於多處 |
+| FR-010 8層商品驗證 | ✅ 已驗證 | 層級 1-8 完整，詳見 product-query-spec.md |
+| FR-012 可訂購規則 | ✅ 已驗證 | `BzSkuInfoServices.java:237-275` lockTradeStatusY 判斷 |
+| FR-014 大型家具判斷 | ✅ 已驗證 | `LargeFurnitureService.java:31-60` 階層式比對 |
+| FR-015 外包服務商品 | ✅ 已驗證 | `BzSkuInfoServices.java:748-750` SUB_DEPT=026 AND CLASS=888 |
 | FR-020 12步驟計價 | ✅ 已驗證 | `BzSoServices.java:4367` doCalculate |
 | FR-021 會員折扣順序 | ✅ 已驗證 | Type 2 → 促銷 → Type 0 → Type 1 → Special |
 | 安裝服務代碼 | ✅ 已驗證 | `GoodsType.java` 定義 I/IA/IE/IC/IS/FI |
 | ComputeType 1-6 | ✅ 已驗證 | `SoConstant.java` COMPUTE_TYPE_* |
 | 限制 500/1000 筆 | ✅ 已驗證 | 500 可配置 / 1000 硬編碼 |
 | 優惠券邏輯 | ✅ 已驗證 | 固定面額按比例分攤、封頂處理 |
-| Enum 定義 | ✅ 已修正 | OrderStatus/DeliveryMethod/TaxType |
+| Enum 定義 | ✅ 已修正 | OrderStatus/DeliveryMethod/TaxType/DcType |
+| 廠商凍結處理 | ✅ 已驗證 | `BzSkuInfoServices.java:252-259` DC/非DC 分流處理 |
+| 採購組織檢查 | ✅ 已驗證 | `BzSkuInfoServices.java:268-275` TBL_SKU_COMPANY 查詢 |
 
 ### 詳細驗證結果
 
@@ -629,21 +673,25 @@ record EligibilityResponse(
 
 **結論**: 規格正確，無需修改
 
-#### 3. 6層商品驗證 (FR-010) ⚠️
+#### 3. 8層商品驗證 (FR-010) ✅
 
-**規格定義**:
+**規格定義** (已擴充至 8 層):
 1. 格式驗證（SKU 符合編碼規則）
-2. 存在性驗證（SKU 存在於商品主檔）
+2. 存在性驗證（SKU 存在於商品主檔 TBL_SKU）
 3. 系統商品排除（allowSales ≠ 'N'）
-4. 稅別驗證（taxType 為有效值）
+4. 稅別驗證（taxType 為有效值 0/1/2）
 5. 銷售禁止（allowSales = true AND holdOrder = false）
 6. 類別限制（類別不在禁售清單）
+7. 廠商凍結（TBL_VENDOR_COMPANY.STATUS = 'A' 或 DC 商品有 AOH）
+8. 採購組織（商品在 TBL_SKU_COMPANY 門市公司採購組織內）
 
 **程式碼證據**:
-- 層級 1-3: 完整實作於 `ProductValidator.java`
-- 層級 4-6: 邏輯分散於多個 Service，部分為隱式檢查
+- 層級 1-3: 完整實作於商品查詢入口
+- 層級 4-6: 邏輯於 `BzSkuInfoServices.java` 商品資格驗證
+- 層級 7: `BzSkuInfoServices.java:252-259` 廠商凍結檢查，DC/非DC 分流處理
+- 層級 8: `BzSkuInfoServices.java:268-275` 採購組織檢查
 
-**結論**: 規格設計合理，實作時需整合分散邏輯
+**結論**: 規格已完整定義，詳見 [product-query-spec.md](./product-query-spec.md)
 
 #### 4. 12步驟計價流程 (FR-020) ✅
 

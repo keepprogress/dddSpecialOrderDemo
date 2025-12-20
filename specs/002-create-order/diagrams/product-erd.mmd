@@ -1,0 +1,112 @@
+%% 商品相關 ER 圖
+%% 來源：docs/tables/, BzSkuInfoServices.java
+
+erDiagram
+    TBL_SKU ||--o{ TBL_SKU_STORE : "1:N"
+    TBL_SKU ||--o{ TBL_BARCODE : "1:N"
+    TBL_SKU ||--o{ TBL_SKU_COMPANY : "1:N"
+    TBL_SKU }o--|| TBL_VENDOR : "N:1"
+    TBL_VENDOR ||--o{ TBL_VENDOR_COMPANY : "1:N"
+    TBL_VENDOR ||--o{ TBL_VENDOR_SKU : "1:N"
+    TBL_SKU_STORE }o--|| TBL_CHANNEL : "N:1"
+    TBL_SKU_STORE }o--o{ TBL_PROM_EVENT : "N:N"
+    TBL_PARM ||--o{ TBL_PARM_DETL : "1:N"
+    TBL_SUB_CONFIG }o--|| TBL_MASTER_CONFIG : "N:1"
+
+    TBL_SKU {
+        VARCHAR2_9 SKU_NO PK "商品編號"
+        VARCHAR2_50 SKU_NAME "商品名稱"
+        VARCHAR2_14 BARCODE "條碼"
+        VARCHAR2_10 SKU_TYPE "商品類型"
+        VARCHAR2_3 SUB_DEPT_ID "大類-子部門"
+        VARCHAR2_3 CLASS_ID "中類"
+        VARCHAR2_3 SUB_CLASS_ID "小類"
+        VARCHAR2_1 SO_FLAG "特別訂購商品-Y/N"
+        VARCHAR2_10 VENDOR_ID FK "主要供應商"
+        VARCHAR2_10 SKU_STATUS "商品狀態-A/D"
+        VARCHAR2_1 TAX_TYPE "稅別-0/1/2"
+        VARCHAR2_1 OPEN_PRICE "開放售價-Y/N"
+        VARCHAR2_1 FREE_DELIVER "免費宅配-Y/N"
+        VARCHAR2_2 DC_TYPE "採購屬性-XD/DC/VD"
+    }
+
+    TBL_SKU_STORE {
+        VARCHAR2_5 STORE_ID PK "店別代碼"
+        VARCHAR2_9 SKU_NO PK "商品編號"
+        VARCHAR2_5 CHANNEL_ID FK "通路代碼"
+        NUMBER_9_2 MARKET_PRICE "市價"
+        NUMBER_9_2 REGULAR_PRICE "原價"
+        NUMBER_9_2 POS_AMT "POS價"
+        NUMBER_9_2 AVG_COST "成本"
+        VARCHAR2_10 SKU_STATUS "商品狀態-A/D"
+        VARCHAR2_1 ALLOW_SALES "允許銷售-Y/N"
+        VARCHAR2_1 HOLD_ORDER "不可採購狀態-A/B/C/D/E/N"
+        VARCHAR2_10 EVENT_NO "降價促銷檔期"
+        VARCHAR2_10 PROM_EVENT_NO "組合促銷檔期"
+    }
+
+    TBL_SKU_COMPANY {
+        VARCHAR2_9 SKU_NO PK "商品編號"
+        VARCHAR2_4 COMPANY_CODE PK "公司別"
+        VARCHAR2_10 STATUS "狀態"
+    }
+
+    TBL_VENDOR {
+        VARCHAR2_10 VENDOR_ID PK "廠商編號"
+        VARCHAR2_50 VENDOR_NAME "廠商名稱"
+        VARCHAR2_4 VENDOR_TYPE "廠商類別"
+        NUMBER_9_2 LEAD_TIME "計劃交貨天數"
+        VARCHAR2_2 STATUS "廠商狀態-A/D"
+        VARCHAR2_3 BUYER "採購群組"
+    }
+
+    TBL_VENDOR_COMPANY {
+        VARCHAR2_10 VENDOR_ID PK "廠商編號"
+        VARCHAR2_4 COMPANY_CODE PK "公司別"
+        VARCHAR2_2 STATUS "狀態-A/D"
+    }
+
+    TBL_VENDOR_SKU {
+        VARCHAR2_10 VENDOR_ID PK "廠商編號"
+        VARCHAR2_9 SKU_NO PK "商品編號"
+        VARCHAR2_4 BUYER_ORG "採購組織"
+        NUMBER MIN_ORDER_QTY "最小訂購量"
+        NUMBER MAX_ORDER_QTY "最大訂購量"
+        NUMBER BUY_COST "進貨成本"
+    }
+
+    TBL_CHANNEL {
+        VARCHAR2_5 CHANNEL_ID PK "通路代碼"
+        VARCHAR2_50 CHANNEL_NAME "通路名稱"
+        VARCHAR2_4 COMPANY_CODE "公司別"
+    }
+
+    TBL_PARM {
+        VARCHAR2_20 PARM PK "參數名稱"
+        VARCHAR2_100 DESCRIPTION "說明"
+    }
+
+    TBL_PARM_DETL {
+        VARCHAR2_20 PARM PK "參數名稱"
+        NUMBER DETL_SEQ PK "序號"
+        VARCHAR2_3 SUB_DEPT_ID "大類"
+        VARCHAR2_3 CLASS_ID "中類"
+        VARCHAR2_3 SUB_CLASS_ID "小類"
+        VARCHAR2_100 VALUE "值"
+    }
+
+    TBL_SUB_CONFIG {
+        VARCHAR2_10 MASTER_CONFIG_ID PK "主設定ID-如C08"
+        VARCHAR2_50 SUB_CONFIG_NAME PK "子設定名稱-如SKU_TYPE"
+        VARCHAR2_100 DESCRIPTION "說明"
+    }
+
+    TBL_MASTER_CONFIG {
+        VARCHAR2_10 MASTER_CONFIG_ID PK "主設定ID"
+        VARCHAR2_100 DESCRIPTION "說明"
+    }
+
+    TBL_BARCODE {
+        VARCHAR2_14 BARCODE PK "條碼"
+        VARCHAR2_9 SKU_NO FK "商品編號"
+    }
