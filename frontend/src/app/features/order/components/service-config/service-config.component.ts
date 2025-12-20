@@ -1,4 +1,4 @@
-import { Component, input, output, signal, inject, computed, OnInit } from '@angular/core';
+import { Component, input, output, signal, inject, computed, OnInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -12,6 +12,7 @@ import {
   STOCK_METHOD_MAP
 } from '../../models/order.model';
 import { OrderService } from '../../services/order.service';
+import { ToastService } from '../../../../shared/services/toast.service';
 
 /**
  * Service Config Component
@@ -91,7 +92,7 @@ import { OrderService } from '../../services/order.service';
             <div class="form-group">
               <label>運送方式</label>
               <select
-                [(ngModel)]="selectedDeliveryMethod"
+                [ngModel]="selectedDeliveryMethod()"
                 (ngModelChange)="onDeliveryMethodChange($event)"
               >
                 @for (method of deliveryMethods; track method.code) {
@@ -131,22 +132,20 @@ import { OrderService } from '../../services/order.service';
             <div class="form-group">
               <label>備貨方式</label>
               <select
-                [(ngModel)]="selectedStockMethod"
-                [disabled]="isStockMethodLocked()"
+                [ngModel]="selectedStockMethod()"
+                (ngModelChange)="onStockMethodChange($event)"
               >
-                @for (method of getAvailableStockMethods(); track method.code) {
+                @for (method of stockMethods; track method.code) {
                   <option [value]="method.code">{{ method.name }}</option>
                 }
               </select>
-              @if (isStockMethodLocked()) {
-                <span class="lock-hint">
-                  @if (selectedDeliveryMethod === 'V') {
-                    直送商品僅能訂購
-                  } @else if (selectedDeliveryMethod === 'C') {
-                    當場自取僅能現貨
-                  }
-                </span>
-              }
+              <span class="compatibility-hint">
+                @if (selectedDeliveryMethod() === 'V') {
+                  (直送商品建議使用訂購)
+                } @else if (selectedDeliveryMethod() === 'C') {
+                  (當場自取建議使用現貨)
+                }
+              </span>
             </div>
           </section>
         </div>
@@ -268,7 +267,7 @@ import { OrderService } from '../../services/order.service';
       margin-left: 4px;
     }
 
-    .lock-hint {
+    .compatibility-hint {
       display: block;
       font-size: 12px;
       color: #6c757d;
@@ -331,6 +330,7 @@ import { OrderService } from '../../services/order.service';
 })
 export class ServiceConfigComponent implements OnInit {
   private orderService = inject(OrderService);
+  private toastService = inject(ToastService);
 
   // Inputs
   orderId = input.required<string>();
@@ -347,14 +347,51 @@ export class ServiceConfigComponent implements OnInit {
   installationWorkTypes = signal<WorkTypeResponse[]>([]);
   selectedServices = signal<string[]>([]);
 
-  // Form fields
+  // Form fields (converted to signals for EC-008 compatibility validation)
   selectedWorkTypeId = '';
-  selectedStockMethod: StockMethod = 'X';
-  selectedDeliveryMethod: DeliveryMethod = 'N';
+  selectedStockMethod = signal<StockMethod>('X');
+  selectedDeliveryMethod = signal<DeliveryMethod>('N');
   receiverName = '';
   receiverPhone = '';
   deliveryAddress = '';
   deliveryZipCode = '';
+
+  // Flag to prevent Toast on initial load or auto-correction
+  private isAutoCorrection = false;
+
+  /**
+   * EC-008: 運送方式與備貨方式相容性驗證 (Signal Effect)
+   *
+   * 規則：
+   * - 選擇直送(V) → 備貨方式自動預設為訂購(Y)，無提示
+   * - 選擇當場自取(C) → 備貨方式自動預設為現貨(X)，無提示
+   * - 直送(V) + 手動改為現貨(X) → 自動切換回訂購(Y)，Toast 提示「直送只能訂購」
+   * - 當場自取(C) + 手動改為訂購(Y) → 自動切換回現貨(X)，Toast 提示「當場自取只能現貨」
+   */
+  private compatibilityEffect = effect(() => {
+    const delivery = this.selectedDeliveryMethod();
+    const stock = this.selectedStockMethod();
+
+    // Skip validation during auto-correction to avoid loops
+    if (this.isAutoCorrection) {
+      this.isAutoCorrection = false;
+      return;
+    }
+
+    // 直送(V) + 現貨(X) → 自動切換回訂購(Y)
+    if (delivery === 'V' && stock === 'X') {
+      this.isAutoCorrection = true;
+      this.selectedStockMethod.set('Y');
+      this.toastService.warning('直送只能訂購', 3000);
+    }
+
+    // 當場自取(C) + 訂購(Y) → 自動切換回現貨(X)
+    if (delivery === 'C' && stock === 'Y') {
+      this.isAutoCorrection = true;
+      this.selectedStockMethod.set('X');
+      this.toastService.warning('當場自取只能現貨', 3000);
+    }
+  });
 
   // Stock methods
   stockMethods = Object.entries(STOCK_METHOD_MAP).map(([code, name]) => ({
@@ -370,16 +407,17 @@ export class ServiceConfigComponent implements OnInit {
 
   // Computed
   showReceiverInfo = computed(() => {
-    return this.selectedDeliveryMethod === 'V' ||
-           this.selectedDeliveryMethod === 'F';
+    const method = this.selectedDeliveryMethod();
+    return method === 'V' || method === 'F';
   });
 
   async ngOnInit() {
-    // 初始化表單值
+    // 初始化表單值 (使用 isAutoCorrection 防止初始化時觸發 Toast)
+    this.isAutoCorrection = true;
     const lineData = this.line();
     this.selectedWorkTypeId = lineData.workTypeId || '';
-    this.selectedStockMethod = lineData.stockMethod || 'X';
-    this.selectedDeliveryMethod = lineData.deliveryMethod;
+    this.selectedDeliveryMethod.set(lineData.deliveryMethod);
+    this.selectedStockMethod.set(lineData.stockMethod || 'X');
     this.selectedServices.set(lineData.serviceTypes || []);
     this.receiverName = lineData.receiverName || '';
     this.receiverPhone = lineData.receiverPhone || '';
@@ -441,42 +479,33 @@ export class ServiceConfigComponent implements OnInit {
   }
 
   /**
-   * 運送方式變更時，自動調整備貨方式
-   * ST-001: 直送僅限訂購
-   * ST-002: 當場自取僅限現貨
+   * 運送方式變更時，自動調整備貨方式 (EC-008 預設行為)
+   * - 選擇直送(V) → 備貨方式自動預設為訂購(Y)，無提示
+   * - 選擇當場自取(C) → 備貨方式自動預設為現貨(X)，無提示
    */
   onDeliveryMethodChange(deliveryMethod: DeliveryMethod): void {
-    this.selectedDeliveryMethod = deliveryMethod;
+    // 預設行為：自動設定相容的備貨方式（無 Toast）
+    this.isAutoCorrection = true;
+    this.selectedDeliveryMethod.set(deliveryMethod);
 
-    // 根據運送方式自動設定備貨方式
     if (deliveryMethod === 'V') {
-      // 直送 → 強制訂購
-      this.selectedStockMethod = 'Y';
+      // 直送 → 預設訂購
+      this.selectedStockMethod.set('Y');
     } else if (deliveryMethod === 'C') {
-      // 當場自取 → 強制現貨
-      this.selectedStockMethod = 'X';
+      // 當場自取 → 預設現貨
+      this.selectedStockMethod.set('X');
     }
   }
 
   /**
-   * 備貨方式是否被鎖定（不可變更）
+   * 備貨方式變更 (EC-008 手動覆寫)
+   * - 直送(V) + 手動改為現貨(X) → effect 會自動切換回訂購(Y) + Toast
+   * - 當場自取(C) + 手動改為訂購(Y) → effect 會自動切換回現貨(X) + Toast
    */
-  isStockMethodLocked(): boolean {
-    return this.selectedDeliveryMethod === 'V' || this.selectedDeliveryMethod === 'C';
-  }
-
-  /**
-   * 取得可用的備貨方式清單
-   */
-  getAvailableStockMethods(): { code: StockMethod; name: string }[] {
-    if (this.selectedDeliveryMethod === 'V') {
-      // 直送僅能選擇訂購
-      return this.stockMethods.filter(m => m.code === 'Y');
-    } else if (this.selectedDeliveryMethod === 'C') {
-      // 當場自取僅能選擇現貨
-      return this.stockMethods.filter(m => m.code === 'X');
-    }
-    return this.stockMethods;
+  onStockMethodChange(stockMethod: StockMethod): void {
+    // 這是使用者手動變更，不設定 isAutoCorrection
+    // effect 會檢查相容性並在需要時顯示 Toast
+    this.selectedStockMethod.set(stockMethod);
   }
 
   async onSave() {
@@ -494,10 +523,10 @@ export class ServiceConfigComponent implements OnInit {
         );
       }
 
-      // 儲存備貨與運送服務
+      // 儲存備貨與運送服務 (使用 signal 值)
       const deliveryRequest: UpdateOrderLineRequest = {
-        stockMethod: this.selectedStockMethod,
-        deliveryMethod: this.selectedDeliveryMethod
+        stockMethod: this.selectedStockMethod(),
+        deliveryMethod: this.selectedDeliveryMethod()
       };
 
       if (this.showReceiverInfo()) {
@@ -517,7 +546,7 @@ export class ServiceConfigComponent implements OnInit {
       this.close.emit();
     } catch (error) {
       console.error('儲存服務設定失敗:', error);
-      alert('儲存失敗，請稍後再試');
+      this.toastService.error('儲存失敗，請稍後再試');
     } finally {
       this.saving.set(false);
     }

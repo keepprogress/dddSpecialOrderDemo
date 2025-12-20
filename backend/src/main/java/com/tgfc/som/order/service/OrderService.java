@@ -211,17 +211,25 @@ public class OrderService {
             line.updateQuantity(request.quantity());
         }
 
+        // 解析運送方式與備貨方式
+        DeliveryMethod deliveryMethod = request.deliveryMethod() != null
+                ? DeliveryMethod.fromCodeOrThrow(request.deliveryMethod())
+                : line.getDeliveryMethod();
+
+        StockMethod stockMethod = request.stockMethod() != null
+                ? StockMethod.fromCodeOrThrow(request.stockMethod())
+                : line.getStockMethod();
+
+        // EC-008: 驗證運送方式與備貨方式相容性
+        stockMethod = validateAndCorrectCompatibility(deliveryMethod, stockMethod);
+
         // 更新運送方式
         if (request.deliveryMethod() != null) {
-            DeliveryMethod deliveryMethod = DeliveryMethod.fromCodeOrThrow(request.deliveryMethod());
             line.updateDeliveryMethod(deliveryMethod);
         }
 
         // 更新備貨方式
-        if (request.stockMethod() != null) {
-            StockMethod stockMethod = StockMethod.fromCodeOrThrow(request.stockMethod());
-            line.updateStockMethod(stockMethod);
-        }
+        line.updateStockMethod(stockMethod);
 
         log.info("訂單行項更新成功: orderId={}, lineId={}", orderId, lineId);
 
@@ -337,13 +345,15 @@ public class OrderService {
         Order order = findOrderOrThrow(orderId);
         OrderLine line = order.getLineOrThrow(LineId.of(lineId));
 
-        // 更新備貨方式（若有提供）
+        DeliveryMethod deliveryMethod = DeliveryMethod.fromCodeOrThrow(deliveryMethodCode);
+
+        // 更新備貨方式（若有提供）並驗證相容性
         if (stockMethodCode != null && !stockMethodCode.isBlank()) {
             StockMethod stockMethod = StockMethod.fromCodeOrThrow(stockMethodCode);
+            // EC-008: 驗證運送方式與備貨方式相容性
+            stockMethod = validateAndCorrectCompatibility(deliveryMethod, stockMethod);
             line.updateStockMethod(stockMethod);
         }
-
-        DeliveryMethod deliveryMethod = DeliveryMethod.fromCodeOrThrow(deliveryMethodCode);
 
         // 建立運送明細
         DeliveryDetail deliveryDetail;
@@ -574,6 +584,27 @@ public class OrderService {
     }
 
     // === Private Methods ===
+
+    /**
+     * EC-008: 驗證運送方式與備貨方式相容性
+     * - 直送(V) 僅限訂購(Y)
+     * - 當場自取(C) 僅限現貨(X)
+     *
+     * @param deliveryMethod 運送方式
+     * @param stockMethod 備貨方式
+     * @return 修正後的備貨方式
+     */
+    private StockMethod validateAndCorrectCompatibility(DeliveryMethod deliveryMethod, StockMethod stockMethod) {
+        if (deliveryMethod == DeliveryMethod.DIRECT_SHIPMENT && stockMethod == StockMethod.IN_STOCK) {
+            log.warn("EC-008: 直送不相容現貨，自動更正為訂購");
+            return StockMethod.PURCHASE_ORDER;
+        }
+        if (deliveryMethod == DeliveryMethod.IMMEDIATE_PICKUP && stockMethod == StockMethod.PURCHASE_ORDER) {
+            log.warn("EC-008: 當場自取不相容訂購，自動更正為現貨");
+            return StockMethod.IN_STOCK;
+        }
+        return stockMethod;
+    }
 
     private Order findOrderOrThrow(String orderId) {
         return Optional.ofNullable(orderStore.get(orderId))

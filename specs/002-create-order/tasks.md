@@ -184,9 +184,24 @@
 - [x] T073 [US2] Create service-config.component.html in `frontend/src/app/features/order/components/service-config/service-config.component.html`
 - [x] T074 [US2] Integrate service-config into product-list.component in `frontend/src/app/features/order/components/product-list/product-list.component.ts`
 
+### Delivery/Stock Compatibility (EC-008)
+
+- [x] T074a [US2] Create ToastService in `frontend/src/app/shared/services/toast.service.ts` (Signals-based, 3s auto-dismiss)
+- [x] T074b [P] [US2] Create ToastComponent (standalone) in `frontend/src/app/shared/components/toast/toast.component.ts`
+- [x] T074c [US2] Add delivery/stock compatibility validation using Signal effect in `frontend/src/app/features/order/components/service-config/service-config.component.ts`:
+  - 選擇直送(V) → 備貨方式自動預設為訂購(Y)，無提示
+  - 選擇當場自取(C) → 備貨方式自動預設為現貨(X)，無提示
+  - 直送(V) + 手動改為現貨(X) → 自動切換回訂購(Y)，Toast 提示「直送只能訂購」
+  - 當場自取(C) + 手動改為訂購(Y) → 自動切換回現貨(X)，Toast 提示「當場自取只能現貨」
+- [x] T074d [US2] Add backend double-check for delivery/stock compatibility in `backend/src/main/java/com/tgfc/som/order/service/OrderService.java`
+
 ### E2E Test
 
 - [x] T075 [US2] Create installation/delivery E2E test in `frontend/e2e/tests/order/create-order-service.spec.ts` (select delivery method, add installation service)
+- [x] T075a [US2] Add delivery/stock compatibility E2E test cases in `frontend/e2e/tests/order/create-order-service.spec.ts`:
+  - Test 直送(V) auto-sets 訂購(Y)
+  - Test 當場自取(C) auto-sets 現貨(X)
+  - Test Toast appears for invalid manual override
 
 **Checkpoint**: User Story 2 完成 - 可獨立測試安裝與運送服務配置
 
@@ -200,8 +215,8 @@
 
 ### Domain Layer (Backend)
 
-- [ ] T076 [P] [US3] Create MemberDiscVO record in `backend/src/main/java/com/tgfc/som/pricing/dto/MemberDiscVO.java`
-- [ ] T077 [P] [US3] Create ComputeTypeVO record in `backend/src/main/java/com/tgfc/som/pricing/dto/ComputeTypeVO.java`
+- [x] T076 [P] [US3] Create MemberDiscVO record in `backend/src/main/java/com/tgfc/som/pricing/dto/MemberDiscVO.java`
+- [x] T077 [P] [US3] Create ComputeTypeVO record in `backend/src/main/java/com/tgfc/som/pricing/dto/ComputeTypeVO.java`
 
 ### Services (Backend)
 
@@ -226,7 +241,7 @@
 
 ### E2E Test
 
-- [ ] T087 [US3] Create member discount E2E test in `frontend/e2e/tests/order/create-order-discount.spec.ts` (Type 0 member discount calculation)
+- [x] T087 [US3] Create member discount E2E test in `frontend/e2e/tests/order/create-order-discount.spec.ts` (Type 0 member discount calculation)
 
 **Checkpoint**: User Story 3 完成 - 可獨立測試會員折扣計算
 
@@ -411,11 +426,11 @@ With multiple developers:
 | Phase 1: Setup | 7 | Package structure for 5 Bounded Contexts |
 | Phase 2: Foundational | 29 | Value Objects, Enums, Mappers, Services, External Service Resilience |
 | Phase 3: US1 (P1) MVP | 27 | Basic order creation (member, product, calculate, submit, temp card) |
-| Phase 4: US2 (P2) | 17 | Installation & Delivery services |
+| Phase 4: US2 (P2) | 22 | Installation & Delivery services, Delivery/Stock compatibility (EC-008) |
 | Phase 5: US3 (P3) | 12 | Member discount (Type 0/1/2), 12-step pricing |
 | Phase 6: US4 (P4) | 15 | Coupon & Bonus points |
 | Phase 7: Polish | 12 | Logging, Performance tests, E2E tests |
-| **Total** | **119** | Complete order creation feature |
+| **Total** | **124** | Complete order creation feature |
 
 ### Parallel Opportunities
 
