@@ -1,24 +1,27 @@
-﻿# Claude Code - DDD Special Order Demo
+# Claude Code - DDD Special Order Demo
 
 ## Current Feature
 
-**Feature ID**: 001-keycloak-user-login
-**Branch**: `001-keycloak-user-login`
+**Feature ID**: 002-create-order
+**Branch**: `002-create-order`
 **Status**: Planning Complete
 
 ## Implementation Plan
 
-**Location**: `specs/001-keycloak-user-login/plan.md`
+**Location**: `specs/002-create-order/plan.md`
 
-### Phase 1 Artifacts
+### Phase Artifacts
 
 | Artifact | Path | Status |
 |----------|------|--------|
-| Specification | `specs/001-keycloak-user-login/spec.md` | Complete |
-| Research | `specs/001-keycloak-user-login/research.md` | Complete |
-| Data Model | `specs/001-keycloak-user-login/data-model.md` | Complete |
-| API Contracts | `specs/001-keycloak-user-login/contracts/auth-api.yaml` | Complete |
-| Quickstart | `specs/001-keycloak-user-login/quickstart.md` | Complete |
+| Specification | `specs/002-create-order/spec.md` | Complete |
+| Research | `specs/002-create-order/research.md` | Complete |
+| Data Model | `specs/002-create-order/data-model.md` | Complete |
+| API Contracts | `specs/002-create-order/contracts/order-api.yaml` | Complete |
+| Quickstart | `specs/002-create-order/quickstart.md` | Complete |
+| Pricing Spec | `specs/002-create-order/pricing-calculation-spec.md` | Complete |
+| Product Query Spec | `specs/002-create-order/product-query-spec.md` | Complete |
+| Tasks | `specs/002-create-order/tasks.md` | Complete |
 
 ## Technical Context
 
@@ -26,48 +29,52 @@
 
 - **Language**: Java 21+
 - **Framework**: Spring Boot 3.x+
-- **Security**: Spring Security OAuth2 Resource Server
+- **Security**: Spring Security OAuth2 Resource Server + Keycloak
 - **Database**: Oracle 21c (Production), H2 (Development)
 - **Data Access**: MyBatis + MyBatisGenerator
 - **Package**: `com.tgfc.som`
+- **Logging**: Logback + logback-encoder (JSON)
 
 ### Frontend
 
 - **Language**: TypeScript 5.9+
-- **Framework**: Angular 21+
+- **Framework**: Angular 21+ (Standalone, Signals, OnPush)
+- **State Management**: Angular Signals + RxJS
 - **Auth Library**: keycloak-angular
-- **State Storage**: Local Storage
+- **E2E Testing**: Playwright
 
 ### Project Structure
 
 ```text
 backend/src/main/java/com/tgfc/som/
-├── auth/                    # Authentication module
-│   ├── controller/          # REST Controllers
-│   ├── service/             # Application Services
-│   └── domain/              # Domain Services
-├── mapper/                  # MyBatisGenerator 產生的 Mapper
-├── mapper/custom/           # 手動撰寫的 CustomMapper (視需要)
-├── entity/                  # MyBatisGenerator 產生的 Entity
-├── common/                  # Shared components
-│   ├── config/              # Keycloak, Security, MyBatis configs
-│   └── exception/           # Exception handlers
+├── order/                       # Order Context (Core Domain)
+│   ├── controller/
+│   ├── service/
+│   ├── domain/
+│   └── dto/
+├── product/                     # Catalog Context (Supporting)
+├── member/                      # Member Context (Supporting)
+├── pricing/                     # Pricing Context (Supporting)
+├── fulfillment/                 # Fulfillment Context (Supporting)
+├── mapper/                      # MyBatisGenerator Mappers
+├── mapper/custom/               # Custom Mappers
+├── entity/                      # MyBatisGenerator Entities
+└── common/
+    ├── config/
+    ├── exception/
+    └── constant/
 
 frontend/src/app/
-├── auth/                    # Authentication module
-│   ├── components/          # Login, Store/System selection
-│   ├── services/            # Auth service, Token interceptor
-│   └── guards/              # Route guards
-├── core/                    # Core module
-│   ├── layout/              # Nav bar, Header
-│   └── services/            # API service
-├── shared/                  # Shared module
-└── e2e/                     # Playwright tests
+├── core/                        # Core module
+├── shared/                      # Shared components
+├── features/
+│   └── order/                   # Order feature module
+└── app.routes.ts
 ```
 
 ## Constitution Principles
 
-See `.specify/memory/constitution.md` (v1.5.0) for project governance:
+See `.specify/memory/constitution.md` (v1.10.0) for project governance:
 
 1. **Pragmatic DDD** - Lightweight DDD, avoid over-engineering
 2. **3-Table Rule** - Max 3 tables per feature (exceptions documented)
@@ -76,46 +83,76 @@ See `.specify/memory/constitution.md` (v1.5.0) for project governance:
 5. **Legacy Codebase Reference** - Search `C:/projects/som` for existing patterns
 6. **Stateless Backend Architecture** - No server-side session, JWT validation
 7. **Playwright Verification** - E2E test with screenshots after implementation
-8. **MyBatis Generator Pattern** - Use MyBatisGenerator for Mapper/Entity, CustomMapper only for complex SQL with performance concerns
+8. **MyBatis Generator Pattern** - Use MyBatisGenerator for Mapper/Entity, CustomMapper only for complex SQL
+9. **No Lombok Policy** - Use Java Records for DTO, manual getter/setter for Entity
+10. **Data Class Convention** - Records for immutable DTO, Class for mutable Entity
+11. **OpenAPI RESTful API Standard** - Code-First with springdoc-openapi
+12. **Angular 21+ Frontend Standard** - Standalone, Signals, new control flow
+13. **Code Coverage Requirement** - 80% line and branch coverage
 
 ## Key Domain Concepts
 
-### 6-Checkpoint Validation
+### 5 Bounded Contexts
 
-1. User exists in TBL_USER
-2. SYSTEM_FLAG is not null
-3. DISABLE_FLAG is not 'Y'
-4. ENABLE_DATE and DISABLE_DATE are set
-5. Current date is within ENABLE_DATE and DISABLE_DATE
-6. User has function permissions
+- **Order Context** (Core) - Order aggregate, OrderLine entity
+- **Member Context** (Supporting) - Member info and discount eligibility
+- **Catalog Context** (Supporting) - Product eligibility (8-layer validation)
+- **Pricing Context** (Supporting) - 12-step calculation flow
+- **Fulfillment Context** (Supporting) - Worktype assignment
 
-### 主店別 NULL 邏輯
+### 12-Step Pricing Calculation
 
-- `STORE_ID = NULL` in TBL_USER_MAST_STORE means "全區" (all-region access)
-- Frontend displays "全區" option
-- Backend queries without store filter for all-region users
+1. revertAllSkuAmt - Restore original prices
+2. apportionmentDiscount - Worktype price apportionment
+3. AssortSku - Product classification
+4. memberDiscountType2 - Cost Markup discount
+5. promotionCalculation - 8 promotion types (A-H)
+6. memberDiscountType0 - Discounting discount
+7. memberDiscountType1 - Down Margin discount
+8. specialMemberDiscount - VIP/Employee pricing
+9-12. generateComputeType - Generate 6 ComputeTypes
 
-### Single Tab Restriction
+### 8-Layer Product Eligibility
 
-- Use BroadcastChannel API + LocalStorage
-- New tab takes over, old tab shows warning
-- Prevents state conflicts and document collisions
+1. Format validation (SKU format)
+2. Existence validation (TBL_SKU)
+3. System product exclusion (allowSales)
+4. Tax type validation (0/1/2)
+5. Sales prohibition (holdOrder)
+6. Category restriction (prohibited list)
+7. Vendor freeze (TBL_VENDOR_COMPANY.STATUS)
+8. Purchasing organization (TBL_SKU_COMPANY)
+
+### Member Discount Types
+
+- **Type 0 (Discounting)** - Discount rate, doesn't modify actPosAmt
+- **Type 1 (Down Margin)** - Fixed discount, modifies actPosAmt
+- **Type 2 (Cost Markup)** - Cost-based pricing, replaces actPosAmt
+
+### Delivery/Stock Compatibility
+
+| Delivery | Stock X | Stock Y |
+|----------|---------|---------|
+| N (Delivery) | OK | OK |
+| D (Pure Delivery) | OK | OK |
+| V (Direct) | Auto→Y | OK |
+| C (Pickup Now) | OK | Auto→X |
+| F (Home Delivery) | OK | OK |
+| P (Pickup Later) | OK | OK |
 
 ## API Endpoints
 
-Base URL: `/api`
+Base URL: `/api/v1`
 
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | /auth/validate | 6-checkpoint user validation |
-| POST | /auth/logout | Audit logout event |
-| GET | /stores/mast | Get user's master stores |
-| GET | /stores/support | Get user's support stores |
-| POST | /stores/select | Record store selection |
-| GET | /channels | Get user's authorized channels |
-| POST | /channels/select | Record channel selection |
-| GET | /health | Health check (no auth) |
+| POST | /orders | Create new order |
+| POST | /orders/{id}/lines | Add order line |
+| POST | /orders/{id}/calculate | Execute pricing calculation |
+| POST | /orders/{id}/submit | Submit order |
+| GET | /products/{skuNo}/eligibility | Check product eligibility |
+| GET | /members/{memberId} | Get member info (Mock: H00199) |
 
 ## Next Steps
 
-Run `/speckit.tasks` to generate implementation tasks from the plan.
+Run `/speckit.implement` to execute tasks from `tasks.md`.

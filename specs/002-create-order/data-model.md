@@ -39,7 +39,7 @@ public class Order {
     private String specialistId;           // 專員 ID
 
     // === Order Lines ===
-    private List<OrderLine> lines;         // 訂單行項清單（最多 50 項）
+    private List<OrderLine> lines;         // 訂單行項清單（最多 999 項）
 
     // === Calculation Result ===
     private PriceCalculation calculation;  // 價格試算結果
@@ -65,7 +65,7 @@ public class Order {
     // === Invariants ===
     // - 訂單至少包含一項商品
     // - 商品數量總和不為零
-    // - 商品數量不超過 50 項
+    // - 商品數量不超過 999 項
     // - 提交前必須完成價格試算
 }
 ```
@@ -1257,7 +1257,7 @@ WHERE TOD.ORDER_ID = #{orderId}
 | OR-003 | Order | deliveryAddress | 地址和郵遞區號必填 | 請輸入安運地址 |
 | OR-004 | Order | storeId | 出貨店必填 | 請選擇出貨店 |
 | OR-005 | Order | lines | 至少一項商品 | 訂單必須包含至少一項商品 |
-| OR-006 | Order | lines | 商品數量 ≤ 50 | 訂單已達商品上限（50項） |
+| OR-006 | Order | lines | 商品數量 ≤ 999 | 訂單已達商品上限（999項） |
 | PR-001 | Order | calculation | 提交前必須試算 | 請先執行價格試算 |
 | PR-002 | OrderLine | actualUnitPrice | 變價需授權 | 變價商品需要授權 |
 | ST-001 | OrderLine | stockMethod | 直送僅限訂購 | 直送商品僅能選擇訂購 |

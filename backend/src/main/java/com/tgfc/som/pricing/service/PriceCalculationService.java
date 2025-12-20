@@ -7,6 +7,7 @@ import com.tgfc.som.order.domain.OrderLine;
 import com.tgfc.som.order.domain.valueobject.Customer;
 import com.tgfc.som.order.domain.valueobject.Money;
 import com.tgfc.som.order.domain.valueobject.PriceCalculation;
+import com.tgfc.som.common.logging.StructuredLogging;
 import com.tgfc.som.pricing.dto.MemberDiscVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,67 +53,74 @@ public class PriceCalculationService {
      * @return 試算結果
      */
     public PriceCalculation calculate(Order order) {
-        log.info("執行價格試算: orderId={}, lineCount={}",
-                order.getId().value(), order.getLineCount());
+        try (var loggingContext = StructuredLogging.forOrder(order.getId().value(), null)
+                .action("PRICE_CALCULATION")) {
 
-        List<String> warnings = new ArrayList<>();
-        boolean promotionSkipped = false;
+            log.info("執行價格試算: orderId={}, lineCount={}",
+                    order.getId().value(), order.getLineCount());
 
-        // ComputeType 1: 計算商品小計
-        Money productTotal = calculateProductTotal(order);
+            List<String> warnings = new ArrayList<>();
+            boolean promotionSkipped = false;
 
-        // ComputeType 2: 計算安裝小計
-        Money installationTotal = calculateInstallationTotal(order);
+            // ComputeType 1: 計算商品小計
+            Money productTotal = calculateProductTotal(order);
 
-        // ComputeType 3: 計算運送小計
-        Money deliveryTotal = calculateDeliveryTotal(order);
+            // ComputeType 2: 計算安裝小計
+            Money installationTotal = calculateInstallationTotal(order);
 
-        // 驗證最低工資
-        validateMinimumWage(order, warnings);
+            // ComputeType 3: 計算運送小計
+            Money deliveryTotal = calculateDeliveryTotal(order);
 
-        // ComputeType 4: 會員折扣
-        MemberDiscountResult memberDiscountResult = calculateMemberDiscount(order);
-        Money memberDiscount = memberDiscountResult.totalDiscount();
-        List<MemberDiscVO> memberDiscounts = memberDiscountResult.discounts();
+            // 驗證最低工資
+            validateMinimumWage(order, warnings);
 
-        // ComputeType 5: 直送費用 (暫時為 0)
-        Money directShipmentTotal = calculateDirectShipmentTotal(order);
+            // ComputeType 4: 會員折扣
+            MemberDiscountResult memberDiscountResult = calculateMemberDiscount(order);
+            Money memberDiscount = memberDiscountResult.totalDiscount();
+            List<MemberDiscVO> memberDiscounts = memberDiscountResult.discounts();
 
-        // ComputeType 6: 折價券折扣 - 從訂單行項加總（由 CouponService 設定）
-        Money couponDiscount = calculateCouponDiscount(order);
+            // ComputeType 5: 直送費用 (暫時為 0)
+            Money directShipmentTotal = calculateDirectShipmentTotal(order);
 
-        // ComputeType 7: 紅利點數折扣 - 從訂單行項加總（由 BonusService 設定）
-        Money bonusDiscount = calculateBonusDiscount(order);
+            // ComputeType 6: 折價券折扣 - 從訂單行項加總（由 CouponService 設定）
+            Money couponDiscount = calculateCouponDiscount(order);
 
-        // 計算稅額
-        Money taxAmount = calculateTaxAmount(order);
+            // ComputeType 7: 紅利點數折扣 - 從訂單行項加總（由 BonusService 設定）
+            Money bonusDiscount = calculateBonusDiscount(order);
 
-        // 計算應付總額
-        Money grandTotal = productTotal
-                .add(installationTotal)
-                .add(deliveryTotal)
-                .add(memberDiscount) // 負數
-                .add(directShipmentTotal)
-                .add(couponDiscount.negate()) // 轉為負數
-                .add(bonusDiscount.negate()); // 轉為負數
+            // 計算稅額
+            Money taxAmount = calculateTaxAmount(order);
 
-        log.info("價格試算完成: productTotal={}, couponDiscount={}, bonusDiscount={}, grandTotal={}",
-                productTotal.amount(), couponDiscount.amount(), bonusDiscount.amount(), grandTotal.amount());
+            // 計算應付總額
+            Money grandTotal = productTotal
+                    .add(installationTotal)
+                    .add(deliveryTotal)
+                    .add(memberDiscount) // 負數
+                    .add(directShipmentTotal)
+                    .add(couponDiscount.negate()) // 轉為負數
+                    .add(bonusDiscount.negate()); // 轉為負數
 
-        return PriceCalculation.builder()
-                .productTotal(productTotal)
-                .installationTotal(installationTotal)
-                .deliveryTotal(deliveryTotal)
-                .memberDiscount(memberDiscount)
-                .directShipmentTotal(directShipmentTotal)
-                .couponDiscount(couponDiscount)
-                .bonusDiscount(bonusDiscount)
-                .taxAmount(taxAmount)
-                .grandTotal(grandTotal)
-                .memberDiscounts(memberDiscounts)
-                .warnings(warnings)
-                .promotionSkipped(promotionSkipped)
-                .build();
+            log.info("價格試算完成: productTotal={}, installationTotal={}, deliveryTotal={}, " +
+                            "memberDiscount={}, couponDiscount={}, bonusDiscount={}, grandTotal={}",
+                    productTotal.amount(), installationTotal.amount(), deliveryTotal.amount(),
+                    memberDiscount.amount(), couponDiscount.amount(), bonusDiscount.amount(),
+                    grandTotal.amount());
+
+            return PriceCalculation.builder()
+                    .productTotal(productTotal)
+                    .installationTotal(installationTotal)
+                    .deliveryTotal(deliveryTotal)
+                    .memberDiscount(memberDiscount)
+                    .directShipmentTotal(directShipmentTotal)
+                    .couponDiscount(couponDiscount)
+                    .bonusDiscount(bonusDiscount)
+                    .taxAmount(taxAmount)
+                    .grandTotal(grandTotal)
+                    .memberDiscounts(memberDiscounts)
+                    .warnings(warnings)
+                    .promotionSkipped(promotionSkipped)
+                    .build();
+        }
     }
 
     /**

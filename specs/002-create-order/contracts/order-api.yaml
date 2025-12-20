@@ -120,7 +120,7 @@ paths:
         新增商品至訂單
 
         **限制**:
-        - 訂單最多 50 項商品
+        - 訂單最多 999 項商品
         - 商品需通過 6 層資格驗證
       operationId: addOrderLine
       parameters:
@@ -220,7 +220,7 @@ paths:
         11. 計算總折扣
         12. 生成 6 種 ComputeType
 
-        **效能目標**: ≤ 3 秒（50 項商品以內）
+        **效能目標**: ≤ 3 秒（500 項商品以內）
       operationId: calculatePrice
       parameters:
         - $ref: '#/components/parameters/OrderIdPath'

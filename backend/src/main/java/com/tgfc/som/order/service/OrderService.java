@@ -36,6 +36,7 @@ import com.tgfc.som.pricing.dto.CouponValidation;
 import com.tgfc.som.pricing.service.BonusService;
 import com.tgfc.som.pricing.service.CouponService;
 import com.tgfc.som.pricing.service.PriceCalculationService;
+import com.tgfc.som.common.logging.StructuredLogging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -95,58 +96,64 @@ public class OrderService {
      * 建立訂單
      */
     public OrderResponse createOrder(CreateOrderRequest request, String idempotencyKey, String userId) {
-        log.info("建立訂單: idempotencyKey={}, storeId={}, channelId={}",
-                idempotencyKey, request.storeId(), request.channelId());
+        try (var loggingContext = StructuredLogging.forOrder(null, userId).action("CREATE_ORDER")) {
+            log.info("建立訂單: idempotencyKey={}, storeId={}, channelId={}",
+                    idempotencyKey, request.storeId(), request.channelId());
 
-        // 冪等性檢查
-        try {
-            idempotencyService.checkAndThrow(idempotencyKey);
-        } catch (DuplicateSubmissionException e) {
-            String existingOrderId = e.getExistingOrderId();
-            if (existingOrderId != null) {
-                Order existingOrder = orderStore.get(existingOrderId);
-                if (existingOrder != null) {
-                    return toOrderResponse(existingOrder);
+            // 冪等性檢查
+            try {
+                idempotencyService.checkAndThrow(idempotencyKey);
+            } catch (DuplicateSubmissionException e) {
+                loggingContext.error("DUPLICATE_SUBMISSION");
+                String existingOrderId = e.getExistingOrderId();
+                if (existingOrderId != null) {
+                    Order existingOrder = orderStore.get(existingOrderId);
+                    if (existingOrder != null) {
+                        return toOrderResponse(existingOrder);
+                    }
                 }
+                throw e;
             }
-            throw e;
+
+            // 建立訂單 ID 與專案代號
+            OrderId orderId = generateOrderId();
+            ProjectId projectId = generateProjectId(request.storeId());
+
+            // 更新 MDC 上下文
+            StructuredLogging.setOrderId(orderId.value());
+
+            // 建立客戶資訊
+            Customer customer = toCustomer(request.customer());
+
+            // 建立地址
+            DeliveryAddress address = new DeliveryAddress(
+                    request.address().zipCode(),
+                    request.address().fullAddress()
+            );
+
+            // 建立訂單
+            Order order = new Order(
+                    orderId,
+                    projectId,
+                    customer,
+                    address,
+                    request.storeId(),
+                    request.channelId(),
+                    userId
+            );
+            order.setIdempotencyKey(idempotencyKey);
+            order.setHandlerId(userId);
+
+            // 儲存訂單
+            orderStore.put(orderId.value(), order);
+
+            // 記錄冪等鍵
+            idempotencyService.record(idempotencyKey, orderId.value());
+
+            log.info("訂單建立成功: orderId={}, projectId={}", orderId.value(), projectId.value());
+
+            return toOrderResponse(order);
         }
-
-        // 建立訂單 ID 與專案代號
-        OrderId orderId = generateOrderId();
-        ProjectId projectId = generateProjectId(request.storeId());
-
-        // 建立客戶資訊
-        Customer customer = toCustomer(request.customer());
-
-        // 建立地址
-        DeliveryAddress address = new DeliveryAddress(
-                request.address().zipCode(),
-                request.address().fullAddress()
-        );
-
-        // 建立訂單
-        Order order = new Order(
-                orderId,
-                projectId,
-                customer,
-                address,
-                request.storeId(),
-                request.channelId(),
-                userId
-        );
-        order.setIdempotencyKey(idempotencyKey);
-        order.setHandlerId(userId);
-
-        // 儲存訂單
-        orderStore.put(orderId.value(), order);
-
-        // 記錄冪等鍵
-        idempotencyService.record(idempotencyKey, orderId.value());
-
-        log.info("訂單建立成功: orderId={}, projectId={}", orderId.value(), projectId.value());
-
-        return toOrderResponse(order);
     }
 
     /**
@@ -424,38 +431,45 @@ public class OrderService {
      * 執行價格試算
      */
     public CalculationResponse calculate(String orderId) {
-        log.info("執行價格試算: orderId={}", orderId);
+        try (var loggingContext = StructuredLogging.forOrder(orderId, null).action("CALCULATE_ORDER")) {
+            log.info("執行價格試算: orderId={}", orderId);
 
-        Order order = findOrderOrThrow(orderId);
+            Order order = findOrderOrThrow(orderId);
 
-        if (!order.hasLines()) {
-            throw new BusinessException("ORDER_EMPTY", "訂單沒有任何商品");
+            if (!order.hasLines()) {
+                loggingContext.error("ORDER_EMPTY");
+                throw new BusinessException("ORDER_EMPTY", "訂單沒有任何商品");
+            }
+
+            // 呼叫試算服務
+            PriceCalculation calculation = priceCalculationService.calculate(order);
+
+            // 更新訂單試算結果
+            order.setCalculation(calculation);
+
+            log.info("價格試算完成: orderId={}, grandTotal={}, lineCount={}, promotionSkipped={}",
+                    orderId, calculation.getGrandTotal().amount(),
+                    order.getLines().size(), calculation.isPromotionSkipped());
+
+            return toCalculationResponse(orderId, calculation);
         }
-
-        // 呼叫試算服務
-        PriceCalculation calculation = priceCalculationService.calculate(order);
-
-        // 更新訂單試算結果
-        order.setCalculation(calculation);
-
-        log.info("價格試算完成: orderId={}, grandTotal={}",
-                orderId, calculation.getGrandTotal().amount());
-
-        return toCalculationResponse(orderId, calculation);
     }
 
     /**
      * 提交訂單
      */
     public OrderResponse submit(String orderId) {
-        log.info("提交訂單: orderId={}", orderId);
+        try (var loggingContext = StructuredLogging.forOrder(orderId, null).action("SUBMIT_ORDER")) {
+            log.info("提交訂單: orderId={}", orderId);
 
-        Order order = findOrderOrThrow(orderId);
-        order.submit();
+            Order order = findOrderOrThrow(orderId);
+            order.submit();
 
-        log.info("訂單提交成功: orderId={}, status={}", orderId, order.getStatus().getName());
+            log.info("訂單提交成功: orderId={}, status={}, grandTotal={}",
+                    orderId, order.getStatus().getName(), order.getCalculation().getGrandTotal().amount());
 
-        return toOrderResponse(order);
+            return toOrderResponse(order);
+        }
     }
 
     /**

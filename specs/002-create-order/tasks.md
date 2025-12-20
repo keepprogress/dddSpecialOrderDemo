@@ -255,36 +255,36 @@
 
 ### Domain Layer (Backend)
 
-- [ ] T088 [P] [US4] Create Coupon value object in `backend/src/main/java/com/tgfc/som/pricing/domain/Coupon.java`
-- [ ] T089 [P] [US4] Create CouponValidation record in `backend/src/main/java/com/tgfc/som/pricing/dto/CouponValidation.java`
-- [ ] T090 [P] [US4] Create BonusRedemption record in `backend/src/main/java/com/tgfc/som/pricing/dto/BonusRedemption.java`
+- [x] T088 [P] [US4] Create Coupon value object in `backend/src/main/java/com/tgfc/som/pricing/domain/Coupon.java`
+- [x] T089 [P] [US4] Create CouponValidation record in `backend/src/main/java/com/tgfc/som/pricing/dto/CouponValidation.java`
+- [x] T090 [P] [US4] Create BonusRedemption record in `backend/src/main/java/com/tgfc/som/pricing/dto/BonusRedemption.java`
 
 ### DTOs (Backend)
 
-- [ ] T091 [P] [US4] Create ApplyCouponRequest record in `backend/src/main/java/com/tgfc/som/order/dto/ApplyCouponRequest.java`
-- [ ] T092 [P] [US4] Create RedeemBonusRequest record in `backend/src/main/java/com/tgfc/som/order/dto/RedeemBonusRequest.java`
+- [x] T091 [P] [US4] Create ApplyCouponRequest record in `backend/src/main/java/com/tgfc/som/order/dto/ApplyCouponRequest.java`
+- [x] T092 [P] [US4] Create RedeemBonusRequest record in `backend/src/main/java/com/tgfc/som/order/dto/RedeemBonusRequest.java`
 
 ### Services (Backend)
 
-- [ ] T093 [US4] Create CouponService in `backend/src/main/java/com/tgfc/som/pricing/service/CouponService.java` (validate, apply, allocate discount)
-- [ ] T094 [US4] Create BonusService in `backend/src/main/java/com/tgfc/som/pricing/service/BonusService.java` (check points, redeem)
-- [ ] T095 [US4] Extend Order aggregate with applyCoupon, redeemBonusPoints methods in `backend/src/main/java/com/tgfc/som/order/domain/Order.java`
-- [ ] T096 [US4] Add coupon threshold validation (cap at product total, no refund) in `backend/src/main/java/com/tgfc/som/pricing/service/CouponService.java`
+- [x] T093 [US4] Create CouponService in `backend/src/main/java/com/tgfc/som/pricing/service/CouponService.java` (validate, apply, allocate discount)
+- [x] T094 [US4] Create BonusService in `backend/src/main/java/com/tgfc/som/pricing/service/BonusService.java` (check points, redeem)
+- [x] T095 [US4] Extend Order aggregate with applyCoupon, redeemBonusPoints methods in `backend/src/main/java/com/tgfc/som/order/domain/Order.java`
+- [x] T096 [US4] Add coupon threshold validation (cap at product total, no refund) in `backend/src/main/java/com/tgfc/som/pricing/service/CouponService.java`
 
 ### Controllers (Backend)
 
-- [ ] T097 [US4] Add POST /orders/{orderId}/coupons to OrderController in `backend/src/main/java/com/tgfc/som/order/controller/OrderController.java`
-- [ ] T098 [US4] Add POST /orders/{orderId}/bonus to OrderController in `backend/src/main/java/com/tgfc/som/order/controller/OrderController.java`
+- [x] T097 [US4] Add POST /orders/{orderId}/coupons to OrderController in `backend/src/main/java/com/tgfc/som/order/controller/OrderController.java`
+- [x] T098 [US4] Add POST /orders/{orderId}/bonus to OrderController in `backend/src/main/java/com/tgfc/som/order/controller/OrderController.java`
 
 ### Frontend Components
 
-- [ ] T099 [US4] Create order-summary.component.ts in `frontend/src/app/features/order/components/order-summary/order-summary.component.ts` (coupon input, bonus redemption)
-- [ ] T100 [US4] Create order-summary.component.html in `frontend/src/app/features/order/components/order-summary/order-summary.component.html`
-- [ ] T101 [US4] Integrate order-summary into create-order.component in `frontend/src/app/features/order/create-order/create-order.component.ts`
+- [x] T099 [US4] Create order-summary.component.ts in `frontend/src/app/features/order/components/order-summary/order-summary.component.ts` (coupon input, bonus redemption)
+- [x] T100 [US4] Create order-summary.component.html in `frontend/src/app/features/order/components/order-summary/order-summary.component.html`
+- [x] T101 [US4] Integrate order-summary into create-order.component in `frontend/src/app/features/order/create-order/create-order.component.ts`
 
 ### E2E Test
 
-- [ ] T102 [US4] Create coupon/bonus E2E test in `frontend/e2e/tests/order/create-order-coupon.spec.ts` (apply coupon, verify discount)
+- [x] T102 [US4] Create coupon/bonus E2E test in `frontend/e2e/tests/order/create-order-coupon.spec.ts` (apply coupon, verify discount)
 
 **Checkpoint**: User Story 4 完成 - 可獨立測試優惠券與紅利折抵
 
@@ -296,33 +296,33 @@
 
 ### Logging & Observability
 
-- [ ] T103 [P] Add structured JSON logging for order operations in `backend/src/main/java/com/tgfc/som/order/service/OrderService.java`
-- [ ] T104 [P] Add structured logging for pricing calculations in `backend/src/main/java/com/tgfc/som/pricing/service/PriceCalculationService.java`
+- [x] T103 [P] Add structured JSON logging for order operations in `backend/src/main/java/com/tgfc/som/order/service/OrderService.java`
+- [x] T104 [P] Add structured logging for pricing calculations in `backend/src/main/java/com/tgfc/som/pricing/service/PriceCalculationService.java`
 
 ### Frontend Polish
 
-- [ ] T107 [P] Implement skeleton loading states for all sections in `frontend/src/app/features/order/create-order/create-order.component.ts` (含 CSS transition 漸變過渡效果，骨架屏→實際內容平滑切換)
-- [ ] T108 [P] Add submit button disable during API calls (prevent double submit) in `frontend/src/app/features/order/create-order/create-order.component.ts`
+- [x] T107 [P] Implement skeleton loading states for all sections in `frontend/src/app/features/order/create-order/create-order.component.ts` (含 CSS transition 漸變過渡效果，骨架屏→實際內容平滑切換)
+- [x] T108 [P] Add submit button disable during API calls (prevent double submit) in `frontend/src/app/features/order/create-order/create-order.component.ts`
 
 ### OpenAPI Documentation
 
-- [ ] T109 [P] Add springdoc annotations to all controllers in `backend/src/main/java/com/tgfc/som/*/controller/*.java`
-- [ ] T110 [P] Verify generated OpenAPI matches contracts/order-api.yaml
+- [x] T109 [P] Add springdoc annotations to all controllers in `backend/src/main/java/com/tgfc/som/*/controller/*.java`
+- [x] T110 [P] Verify generated OpenAPI matches contracts/order-api.yaml
 
 ### E2E Integration Test
 
-- [ ] T111 Create full flow E2E test in `frontend/e2e/tests/order/create-order-full.spec.ts` (complete order creation with all features)
+- [x] T111 Create full flow E2E test in `frontend/e2e/tests/order/create-order-full.spec.ts` (complete order creation with all features)
 
 ### Performance Validation
 
-- [ ] T111a Execute performance baseline test for NFR-001 (價格試算 API ≤ 3秒, 500筆明細) in `backend/src/test/java/com/tgfc/som/pricing/PriceCalculationPerformanceTest.java`
-- [ ] T111b [P] Execute performance baseline test for NFR-002 (商品驗證 API ≤ 500ms) in `backend/src/test/java/com/tgfc/som/catalog/ProductEligibilityPerformanceTest.java`
-- [ ] T111c [P] Execute performance baseline test for NFR-003 (訂單建立 API ≤ 2秒) in `backend/src/test/java/com/tgfc/som/order/OrderCreationPerformanceTest.java`
+- [x] T111a Execute performance baseline test for NFR-001 (價格試算 API ≤ 3秒, 500筆明細) in `backend/src/test/java/com/tgfc/som/pricing/PriceCalculationPerformanceTest.java`
+- [x] T111b [P] Execute performance baseline test for NFR-002 (商品驗證 API ≤ 500ms) in `backend/src/test/java/com/tgfc/som/catalog/ProductEligibilityPerformanceTest.java`
+- [x] T111c [P] Execute performance baseline test for NFR-003 (訂單建立 API ≤ 2秒) in `backend/src/test/java/com/tgfc/som/order/OrderCreationPerformanceTest.java`
 
 ### Validation
 
-- [ ] T112 Run quickstart.md validation - verify development environment setup
-- [ ] T113 Verify all API responses match contracts/order-api.yaml schema
+- [x] T112 Run quickstart.md validation - verify development environment setup
+- [x] T113 Verify all API responses match contracts/order-api.yaml schema
 
 ---
 

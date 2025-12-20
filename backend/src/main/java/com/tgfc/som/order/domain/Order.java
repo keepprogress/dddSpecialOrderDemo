@@ -27,13 +27,13 @@ import java.util.UUID;
  *
  * 不變量：
  * - 訂單至少包含一項商品（提交時）
- * - 商品數量不超過 50 項
+ * - 商品數量不超過 999 項
  * - 提交前必須完成價格試算
  */
 public class Order {
 
     // 最大行項數量
-    public static final int MAX_LINES = 50;
+    public static final int MAX_LINES = 999;
 
     // === Identity ===
     private final OrderId id;
