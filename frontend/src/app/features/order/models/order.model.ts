@@ -251,23 +251,58 @@ export interface TempMemberRequest {
 
 // ============ 商品 ============
 
+/**
+ * 採購屬性 (DC_TYPE)
+ */
+export type DcType = 'XD' | 'DC' | 'VD';
+
+export const DC_TYPE_MAP: Record<DcType, string> = {
+  'XD': '交叉轉運',
+  'DC': '庫存持有',
+  'VD': '供應商直送'
+};
+
+/**
+ * 採購權限 (holdOrder)
+ */
+export type HoldOrderType = 'N' | 'A' | 'B' | 'C' | 'D' | 'E';
+
+export const HOLD_ORDER_TYPE_MAP: Record<HoldOrderType, string> = {
+  'N': '無HOLD ORDER',
+  'A': '暫停採購及調撥',
+  'B': '暫停店對店調撥',
+  'C': '暫停所有採購調撥',
+  'D': '暫停但允許MD下單及調撥',
+  'E': '暫停但允許MD調撥'
+};
+
 export interface ProductInfo {
   skuNo: string;
   skuName: string;
-  category: string;
+  skuType: string;
+  subDeptId: string;
+  classId: string;
+  subClassId: string;
   taxType: TaxType;
+  vendorId?: string;
+  dcType?: DcType;
+  holdOrderType?: HoldOrderType;
   marketPrice: number;
-  registeredPrice: number;
+  regularPrice: number;
   posPrice: number;
   cost: number;
   allowSales: boolean;
-  holdOrder: boolean;
   isSystemSku: boolean;
-  isNegativeSku: boolean;
+  soFlag: boolean;
   freeDelivery: boolean;
   freeDeliveryShipping: boolean;
   allowDirectShipment: boolean;
-  allowHomeDelivery: boolean;
+  openPrice: boolean;
+  vendorStatus?: string;
+  hasSkuCompany: boolean;
+  stockAoh: number;
+  skuStatus?: string;
+  skuStoreStatus?: string;
 }
 
 export interface EligibilityResponse {
@@ -275,9 +310,26 @@ export interface EligibilityResponse {
   failureReason?: string;
   failureLevel: number;
   product?: ProductInfo;
+  orderability?: OrderabilityResult;
   availableServices: InstallationService[];
   availableStockMethods: StockMethod[];
   availableDeliveryMethods: DeliveryMethod[];
+  isLargeFurniture: boolean;
+  isServiceSku: boolean;
+}
+
+/**
+ * 商品可訂購性結果
+ *
+ * 來源: product-query-spec.md Section 11.3
+ */
+export interface OrderabilityResult {
+  orderable: boolean;
+  lockReason?: string;
+  isDcVendorFrozen: boolean;
+  isLargeFurniture: boolean;
+  isServiceSku: boolean;
+  stockAoh: number;
 }
 
 export interface InstallationService {

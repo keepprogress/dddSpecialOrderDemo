@@ -64,7 +64,21 @@ import { ServiceConfigComponent } from '../service-config/service-config.compone
         @if (eligibilityResult()?.eligible) {
           <div class="success-message">
             商品 {{ eligibilityResult()?.product?.skuName }} 可以銷售
+            @if (eligibilityResult()?.isLargeFurniture) {
+              <span class="product-badge large-furniture">大型家具</span>
+            }
+            @if (eligibilityResult()?.isServiceSku) {
+              <span class="product-badge service-sku">外包服務</span>
+            }
           </div>
+          @if (eligibilityResult()?.orderability?.isDcVendorFrozen) {
+            <div class="warning-message">
+              ⚠️ 此商品廠商已凍結，庫存量: {{ eligibilityResult()?.orderability?.stockAoh }}
+              @if (requiresSpotStock()) {
+                <strong>（僅可選現貨）</strong>
+              }
+            </div>
+          }
         }
       </div>
 
@@ -243,6 +257,36 @@ import { ServiceConfigComponent } from '../service-config/service-config.compone
       color: #2e7d32;
       border-radius: 4px;
       font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .warning-message {
+      padding: 0.5rem;
+      background: #fff3e0;
+      color: #e65100;
+      border-radius: 4px;
+      font-size: 0.875rem;
+    }
+
+    .product-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 500;
+
+      &.large-furniture {
+        background: #e8eaf6;
+        color: #3949ab;
+      }
+
+      &.service-sku {
+        background: #fce4ec;
+        color: #c2185b;
+      }
     }
 
     .lines-table {
@@ -469,6 +513,16 @@ export class ProductListComponent {
    */
   calculateTotal(): number {
     return this.lines().reduce((sum, line) => sum + line.subtotal, 0);
+  }
+
+  /**
+   * 判斷是否需強制現貨
+   * DC商品廠商凍結 + 非大型家具 + 庫存不足 → 強制現貨
+   */
+  requiresSpotStock(): boolean {
+    const result = this.eligibilityResult();
+    if (!result) return false;
+    return this.productService.requiresSpotStock(result, this.quantityInput);
   }
 
   /**

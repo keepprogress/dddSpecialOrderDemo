@@ -50,6 +50,8 @@ export class ProductService {
 
   /**
    * 取得資格驗證失敗訊息
+   *
+   * 來源: product-query-spec.md 8-Layer 驗證
    */
   getEligibilityErrorMessage(level: number): string {
     const messages: Record<number, string> = {
@@ -58,8 +60,28 @@ export class ProductService {
       3: '系統商品無法銷售',
       4: '稅別設定錯誤',
       5: '商品已禁止銷售',
-      6: '商品類別限制銷售'
+      6: '商品類別限制銷售',
+      7: '廠商已凍結，商品無法訂購',
+      8: '商品不在門市採購組織內'
     };
     return messages[level] || '商品不符合銷售資格';
+  }
+
+  /**
+   * 判斷是否為 DC 商品廠商凍結（需特殊處理備貨方式）
+   */
+  isDcVendorFrozen(eligibility: EligibilityResponse): boolean {
+    return eligibility.orderability?.isDcVendorFrozen ?? false;
+  }
+
+  /**
+   * 判斷 DC 商品廠商凍結是否需強制現貨
+   * DC商品廠商凍結 + 非大型家具 + 庫存不足 → 強制現貨
+   */
+  requiresSpotStock(eligibility: EligibilityResponse, requestedQuantity: number): boolean {
+    const orderability = eligibility.orderability;
+    if (!orderability?.isDcVendorFrozen) return false;
+    if (orderability.isLargeFurniture) return false;
+    return orderability.stockAoh < requestedQuantity;
   }
 }
