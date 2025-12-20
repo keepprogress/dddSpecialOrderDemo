@@ -338,7 +338,7 @@ paths:
         查詢會員基本資料與折扣類型
 
         **Mock 策略**:
-        - H00199 返回寫死假資料
+        - K00123 返回寫死假資料
         - 其他帳號走正常 CRM API
       operationId: getMember
       parameters:
@@ -464,7 +464,7 @@ components:
         memberId:
           type: string
           description: 會員卡號
-          example: "H00199"
+          example: "K00123"
         name:
           type: string
           description: 姓名
@@ -761,7 +761,7 @@ components:
       properties:
         memberId:
           type: string
-          example: "H00199"
+          example: "K00123"
         cardType:
           type: string
           example: "0"

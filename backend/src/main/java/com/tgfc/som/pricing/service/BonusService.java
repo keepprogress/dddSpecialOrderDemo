@@ -44,7 +44,7 @@ public class BonusService {
      * 初始化範例資料（開發測試用）
      */
     private void initializeSampleData() {
-        memberBonusPoints.put("H00199", 5000);
+        memberBonusPoints.put("K00123", 5000);
         memberBonusPoints.put("M001", 1000);
         memberBonusPoints.put("M002", 500);
         log.info("已初始化 {} 位會員的紅利點數", memberBonusPoints.size());

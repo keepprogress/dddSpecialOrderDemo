@@ -1,4 +1,4 @@
-# Claude Code - DDD Special Order Demo
+﻿# Claude Code - DDD Special Order Demo
 
 ## Current Feature
 
@@ -151,7 +151,7 @@ Base URL: `/api/v1`
 | POST | /orders/{id}/calculate | Execute pricing calculation |
 | POST | /orders/{id}/submit | Submit order |
 | GET | /products/{skuNo}/eligibility | Check product eligibility |
-| GET | /members/{memberId} | Get member info (Mock: H00199) |
+| GET | /members/{memberId} | Get member info (Mock: K00123) |
 
 ## Next Steps
 

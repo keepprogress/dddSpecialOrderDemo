@@ -1,9 +1,10 @@
 # Tasks: 新增訂單頁面 (Create Order)
 
 **Input**: Design documents from `/specs/002-create-order/`
-**Prerequisites**: plan.md, spec.md, data-model.md, contracts/order-api.yaml, research.md, quickstart.md
+**Prerequisites**: plan.md (v2.0.0), spec.md (v2.0.0), data-model.md, contracts/order-api.yaml, research.md, quickstart.md
+**Constitution**: v1.10.0 (requires ≥80% code coverage)
 
-**Tests**: E2E tests with Playwright (per Constitution VII)
+**Tests**: E2E tests with Playwright (per Constitution VII), Unit tests with JUnit 5 + JaCoCo (per Constitution XIII)
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
@@ -53,7 +54,7 @@
 ### Enums (Backend)
 
 - [x] T014 [P] Create OrderStatus enum in `backend/src/main/java/com/tgfc/som/order/domain/OrderStatus.java` (值：1=草稿/2=報價/3=已付款/4=有效/5=結案/6=作廢，參考 DataExchangeItf.java)
-- [x] T015 [P] Create DeliveryMethod enum in `backend/src/main/java/com/tgfc/som/order/domain/DeliveryMethod.java` (值：N=運送/D=純運/V=直送/C=當場自取/F=宅配/P=下次自取，參考 SoConstant.java)
+- [x] T015 [P] Create DeliveryMethod enum in `backend/src/main/java/com/tgfc/som/order/domain/DeliveryMethod.java` (值：N=運送/D=純運/V=直送/C=當場自取/F=宅配(工種0167)/P=下次自取，參考 SoConstant.java:93-113，spec.md v2.0.0 澄清 F 為宅配非免運)
 - [x] T016 [P] Create StockMethod enum in `backend/src/main/java/com/tgfc/som/order/domain/StockMethod.java` (值：X=現貨/Y=訂購，資料庫欄位 TRADE_STATUS)
 - [x] T017 [P] Create TaxType enum in `backend/src/main/java/com/tgfc/som/order/domain/TaxType.java` (值：0=零稅/1=應稅/2=免稅，參考 CommonConstant.java)
 - [x] T018 [P] Create MemberDiscountType enum in `backend/src/main/java/com/tgfc/som/member/domain/MemberDiscountType.java` (值：0=Discounting折價/1=DownMargin下降/2=CostMarkup成本加成，參考 SoConstant.java)
@@ -119,8 +120,8 @@
 ### Services (Backend)
 
 - [x] T045 [US1] Create OrderService in `backend/src/main/java/com/tgfc/som/order/service/OrderService.java` (createOrder, addLine, calculate, submit)
-- [x] T046 [US1] Create MemberService with H00199 mock + temp card support in `backend/src/main/java/com/tgfc/som/member/service/MemberService.java` (H00199 返回假資料、TEMP001 返回臨時卡假資料、其他查無資料時允許建立臨時卡)
-- [x] T047 [US1] Create ProductEligibilityService (6-layer validation) in `backend/src/main/java/com/tgfc/som/catalog/service/ProductEligibilityService.java`
+- [x] T046 [US1] Create MemberService with K00123 mock + temp card support in `backend/src/main/java/com/tgfc/som/member/service/MemberService.java` (K00123 返回假資料、TEMP001 返回臨時卡假資料、其他查無資料時允許建立臨時卡)
+- [x] T047 [US1] Create ProductEligibilityService (8-layer validation per spec.md v2.0.0) in `backend/src/main/java/com/tgfc/som/catalog/service/ProductEligibilityService.java`
 - [x] T048 [US1] Create basic PriceCalculationService in `backend/src/main/java/com/tgfc/som/pricing/service/PriceCalculationService.java` (ComputeType 1-3 only)
 
 ### Controllers (Backend)
@@ -440,19 +441,19 @@ With multiple developers:
 
 ### Independent Test Criteria
 
-- **US1**: Member H00199 → Add SKU → Calculate → Submit → Order ID returned
+- **US1**: Member K00123 → Add SKU (8-layer validation) → Calculate → Submit → Order ID returned
 - **US1 (Temp Card)**: 查無會員 → 使用臨時卡 → 輸入姓名/電話/地址 → Submit → Order ID returned
-- **US2**: Select delivery method → Add installation service → Verify cost
-- **US3**: Type 0 member → Calculate → Verify memberDisc in response
-- **US4**: Apply coupon → Verify discount capped at product total
+- **US2**: Select delivery method (6 types per spec.md v2.0.0) → Add installation service → Verify cost
+- **US3**: Type 0 member → Calculate (12-step flow) → Verify memberDisc in response
+- **US4**: Apply coupon (FIFO order) → Verify discount capped at product total
 
 ### Suggested MVP Scope
 
 **User Story 1 Only** (34 tasks total = Phase 1 + Phase 2 + Phase 3):
 - Basic order creation flow
-- Member lookup with H00199 mock
+- Member lookup with K00123 mock
 - Temp card support (查無會員時可手動輸入臨時卡資料)
-- Product eligibility validation (6 layers)
+- Product eligibility validation (8 layers per spec.md v2.0.0)
 - Simple price calculation (ComputeType 1-3)
 - Order submission with idempotency check
 
@@ -466,4 +467,4 @@ With multiple developers:
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence
-- **Constitution Compliance**: No Lombok, use Java Records for DTOs, MyBatisGenerator for mappers
+- **Constitution Compliance**: No Lombok (IX), use Java Records for DTOs (X), MyBatisGenerator for mappers (VIII), ≥80% code coverage (XIII)

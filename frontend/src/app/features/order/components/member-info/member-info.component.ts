@@ -30,7 +30,7 @@ import { MemberResponse, TempMemberRequest } from '../../models/order.model';
               placeholder="請輸入會員卡號"
               [disabled]="isSearching()"
             />
-            <small class="hint">測試用: H00199, M00001, M00002, S00001</small>
+            <small class="hint">測試用: K00123, M00001, M00002, S00001</small>
           </div>
           <div class="button-group">
             <button

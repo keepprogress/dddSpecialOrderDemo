@@ -165,9 +165,9 @@ class OrderCreationPerformanceTest {
 
     private CreateOrderRequest createOrderRequest() {
         return new CreateOrderRequest(
-                "H00199",
+                "K00123",
                 new CreateOrderRequest.CustomerInfo(
-                        "H00199",
+                        "K00123",
                         "A",
                         "測試會員",
                         "M",

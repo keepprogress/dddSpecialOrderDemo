@@ -131,7 +131,7 @@ class PriceCalculationPerformanceTest {
 
     private Order createOrderWithLines(int lineCount) {
         Customer customer = new Customer(
-                "H00199",
+                "K00123",
                 "A",
                 "測試會員",
                 "M",

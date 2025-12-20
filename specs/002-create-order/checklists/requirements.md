@@ -97,7 +97,7 @@
 ### 待釐清事項
 
 - [x] 商品數量試算上限：500 筆 (TBL_PARM.SKU_COMPUTE_LIMIT)，結帳限制 1000 筆
-- [x] CRM 系統整合方式：Controller 層 Mock (H00199/TEMP001 返回假資料)
+- [x] CRM 系統整合方式：Controller 層 Mock (K00123/TEMP001 返回假資料)
 - [x] Type 2 負數折扣的處理邏輯：歸零處理並發送告警信
 - [x] 促銷引擎 (Event A-H) 的優先級控制來源：OMS 控制優先級
 
@@ -113,7 +113,7 @@
 ### 依賴項目
 
 - [x] 001-keycloak-user-login 功能完成（登入與店別選擇）
-- [x] CRM 系統 API 規格確認（使用 Mock 實作：H00199/TEMP001）
+- [x] CRM 系統 API 規格確認（使用 Mock 實作：K00123/TEMP001）
 - [x] 資料庫結構文件 (docs/tables) 完整性確認
 
 ---

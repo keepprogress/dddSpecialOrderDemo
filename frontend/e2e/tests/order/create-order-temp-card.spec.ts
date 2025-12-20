@@ -51,7 +51,7 @@ test.describe('Create Order - Temp Card Flow', () => {
     lines: [],
     calculation: null,
     createdAt: new Date().toISOString(),
-    createdBy: 'H00199',
+    createdBy: 'K00123',
   };
 
   const mockOrderLine = {

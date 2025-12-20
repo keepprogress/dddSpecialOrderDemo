@@ -89,12 +89,12 @@
       ]
     },
     {
-      "username": "H00199",
+      "username": "K00123",
       "enabled": true,
       "emailVerified": true,
       "firstName": "SIT",
       "lastName": "測試人員",
-      "email": "H00199@test.com",
+      "email": "K00123@test.com",
       "credentials": [
         {
           "type": "password",

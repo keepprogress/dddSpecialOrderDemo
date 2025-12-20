@@ -11,7 +11,7 @@ import { test, expect } from '../../fixtures/mock-auth.fixture';
 test.describe('Create Order - Member Discount', () => {
   // Type 0 會員 (折價 Discounting)
   const mockMemberType0 = {
-    memberId: 'H00199',
+    memberId: 'K00123',
     discType: '0',
     name: 'SIT測試人員',
     cellPhone: '0912345678',
@@ -79,14 +79,14 @@ test.describe('Create Order - Member Discount', () => {
     projectId: 'PJ240101000001',
     status: '1',
     statusName: '草稿',
-    memberId: 'H00199',
+    memberId: 'K00123',
     memberName: 'SIT測試人員',
     channelId: 'A',
     storeId: '001',
     lines: [],
     calculation: null,
     createdAt: new Date().toISOString(),
-    createdBy: 'H00199',
+    createdBy: 'K00123',
   };
 
   const mockOrderLine = {
@@ -199,7 +199,7 @@ test.describe('Create Order - Member Discount', () => {
     // 設定 Mock API 路由
     await authenticatedPage.route('**/api/v1/members/*', (route) => {
       const url = route.request().url();
-      if (url.includes('H00199')) {
+      if (url.includes('K00123')) {
         route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -283,7 +283,7 @@ test.describe('Create Order - Member Discount', () => {
       await authenticatedPage.waitForLoadState('networkidle');
 
       // 查詢 Type 0 會員
-      await authenticatedPage.getByPlaceholder(/請輸入會員卡號/i).fill('H00199');
+      await authenticatedPage.getByPlaceholder(/請輸入會員卡號/i).fill('K00123');
       await authenticatedPage.getByRole('button', { name: /查詢會員/i }).click();
       await authenticatedPage.waitForTimeout(500);
 
@@ -303,7 +303,7 @@ test.describe('Create Order - Member Discount', () => {
         });
       });
 
-      await setupOrderWithMemberAndProduct(authenticatedPage, 'H00199');
+      await setupOrderWithMemberAndProduct(authenticatedPage, 'K00123');
 
       // 點擊試算
       const calculateButton = authenticatedPage.getByRole('button', { name: /執行試算/i });
@@ -333,7 +333,7 @@ test.describe('Create Order - Member Discount', () => {
         });
       });
 
-      await setupOrderWithMemberAndProduct(authenticatedPage, 'H00199');
+      await setupOrderWithMemberAndProduct(authenticatedPage, 'K00123');
 
       // 點擊試算
       await authenticatedPage.getByRole('button', { name: /執行試算/i }).click();
@@ -452,7 +452,7 @@ test.describe('Create Order - Member Discount', () => {
         });
       });
 
-      await setupOrderWithMemberAndProduct(authenticatedPage, 'H00199');
+      await setupOrderWithMemberAndProduct(authenticatedPage, 'K00123');
 
       // 點擊試算
       await authenticatedPage.getByRole('button', { name: /執行試算/i }).click();
@@ -476,7 +476,7 @@ test.describe('Create Order - Member Discount', () => {
         });
       });
 
-      await setupOrderWithMemberAndProduct(authenticatedPage, 'H00199');
+      await setupOrderWithMemberAndProduct(authenticatedPage, 'K00123');
 
       // 點擊試算
       await authenticatedPage.getByRole('button', { name: /執行試算/i }).click();
@@ -529,7 +529,7 @@ test.describe('Create Order - Member Discount', () => {
         });
       });
 
-      await setupOrderWithMemberAndProduct(authenticatedPage, 'H00199');
+      await setupOrderWithMemberAndProduct(authenticatedPage, 'K00123');
 
       // 點擊試算
       await authenticatedPage.getByRole('button', { name: /執行試算/i }).click();

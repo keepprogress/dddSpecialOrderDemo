@@ -1,9 +1,23 @@
 # Pricing Calculation Specification
 
 > **Feature**: 002-create-order
-> **Version**: 1.0.0
+> **Version**: 1.1.0
 > **Last Updated**: 2025-12-20
 > **Status**: Draft
+
+## Clarification Summary (2025-12-20)
+
+本規格已通過 `/speckit.clarify` 工作流程，以下歧義已澄清：
+
+| # | 歧義類別 | 問題 | 決議 | 位置 |
+|---|---------|------|------|------|
+| 1 | 邊界案例 | OMS 促銷過期風險窗口處理 | 靜默忽略，按原價計算，記錄 Warning Log | Section 21.4 |
+| 2 | 領域模型 | 多張折價券計算順序 | 依加入順序 (FIFO) | Section 24.4 |
+| 3 | 邊界案例 | 工種變價餘數分攤算法 | 按 detlSeq 逐一分攤 $1 | Section 21.5 |
+| 4 | 功能行為 | 零元商品處理 | 打印 INFO Log 便於追蹤 | Section 6.2 |
+| 5 | 外部依賴 | CRM 長時間不可用 | 三層降級：過期快取 → 臨時卡 | Section 21.6.1 |
+
+---
 
 ## Overview
 
@@ -510,6 +524,27 @@ taxAmount = actTotalPrice - FLOOR(actTotalPrice / 1.05)
 **免稅/零稅商品**:
 ```
 taxAmount = 0
+```
+
+#### 零元商品處理 (Clarified)
+
+當商品最終金額為 0 時（因折扣、紅利折抵等原因）：
+
+- **稅額計算**: 跳過稅額計算，taxAmount = 0
+- **日誌記錄**: 打印 INFO Log 便於追蹤，包含 SKU_NO、原因類型、訂單編號
+- **原因類型** (可從現有欄位推導):
+  - `FULL_DISCOUNT`: 當 discountAmt >= originalPrice
+  - `FULL_BONUS`: 當 bonusTotal >= originalPrice
+  - `FULL_COUPON`: 當 couponDisc >= originalPrice
+  - `COMBINED`: 以上組合導致
+
+```java
+// 實作範例
+if (line.getSubtotal().isZero()) {
+    String reason = determineZeroReason(line);
+    log.info("商品金額為 0: skuNo={}, reason={}, orderId={}",
+             line.getSkuNo(), reason, order.getId());
+}
 ```
 
 ### 6.3 Tax Zero Order
@@ -1560,6 +1595,27 @@ public boolean isPromotionValid(String eventNo) {
 }
 ```
 
+#### 促銷過期處理規則 (Clarified)
+
+當促銷在風險窗口（23:59 ~ 隔天 09:30）過期，但 `TBL_SKU_STORE.PROM_EVENT_NO` 仍指向已過期促銷時：
+
+- **處理方式**: 靜默忽略
+- **計價邏輯**: 當作無促銷處理，按原價計算
+- **日誌記錄**: 記錄 Warning Log，包含 SKU_NO、過期 EVENT_NO、訂單編號
+- **理由**: 最簡單且不影響用戶體驗，OMS 同步後自動恢復正常
+
+```java
+// 實作範例
+public Optional<PromotionEvent> getValidPromotion(String eventNo) {
+    TblPromEvent event = promEventMapper.selectByEventNo(eventNo);
+    if (event == null || !isPromotionValid(event)) {
+        log.warn("促銷已過期或無效: eventNo={}", eventNo);
+        return Optional.empty();  // 靜默忽略
+    }
+    return Optional.of(mapToPromotion(event));
+}
+```
+
 ### 21.5 工種變價分攤餘數處理
 
 **來源**: `BzSoServices.java:5375-5572`
@@ -1606,6 +1662,57 @@ for (int i = 0; i < lstInstallSkuByWorkType.size(); i++) {
 }
 ```
 
+#### 餘數分攤優化算法 (Clarified)
+
+當工種變價產生餘數時，採用 **按 detlSeq 逐一分攤 $1** 的方式：
+
+1. 先計算每筆商品的基礎分攤金額（整數除法）
+2. 計算餘數 = 變價總額 - 所有基礎分攤金額總和
+3. 將餘數按 detlSeq 順序逐一分配 $1，直到餘數為 0
+
+**計算範例**:
+```
+變價總額: 100 元，3 筆商品
+
+Step 1: 基礎分攤
+  商品 1: 100 / 3 = 33 元
+  商品 2: 100 / 3 = 33 元
+  商品 3: 100 / 3 = 33 元
+  小計: 99 元
+
+Step 2: 餘數分攤
+  餘數: 100 - 99 = 1 元
+  商品 1 (detlSeq=1): +1 元 → 34 元
+
+最終結果: [34, 33, 33] = 100 元
+```
+
+```java
+// DDD 重構實作
+public void apportionWorkTypeChange(List<OrderLine> lines, Money changeAmount) {
+    int total = changeAmount.intValue();
+    int count = lines.size();
+    int base = total / count;  // 基礎分攤
+    int remainder = total % count;  // 餘數
+
+    // 按 detlSeq 排序
+    lines.sort(Comparator.comparing(OrderLine::getSerialNo));
+
+    for (int i = 0; i < count; i++) {
+        int amount = base;
+        if (i < remainder) {
+            amount += 1;  // 餘數逐一分攤
+        }
+        lines.get(i).setWorkTypeChangeDiscount(Money.of(amount));
+    }
+}
+```
+
+**優點**:
+- 效能較佳（避免逐元迭代）
+- 結果可預測且穩定
+- 不會產生負數安裝費問題
+
 ### 21.6 快取機制詳細說明
 
 #### 21.6.1 會員快取 (CRM Fallback)
@@ -1628,6 +1735,45 @@ private Optional<MemberResponse> callCrmWithTimeout(String memberId) {
     }
 }
 ```
+
+#### CRM 長時間不可用處理 (Clarified)
+
+當會員快取過期且 CRM API 持續不可用超過 30 分鐘時：
+
+**三層降級策略**:
+1. **優先使用過期快取**: 使用過期的快取資料，並標記警告 Log
+2. **若快取不存在**: 採用「臨時卡」機制，視為一般會員（無折扣）
+3. **訂單繼續**: 不中斷訂單流程，保障業務連續性
+
+```java
+// 實作範例
+public MemberInfo getMemberInfo(String memberId) {
+    // 1. 嘗試 CRM API
+    try {
+        return callCrmApi(memberId);
+    } catch (CrmUnavailableException e) {
+        log.warn("CRM 不可用: memberId={}", memberId);
+    }
+
+    // 2. 使用過期快取
+    CachedMember cached = memberCache.get(memberId);
+    if (cached != null) {
+        log.warn("使用過期快取: memberId={}, cachedAt={}",
+                 memberId, cached.getCachedAt());
+        return cached.getMemberInfo();
+    }
+
+    // 3. 降級為臨時卡
+    log.warn("降級為臨時卡: memberId={}", memberId);
+    return MemberInfo.temporaryCard(memberId);
+}
+```
+
+**臨時卡規則**:
+- 會員等級: 一般會員
+- 折扣類型: 無 (discType = null)
+- 紅利點數: 0
+- 備註: 記錄「CRM 降級」標記，後續可人工追溯
 
 #### 21.6.2 冪等鍵快取 (防重複提交)
 
@@ -2064,6 +2210,33 @@ if ("40".equals(coupon.getOtherFlag()) && coupons.size() > 0) {
             return "折價券 " + sku + " 不可與 折價券 " + existingSku + " 一起使用";
         }
     }
+}
+```
+
+#### 多張折價券計算順序 (Clarified)
+
+當訂單同時套用多張折價券且互斥檢查通過時：
+
+- **計算順序**: 依加入順序 (FIFO)
+- **先套用的折價券先計算**，後續折價券基於折後金額繼續計算
+- **理由**: 簡單且可預測，符合 Legacy 系統行為
+
+**計算範例**:
+```
+訂單金額: $1000
+折價券 A (先加入): 固定 $100 折扣 → $1000 - $100 = $900
+折價券 B (後加入): 8 折 → $900 × 0.8 = $720
+最終金額: $720
+```
+
+```java
+// 實作範例
+public Money applyCoupons(Money originalAmount, List<Coupon> coupons) {
+    Money result = originalAmount;
+    for (Coupon coupon : coupons) {  // 依加入順序迭代
+        result = coupon.apply(result);
+    }
+    return result;
 }
 ```
 

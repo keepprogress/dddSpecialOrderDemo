@@ -10,7 +10,7 @@ import { test, expect } from '../../fixtures/mock-auth.fixture';
 test.describe('Create Order - Coupon & Bonus', () => {
   // Mock API 回應設定
   const mockMember = {
-    memberId: 'H00199',
+    memberId: 'K00123',
     discType: '0',
     name: 'SIT測試人員',
     cellPhone: '0912345678',
@@ -28,14 +28,14 @@ test.describe('Create Order - Coupon & Bonus', () => {
     projectId: 'PJ240101000001',
     status: '1',
     statusName: '草稿',
-    memberId: 'H00199',
+    memberId: 'K00123',
     memberName: 'SIT測試人員',
     channelId: 'A',
     storeId: '001',
     lines: [],
     calculation: null,
     createdAt: new Date().toISOString(),
-    createdBy: 'H00199',
+    createdBy: 'K00123',
   };
 
   const mockOrderLine = {
@@ -96,7 +96,7 @@ test.describe('Create Order - Coupon & Bonus', () => {
   };
 
   const mockBonusRedemption = {
-    memberId: 'H00199',
+    memberId: 'K00123',
     skuNo: '014014014',
     skuName: '測試商品A',
     pointsUsed: 100,
@@ -125,7 +125,7 @@ test.describe('Create Order - Coupon & Bonus', () => {
     // 會員查詢
     await authenticatedPage.route('**/api/v1/members/*', (route) => {
       const url = route.request().url();
-      if (url.includes('H00199')) {
+      if (url.includes('K00123')) {
         route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -274,7 +274,7 @@ test.describe('Create Order - Coupon & Bonus', () => {
     await authenticatedPage.waitForLoadState('networkidle');
 
     // 查詢會員
-    await authenticatedPage.getByPlaceholder(/請輸入會員卡號/i).fill('H00199');
+    await authenticatedPage.getByPlaceholder(/請輸入會員卡號/i).fill('K00123');
     await authenticatedPage.getByRole('button', { name: /查詢會員/i }).click();
     await authenticatedPage.waitForTimeout(500);
 

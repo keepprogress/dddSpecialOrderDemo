@@ -167,7 +167,7 @@ public class IdempotencyService {
 **Mock Data**:
 | 卡號 | 類型 | 用途 |
 |------|------|------|
-| H00199 | 一般會員 | 測試 Type 0 折扣 |
+| K00123 | 一般會員 | 測試 Type 0 折扣 |
 | TEMP001 | 臨時卡 | 測試臨時卡流程 |
 
 ---

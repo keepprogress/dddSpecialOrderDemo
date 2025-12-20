@@ -8,7 +8,7 @@ import { test, expect } from '../../fixtures/mock-auth.fixture';
 test.describe('Create Order - Basic Flow', () => {
   // Mock API 回應設定
   const mockMember = {
-    memberId: 'H00199',
+    memberId: 'K00123',
     discType: '0',
     name: 'SIT測試人員',
     cellPhone: '0912345678',
@@ -44,14 +44,14 @@ test.describe('Create Order - Basic Flow', () => {
     projectId: 'PJ240101000001',
     status: '1',
     statusName: '草稿',
-    memberId: 'H00199',
+    memberId: 'K00123',
     memberName: 'SIT測試人員',
     channelId: 'A',
     storeId: '001',
     lines: [],
     calculation: null,
     createdAt: new Date().toISOString(),
-    createdBy: 'H00199',
+    createdBy: 'K00123',
   };
 
   const mockOrderLine = {
@@ -96,7 +96,7 @@ test.describe('Create Order - Basic Flow', () => {
     // 設定 Mock API 路由
     await authenticatedPage.route('**/api/v1/members/*', (route) => {
       const url = route.request().url();
-      if (url.includes('H00199')) {
+      if (url.includes('K00123')) {
         route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -177,7 +177,7 @@ test.describe('Create Order - Basic Flow', () => {
 
     // 輸入會員卡號
     const memberInput = authenticatedPage.getByPlaceholder(/請輸入會員卡號/i);
-    await memberInput.fill('H00199');
+    await memberInput.fill('K00123');
 
     // 點擊查詢
     const searchButton = authenticatedPage.getByRole('button', { name: /查詢會員/i });
@@ -216,7 +216,7 @@ test.describe('Create Order - Basic Flow', () => {
 
     // 先查詢會員
     const memberInput = authenticatedPage.getByPlaceholder(/請輸入會員卡號/i);
-    await memberInput.fill('H00199');
+    await memberInput.fill('K00123');
     await authenticatedPage.getByRole('button', { name: /查詢會員/i }).click();
     await authenticatedPage.waitForTimeout(500);
 
@@ -246,7 +246,7 @@ test.describe('Create Order - Basic Flow', () => {
     await authenticatedPage.waitForLoadState('networkidle');
 
     // 完成會員查詢與商品新增
-    await authenticatedPage.getByPlaceholder(/請輸入會員卡號/i).fill('H00199');
+    await authenticatedPage.getByPlaceholder(/請輸入會員卡號/i).fill('K00123');
     await authenticatedPage.getByRole('button', { name: /查詢會員/i }).click();
     await authenticatedPage.waitForTimeout(500);
 
@@ -269,7 +269,7 @@ test.describe('Create Order - Basic Flow', () => {
     await authenticatedPage.waitForLoadState('networkidle');
 
     // 完成完整流程：會員查詢 → 新增商品 → 試算
-    await authenticatedPage.getByPlaceholder(/請輸入會員卡號/i).fill('H00199');
+    await authenticatedPage.getByPlaceholder(/請輸入會員卡號/i).fill('K00123');
     await authenticatedPage.getByRole('button', { name: /查詢會員/i }).click();
     await authenticatedPage.waitForTimeout(500);
 
@@ -296,7 +296,7 @@ test.describe('Create Order - Basic Flow', () => {
     await authenticatedPage.waitForLoadState('networkidle');
 
     // 完成會員查詢與商品新增
-    await authenticatedPage.getByPlaceholder(/請輸入會員卡號/i).fill('H00199');
+    await authenticatedPage.getByPlaceholder(/請輸入會員卡號/i).fill('K00123');
     await authenticatedPage.getByRole('button', { name: /查詢會員/i }).click();
     await authenticatedPage.waitForTimeout(500);
 

@@ -107,7 +107,7 @@ class ProductEligibilityPerformanceTest {
     @Test
     @DisplayName("Mock 資料驗證應在 50ms 內完成")
     void checkEligibilityWithMock_shouldCompleteWithin50Ms() {
-        // Given: Mock 商品 (H00199 系列)
+        // Given: Mock 商品 (K00123 系列)
         String skuNo = "014014014";
 
         // When

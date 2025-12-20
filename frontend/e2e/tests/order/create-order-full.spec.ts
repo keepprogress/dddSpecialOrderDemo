@@ -15,7 +15,7 @@ import { test, expect } from '../../fixtures/mock-auth.fixture';
 test.describe('Create Order - Full Flow', () => {
   // Mock API 回應設定
   const mockMember = {
-    memberId: 'H00199',
+    memberId: 'K00123',
     cardType: 'A',
     discType: '0',
     name: 'SIT測試人員',
@@ -58,7 +58,7 @@ test.describe('Create Order - Full Flow', () => {
     status: '1',
     statusName: '草稿',
     customer: {
-      memberId: 'H00199',
+      memberId: 'K00123',
       name: 'SIT測試人員',
       cellPhone: '0912345678',
       isTempCard: false,
@@ -133,7 +133,7 @@ test.describe('Create Order - Full Flow', () => {
     // Mock 會員查詢 API
     await authenticatedPage.route('**/api/v1/members/*', (route) => {
       const url = route.request().url();
-      if (url.includes('H00199')) {
+      if (url.includes('K00123')) {
         route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -277,7 +277,7 @@ test.describe('Create Order - Full Flow', () => {
     await expect(authenticatedPage.getByRole('heading', { name: '新增訂單' })).toBeVisible();
 
     // Step 1: 輸入會員卡號
-    await authenticatedPage.getByLabel('會員卡號').fill('H00199');
+    await authenticatedPage.getByLabel('會員卡號').fill('K00123');
     await authenticatedPage.getByRole('button', { name: '查詢' }).click();
 
     // 等待會員資訊顯示
@@ -329,7 +329,7 @@ test.describe('Create Order - Full Flow', () => {
     await authenticatedPage.goto('/order/create');
 
     // 查詢會員
-    await authenticatedPage.getByLabel('會員卡號').fill('H00199');
+    await authenticatedPage.getByLabel('會員卡號').fill('K00123');
     await authenticatedPage.getByRole('button', { name: '查詢' }).click();
     await expect(authenticatedPage.getByText('SIT測試人員')).toBeVisible();
 
@@ -350,7 +350,7 @@ test.describe('Create Order - Full Flow', () => {
     await authenticatedPage.goto('/order/create');
 
     // 建立訂單
-    await authenticatedPage.getByLabel('會員卡號').fill('H00199');
+    await authenticatedPage.getByLabel('會員卡號').fill('K00123');
     await authenticatedPage.getByRole('button', { name: '查詢' }).click();
     await expect(authenticatedPage.getByText('SIT測試人員')).toBeVisible();
 
@@ -377,7 +377,7 @@ test.describe('Create Order - Full Flow', () => {
     await authenticatedPage.goto('/order/create');
 
     // 建立訂單
-    await authenticatedPage.getByLabel('會員卡號').fill('H00199');
+    await authenticatedPage.getByLabel('會員卡號').fill('K00123');
     await authenticatedPage.getByRole('button', { name: '查詢' }).click();
     await expect(authenticatedPage.getByText('SIT測試人員')).toBeVisible();
 
@@ -402,7 +402,7 @@ test.describe('Create Order - Full Flow', () => {
     await authenticatedPage.goto('/order/create');
 
     // 建立訂單
-    await authenticatedPage.getByLabel('會員卡號').fill('H00199');
+    await authenticatedPage.getByLabel('會員卡號').fill('K00123');
     await authenticatedPage.getByRole('button', { name: '查詢' }).click();
     await expect(authenticatedPage.getByText('SIT測試人員')).toBeVisible();
 

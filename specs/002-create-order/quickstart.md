@@ -366,7 +366,7 @@ class OrderServiceTest {
         CreateOrderRequest request = new CreateOrderRequest(
             "12345",
             "0001",
-            new CustomerInfo("H00199", "劉芒果", "0912345678", null, null),
+            new CustomerInfo("K00123", "劉芒果", "0912345678", null, null),
             new DeliveryAddress("114", "台北市內湖區瑞光路100號"),
             List.of()
         );
@@ -418,7 +418,7 @@ test.describe('新增訂單', () => {
     await page.screenshot({ path: 'e2e/screenshots/create-order-1-initial.png' });
 
     // 輸入會員卡號
-    await page.fill('[data-testid="member-id"]', 'H00199');
+    await page.fill('[data-testid="member-id"]', 'K00123');
     await page.click('[data-testid="search-member"]');
     await page.waitForSelector('[data-testid="member-name"]');
     await expect(page.locator('[data-testid="member-name"]')).toHaveText('劉芒果');
@@ -505,7 +505,7 @@ http://localhost:8080/swagger-ui.html
 ### 5.2 測試資料
 
 **Mock 會員**:
-- 會員卡號：H00199
+- 會員卡號：K00123
 - 姓名：劉芒果
 - 折扣類型：Type 0 (Discounting)
 

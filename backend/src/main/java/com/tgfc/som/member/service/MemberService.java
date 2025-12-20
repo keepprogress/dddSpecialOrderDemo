@@ -51,9 +51,9 @@ public class MemberService {
 
     // Mock 會員資料
     private static final Map<String, MemberResponse> MOCK_MEMBERS = Map.of(
-        // H00199 測試會員 - Type 0 (Discounting 折價)
-        "H00199", new MemberResponse(
-            "H00199", "0", "SIT測試人員", null, null, "0912345678",
+        // K00123 測試會員 - Type 0 (Discounting 折價)
+        "K00123", new MemberResponse(
+            "K00123", "0", "SIT測試人員", null, null, "0912345678",
             null, null, "0", "折價 (Discounting)", new BigDecimal("0.95"), null, false
         ),
         // Type 1 (Down Margin) 測試會員

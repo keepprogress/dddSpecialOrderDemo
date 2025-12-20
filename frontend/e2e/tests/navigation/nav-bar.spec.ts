@@ -11,7 +11,7 @@ test.describe('Navigation Bar', () => {
   });
 
   test('should display user info', async ({ authenticatedPage }) => {
-    // 驗證使用者資訊顯示 (H00199 = SIT測試人員) - 在導航列中
+    // 驗證使用者資訊顯示 (K00123 = SIT測試人員) - 在導航列中
     await expect(authenticatedPage.getByRole('navigation').getByText('SIT測試人員')).toBeVisible();
     // 店別顯示在導航列中
     await expect(authenticatedPage.locator('nav .user-name, header .user-name')).toBeVisible();
