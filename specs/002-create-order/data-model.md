@@ -1019,6 +1019,232 @@ WHERE TOD.ORDER_ID = #{orderId}
 | TBL_SKU_STORE | SKU_NO, STORE_ID | 同一商品在不同店別有不同價格/狀態 |
 | TBL_ORDER_DETL | ORDER_ID, DETL_SEQ_ID | DETL_SEQ_ID 為該訂單內的流水號 |
 | TBL_ORDER_COMPUTE | ORDER_ID, COMPUTE_TYPE | COMPUTE_TYPE 區分不同計算項目 |
+| TBL_WORKTYPE_SKUNO_MAPPING | SUB_DEPT_ID, CLASS_ID, SUB_CLASS_ID | 工種-商品分類對照 (三欄位複合) |
+
+---
+
+## 6.8 TBL_WORKTYPE_SKUNO_MAPPING 對應 (工種-商品對照表)
+
+> **來源**: Legacy DAO `TblWorktypeSkunoMapping.java`
+> **用途**: 依商品分類 (大/中/小類) 對照安裝工種與成本折數
+
+**PK**: SUB_DEPT_ID + CLASS_ID + SUB_CLASS_ID (複合主鍵)
+
+| Entity Field | Table Column | Type | Nullable | Description |
+|--------------|--------------|------|----------|-------------|
+| subDeptId | SUB_DEPT_ID | VARCHAR2(3) | NOT NULL | 大類代碼 (PK) |
+| classId | CLASS_ID | VARCHAR2(3) | NOT NULL | 中類代碼 (PK) |
+| subClassId | SUB_CLASS_ID | VARCHAR2(3) | NOT NULL | 子類代碼 (PK) |
+| subClassName | SUB_CLASS_NAME | VARCHAR2(60) | NULL | 子類名稱 |
+| worktypeId | WORKTYPE_ID | VARCHAR2(4) | NULL | 工種代碼 (FK → TBL_WORKTYPE) |
+| discountBase | DISCOUNT_BASE | NUMBER(5,2) | NULL | 標安成本折數 (0.00~1.00) |
+| discountExtra | DISCOUNT_EXTRA | NUMBER(5,2) | NULL | 非標成本折數 (0.00~1.00) |
+| updateDate | UPDATE_DATE | DATE | NULL | 更新日期 |
+| updateEmpId | UPDATE_EMP_ID | VARCHAR2(10) | NULL | 更新人員工號 |
+| updateEmpName | UPDATE_EMP_NAME | VARCHAR2(20) | NULL | 更新人員姓名 |
+
+**JOIN 條件**:
+
+```sql
+-- 商品查詢工種對照
+SELECT WM.WORKTYPE_ID, WM.DISCOUNT_BASE, WM.DISCOUNT_EXTRA
+FROM TBL_WORKTYPE_SKUNO_MAPPING WM
+WHERE WM.SUB_DEPT_ID = #{subDeptId}
+  AND WM.CLASS_ID = #{classId}
+  AND WM.SUB_CLASS_ID = #{subClassId}
+
+-- 結合商品主檔查詢
+SELECT SK.SKU_NO, SK.SKU_NAME, WM.WORKTYPE_ID, WM.DISCOUNT_BASE
+FROM TBL_SKU SK
+LEFT OUTER JOIN TBL_WORKTYPE_SKUNO_MAPPING WM
+    ON SK.SUB_DEPT_ID = WM.SUB_DEPT_ID
+   AND SK.CLASS_ID = WM.CLASS_ID
+   AND SK.SUB_CLASS_ID = WM.SUB_CLASS_ID
+WHERE SK.SKU_NO = #{skuNo}
+```
+
+---
+
+## 6.9 TBL_WORKTYPE 對應 (工種主檔)
+
+> **來源**: Legacy DAO `TblWorktype.java`
+> **用途**: 工種基本資料與最低工資設定
+
+**PK**: WORKTYPE_ID
+
+| Entity Field | Table Column | Type | Nullable | Description |
+|--------------|--------------|------|----------|-------------|
+| worktypeId | WORKTYPE_ID | VARCHAR2(4) | NOT NULL | 工種代碼 (PK) |
+| engineeringId | ENGINEERING_ID | VARCHAR2(10) | NULL | 工程部門代碼 |
+| worktypeName | WORKTYPE_NAME | VARCHAR2(40) | NULL | 工種名稱 |
+| lowSalary | LOW_SALARY | NUMBER(10,0) | NULL | 最低工資 |
+| hisuFlag | HISU_FLAG | VARCHAR2(1) | NULL | HISU 旗標 |
+| warranty | WARRANTY | NUMBER(3,0) | NULL | 保固期限 (月) |
+| disabledFlag | DISABLED_FLAG | VARCHAR2(1) | NULL | 停用旗標 (Y/N) |
+| worktypeSku | WORKTYPE_SKU | VARCHAR2(9) | NULL | 工種對應 SKU |
+| updateDate | UPDATE_DATE | DATE | NULL | 更新日期 |
+| updateEmpId | UPDATE_EMP_ID | VARCHAR2(10) | NULL | 更新人員工號 |
+| updateEmpName | UPDATE_EMP_NAME | VARCHAR2(20) | NULL | 更新人員姓名 |
+
+**特殊工種代碼**:
+
+| 代碼 | 名稱 | 用途 |
+|------|------|------|
+| 0167 | 宅配工種 | 宅配 (F) 配送方式專用 |
+
+**JOIN 條件**:
+
+```sql
+-- 工種對照表查詢工種名稱
+SELECT WM.*, WT.WORKTYPE_NAME, WT.LOW_SALARY
+FROM TBL_WORKTYPE_SKUNO_MAPPING WM
+INNER JOIN TBL_WORKTYPE WT
+    ON WM.WORKTYPE_ID = WT.WORKTYPE_ID
+WHERE WM.SUB_DEPT_ID = #{subDeptId}
+  AND WM.CLASS_ID = #{classId}
+  AND WM.SUB_CLASS_ID = #{subClassId}
+```
+
+---
+
+## 6.10 TBL_PARM_DETL 對應 (參數設定明細表)
+
+> **來源**: Legacy DAO `TblParmDetl.java`
+> **用途**: 系統參數設定 (如大型家具判斷)
+
+**無固定 PK** (依 PARM 類型決定唯一性)
+
+| Entity Field | Table Column | Type | Nullable | Description |
+|--------------|--------------|------|----------|-------------|
+| parm | PARM | VARCHAR2(30) | NULL | 參數名稱 |
+| skuNo | SKU_NO | VARCHAR2(9) | NULL | 商品編號 (選填) |
+| subDeptId | SUB_DEPT_ID | VARCHAR2(3) | NULL | 大類代碼 |
+| classId | CLASS_ID | VARCHAR2(3) | NULL | 中類代碼 |
+| subClassId | SUB_CLASS_ID | VARCHAR2(3) | NULL | 子類代碼 |
+| vendor | VENDOR | VARCHAR2(10) | NULL | 廠商代碼 |
+
+**LARGE_FURNITURE 參數用法**:
+
+```sql
+-- 查詢大型家具設定
+SELECT SUB_DEPT_ID, CLASS_ID, SUB_CLASS_ID
+FROM TBL_PARM_DETL
+WHERE PARM = 'LARGE_FURNITURE'
+
+-- 判斷商品是否為大型家具 (層級匹配)
+SELECT CASE
+    WHEN EXISTS (
+        SELECT 1 FROM TBL_PARM_DETL PD
+        WHERE PD.PARM = 'LARGE_FURNITURE'
+          AND PD.SUB_DEPT_ID = #{subDeptId}
+          AND (PD.CLASS_ID IS NULL
+               OR (PD.CLASS_ID = #{classId}
+                   AND (PD.SUB_CLASS_ID IS NULL
+                        OR PD.SUB_CLASS_ID = #{subClassId})))
+    ) THEN 'Y' ELSE 'N' END AS IS_LARGE_FURNITURE
+FROM DUAL
+```
+
+**層級匹配規則**:
+1. 只比對 SUB_DEPT_ID → 該大類所有商品皆為大型家具
+2. 比對 SUB_DEPT_ID + CLASS_ID → 該中類商品皆為大型家具
+3. 比對 SUB_DEPT_ID + CLASS_ID + SUB_CLASS_ID → 僅該子類為大型家具
+
+---
+
+## 6.11 工種與配送 JOIN Reference (補充)
+
+### 6.11.1 資料表關聯圖 (工種相關)
+
+```text
+┌─────────────────┐    SUB_DEPT_ID     ┌─────────────────────────────┐
+│    TBL_SKU      │    CLASS_ID        │ TBL_WORKTYPE_SKUNO_MAPPING  │
+│  (商品主檔)      │    SUB_CLASS_ID    │      (工種對照表)            │
+│                 │◄──────────────────►│                              │
+│                 │        M:1         │  PK: SUB_DEPT_ID,           │
+│                 │                     │      CLASS_ID,              │
+│                 │                     │      SUB_CLASS_ID           │
+└─────────────────┘                     └──────────────┬──────────────┘
+                                                       │
+                                                       │ WORKTYPE_ID
+                                                       ▼
+                                        ┌─────────────────────────────┐
+                                        │       TBL_WORKTYPE          │
+                                        │        (工種主檔)            │
+                                        │                              │
+                                        │  PK: WORKTYPE_ID            │
+                                        └─────────────────────────────┘
+
+┌─────────────────┐    SUB_DEPT_ID     ┌─────────────────────────────┐
+│    TBL_SKU      │    CLASS_ID        │      TBL_PARM_DETL          │
+│  (商品主檔)      │    SUB_CLASS_ID    │   (參數設定: LARGE_FURNITURE)│
+│                 │◄─ ─ ─ ─ ─ ─ ─ ─ ─ ─│                              │
+│                 │     層級匹配        │  PARM = 'LARGE_FURNITURE'   │
+└─────────────────┘                     └─────────────────────────────┘
+```
+
+### 6.11.2 JOIN 條件對照表 (工種相關)
+
+| 主表 | 從表 | JOIN 條件 | 關聯類型 | 使用場景 |
+|------|------|-----------|---------|---------|
+| TBL_SKU | TBL_WORKTYPE_SKUNO_MAPPING | `SK.SUB_DEPT_ID = WM.SUB_DEPT_ID AND SK.CLASS_ID = WM.CLASS_ID AND SK.SUB_CLASS_ID = WM.SUB_CLASS_ID` | M:1 | 查詢商品對應工種 |
+| TBL_WORKTYPE_SKUNO_MAPPING | TBL_WORKTYPE | `WM.WORKTYPE_ID = WT.WORKTYPE_ID` | M:1 | 取得工種名稱與最低工資 |
+| TBL_ORDER_DETL | TBL_WORKTYPE | `TOD.WORKTYPE_ID = WT.WORKTYPE_ID` | M:1 | 訂單明細查詢工種資訊 |
+| TBL_SKU | TBL_PARM_DETL | 層級匹配 (見 6.10) | M:M | 判斷是否大型家具 |
+
+### 6.11.3 常用查詢模式 (工種與配送)
+
+**工種資訊查詢 (商品 → 工種對照 → 工種主檔)**:
+
+```sql
+-- Pattern 1: 完整工種查詢
+SELECT SK.SKU_NO, SK.SKU_NAME, SK.FREE_DELIVER,
+       WM.WORKTYPE_ID, WM.DISCOUNT_BASE, WM.DISCOUNT_EXTRA,
+       WT.WORKTYPE_NAME, WT.LOW_SALARY
+FROM TBL_SKU SK
+LEFT OUTER JOIN TBL_WORKTYPE_SKUNO_MAPPING WM
+    ON SK.SUB_DEPT_ID = WM.SUB_DEPT_ID
+   AND SK.CLASS_ID = WM.CLASS_ID
+   AND SK.SUB_CLASS_ID = WM.SUB_CLASS_ID
+LEFT OUTER JOIN TBL_WORKTYPE WT
+    ON WM.WORKTYPE_ID = WT.WORKTYPE_ID
+WHERE SK.SKU_NO = #{skuNo}
+```
+
+**訂單明細含工種資訊**:
+
+```sql
+-- Pattern 2: 訂單明細 + 工種
+SELECT TOD.ORDER_ID, TOD.DETL_SEQ_ID, TOD.SKU_NO,
+       TOD.WORKTYPE_ID, TOD.WORKTYPE_DISCOUNT_BASE, TOD.WORKTYPE_DISCOUNT_EXTRA,
+       WT.WORKTYPE_NAME, WT.LOW_SALARY
+FROM TBL_ORDER_DETL TOD
+LEFT OUTER JOIN TBL_WORKTYPE WT
+    ON TOD.WORKTYPE_ID = WT.WORKTYPE_ID
+WHERE TOD.ORDER_ID = #{orderId}
+  AND TOD.GOODS_TYPE IN ('I', 'IA', 'IE', 'IS', 'IC')  -- 安裝類商品
+```
+
+**免運商品與直送查詢**:
+
+```sql
+-- Pattern 3: 免運商品查詢
+SELECT SK.SKU_NO, SK.SKU_NAME, SK.FREE_DELIVER,
+       SKS.SKU_STATUS, SKS.HOLD_ORDER
+FROM TBL_SKU SK
+INNER JOIN TBL_SKU_STORE SKS
+    ON SK.SKU_NO = SKS.SKU_NO
+WHERE SK.FREE_DELIVER = 'Y'
+  AND SKS.STORE_ID = #{storeId}
+  AND SKS.ALLOW_SALES <> 'N'
+
+-- Pattern 4: 直送訂單明細查詢
+SELECT TOD.*
+FROM TBL_ORDER_DETL TOD
+WHERE TOD.ORDER_ID = #{orderId}
+  AND TOD.DELIVERY_FLAG = 'V'      -- 直送
+  AND TOD.GOODS_TYPE = 'VD'        -- 直送運費項目
+```
 
 ---
 
