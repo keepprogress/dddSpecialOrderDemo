@@ -1901,3 +1901,380 @@ public List<TblSkuStore> findAllBySkuNos(String storeId, List<String> skuNos) {
 | 試算 (500 SKU) | ~3s | <1.5s | 批次預載入 |
 | 促銷計算 | ~500ms | <200ms | 快取促銷資料 |
 | 會員折扣 | ~300ms | <100ms | 快取三階段結果 |
+
+---
+
+## 24. 優惠互斥與優先序規則
+
+本章節定義各類優惠之間的互斥關係、疊加規則與執行優先序。
+
+### 24.1 優惠類型總覽
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        優惠類型架構                              │
+├─────────────────────────────────────────────────────────────────┤
+│  Layer 1: 會員折扣 (Member Discount)                            │
+│    ├── Type 0: 折扣 (Discounting) - 乘以折扣率                   │
+│    ├── Type 1: 降價 (Down Margin) - 減固定金額                   │
+│    ├── Type 2: 成本加成 (Cost Markup) - 成本 × 加成率            │
+│    └── Type CT: 通用折扣 - 全訂單級別                            │
+├─────────────────────────────────────────────────────────────────┤
+│  Layer 2: 促銷活動 (Event A-H)                                   │
+│    ├── Event A: 印花價 (Stamp Price)                             │
+│    ├── Event B: 發票金額滿額加價購                                │
+│    ├── Event C: 商品滿額/滿件全面優惠                             │
+│    ├── Event D: 買 M 送 N                                        │
+│    ├── Event E: 買 A 群組享 B 商品優惠                            │
+│    ├── Event F: 合購價                                           │
+│    ├── Event G: 共用商品合購價                                    │
+│    └── Event H: 單品拆價合購價                                    │
+├─────────────────────────────────────────────────────────────────┤
+│  Layer 3: 折價券 (Coupon)                                        │
+│    └── 依 OTHER_FLAG 決定互斥模式                                 │
+├─────────────────────────────────────────────────────────────────┤
+│  Layer 4: 紅利點數 (Bonus Points)                                │
+│    └── 使用紅利將排除該商品參與促銷                               │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 24.2 會員折扣與促銷疊加規則
+
+```mermaid
+graph TD
+    subgraph "會員折扣類型"
+        T0["Type 0: 折扣<br/>price × discount_rate"]
+        T1["Type 1: 降價<br/>price - discount_amount"]
+        T2["Type 2: 成本加成<br/>cost × markup_rate"]
+        TCT["Type CT: 通用折扣<br/>全訂單適用"]
+    end
+
+    subgraph "促銷活動"
+        EVT["Event A-H<br/>OMS 指定促銷"]
+    end
+
+    T0 -->|"可疊加"| EVT
+    T1 -->|"可疊加"| EVT
+    T2 -->|"互斥"| EVT
+    TCT -.->|"條件排除"| T0
+    TCT -.->|"條件排除"| T1
+    TCT -.->|"條件排除"| T2
+
+    style T2 fill:#ffcccc
+    style EVT fill:#ccffcc
+```
+
+**疊加規則矩陣**:
+
+| 會員折扣 | Event A-H | 說明 |
+|---------|-----------|------|
+| Type 0 (折扣) | 可疊加 | Event 先計算，再乘折扣率 |
+| Type 1 (降價) | 可疊加 | Event 先計算，再減金額 |
+| Type 2 (成本加成) | **互斥** | Type 2 改變基價，排除參與 Event |
+| Type CT | 條件適用 | 若訂單有任何 Type 0/1/2，則 CT 不適用 |
+
+**執行順序**:
+
+```
+1. Event A-H 先執行 (OMS 指定的促銷)
+2. Type 0/1 再計算 (基於 Event 折後價)
+3. Type 2 單獨計算 (不與 Event 並存)
+4. Type CT 最後檢查 (全訂單級別)
+```
+
+### 24.3 Type CT 全或無規則
+
+```mermaid
+flowchart TD
+    START["開始計算 Type CT"] --> CHECK{"訂單中是否有任何商品<br/>已套用 Type 0/1/2?"}
+    CHECK -->|"是"| SKIP["跳過 Type CT<br/>所有商品不適用"]
+    CHECK -->|"否"| APPLY["套用 Type CT<br/>全訂單商品適用"]
+
+    SKIP --> END["結束"]
+    APPLY --> END
+
+    style SKIP fill:#ffcccc
+    style APPLY fill:#ccffcc
+```
+
+**規則說明**:
+- Type CT 是訂單級別的通用折扣
+- 只要訂單中有**任一商品**適用 Type 0/1/2，**所有商品**都不套用 Type CT
+- 這是「全或無」邏輯，不是逐項判斷
+
+**程式碼參考**: `BzSoServices.java` 會員折扣計算邏輯
+
+### 24.4 折價券互斥規則 (OTHER_FLAG)
+
+```mermaid
+graph TD
+    subgraph "折價券互斥模式"
+        M10["Mode 10: 全部可使用<br/>無限制"]
+        M20["Mode 20: 全部不可使用<br/>獨佔模式"]
+        M30["Mode 30: 部分可使用<br/>白名單模式"]
+        M40["Mode 40: 部分不可使用<br/>黑名單模式"]
+    end
+
+    C1["折價券 A"] --> CHECK{"檢查 OTHER_FLAG"}
+    CHECK -->|"10"| M10
+    CHECK -->|"20"| M20
+    CHECK -->|"30"| M30
+    CHECK -->|"40"| M40
+
+    M10 --> OK1["可與任何折價券併用"]
+    M20 --> FAIL1["不可與任何其他折價券併用"]
+    M30 --> WL["檢查 TBL_CRM_COUPON_EXC<br/>只能與白名單內折價券併用"]
+    M40 --> BL["檢查 TBL_CRM_COUPON_EXC<br/>不能與黑名單內折價券併用"]
+
+    style M20 fill:#ffcccc
+    style M10 fill:#ccffcc
+```
+
+**互斥模式詳細說明**:
+
+| Mode | OTHER_FLAG | 名稱 | 邏輯 | 資料表查詢 |
+|------|------------|------|------|-----------|
+| 10 | '10' | 全部可使用 | 無限制，可與任何折價券併用 | 不需查詢 |
+| 20 | '20' | 全部不可使用 | 獨佔模式，不可與任何其他折價券併用 | 不需查詢 |
+| 30 | '30' | 部分可使用 | 白名單模式，只能與指定折價券併用 | TBL_CRM_COUPON_EXC.SAMETIME_REBATE_VALUE |
+| 40 | '40' | 部分不可使用 | 黑名單模式，不能與指定折價券併用 | TBL_CRM_COUPON_EXC.SAMETIME_REBATE_VALUE |
+
+**驗證邏輯 (BzSoServices.java:4859-4900)**:
+
+```java
+// Mode 20: 獨佔模式
+if ("20".equals(coupon.getOtherFlag()) && coupons.size() > 0) {
+    return "折價券 " + skuNo + " 不可與其他折價券一起使用";
+}
+
+// Mode 30: 白名單模式 (自動加入自己)
+if ("30".equals(coupon.getOtherFlag()) && coupons.size() > 0) {
+    sametimeRebateValue.add(coupon.getGrno()); // 自己加入白名單
+    for (CouponVO existingCoupon : coupons) {
+        if (!sametimeRebateValue.contains(existingCoupon.getGrno())) {
+            return "折價券 " + sku + " 不可與 折價券 " + existingSku + " 一起使用";
+        }
+    }
+}
+
+// Mode 40: 黑名單模式
+if ("40".equals(coupon.getOtherFlag()) && coupons.size() > 0) {
+    for (CouponVO existingCoupon : coupons) {
+        if (sametimeRebateValue.contains(existingCoupon.getGrno())) {
+            return "折價券 " + sku + " 不可與 折價券 " + existingSku + " 一起使用";
+        }
+    }
+}
+```
+
+### 24.5 紅利點數排除規則
+
+```mermaid
+flowchart TD
+    ITEM["商品項目"] --> BONUS{"BonusTotal > 0?<br/>(使用紅利點數)"}
+    BONUS -->|"是"| EXCLUDE["排除參與 Event A-H<br/>只計算原價或會員折扣"]
+    BONUS -->|"否"| EVENT["可參與 Event A-H 促銷"]
+
+    EXCLUDE --> REPRICE["需重新試算<br/>移除已套用促銷"]
+    EVENT --> CALC["正常促銷計算"]
+
+    style EXCLUDE fill:#ffcccc
+    style EVENT fill:#ccffcc
+```
+
+**關鍵規則**:
+- 若商品使用紅利點數折抵 (BonusTotal > 0)，該商品**排除**參與所有 Event A-H 促銷
+- 這意味著使用紅利後需要**重新試算**，移除該商品原本套用的促銷優惠
+- 程式碼參考: `SoComputeFunctionMain.java:155`
+
+### 24.6 促銷優先序機制 (OMS 權威模式)
+
+```mermaid
+sequenceDiagram
+    participant OMS as OMS<br/>(訂單管理系統)
+    participant SOM as SOM<br/>(特殊訂單系統)
+    participant DB as TBL_PROM_EVENT
+
+    Note over OMS,DB: 促銷優先序由 OMS 決定，SOM 只執行
+
+    OMS->>DB: 指定商品促銷 (EVENT_NO)
+    Note over OMS: OMS 內部決定優先級<br/>SOM 不參與決策
+
+    SOM->>DB: 查詢商品促銷標記
+    DB-->>SOM: EVENT_NO = 'A'/'B'/.../H
+
+    alt 有促銷標記
+        SOM->>SOM: 執行對應 Event 邏輯
+    else 無促銷標記
+        SOM->>SOM: 只計算會員折扣
+    end
+
+    Note over SOM: SOM 無優先級選擇邏輯<br/>不比較 "哪個促銷更優"
+```
+
+**架構說明**:
+- **OMS 權威模式**: 促銷優先級完全由 OMS 決定，SOM 只負責執行
+- **無優先比較**: SOM 不實作「選擇最優促銷」邏輯
+- **單一促銷**: 每個商品只會被標記一個 Event 類型
+- **TBL_PROM_EVENT 無優先級欄位**: 資料表設計即反映此架構
+
+### 24.7 Event 數量超限處理差異
+
+不同 Event 類型對於數量超限有不同處理邏輯:
+
+```mermaid
+flowchart TD
+    subgraph "Event A: 印花價"
+        A_CHECK{"數量 > LIMIT_QTY?"} -->|"是"| A_FAIL["整筆促銷失敗<br/>全部回歸原價"]
+        A_CHECK -->|"否"| A_OK["全部享優惠價"]
+    end
+
+    subgraph "Event B/D/E: 階梯式"
+        B_CHECK{"數量 > LIMIT_QTY?"} -->|"是"| B_PARTIAL["限額內享優惠<br/>超額部分原價"]
+        B_CHECK -->|"否"| B_OK["全部享優惠價"]
+    end
+
+    style A_FAIL fill:#ffcccc
+    style A_OK fill:#ccffcc
+    style B_PARTIAL fill:#ffffcc
+    style B_OK fill:#ccffcc
+```
+
+| Event 類型 | 超限模式 | 行為 | 範例 |
+|-----------|----------|------|------|
+| Event A | 全或無 | 超限 = 整筆失敗 | 限買 5 件，買 6 件 → 6 件全原價 |
+| Event B | 階梯式 | 超限 = 部分優惠 | 限買 5 件，買 6 件 → 5 件優惠 + 1 件原價 |
+| Event D | 階梯式 | 超限 = 部分優惠 | 買 3 送 1 限 2 組，買 9 件 → 6 件計算 + 3 件原價 |
+| Event E | 階梯式 | 超限 = 部分優惠 | 條件商品超限時，優惠商品部分適用 |
+
+**程式碼參考**:
+- Event A: `SoEventA.java:159-170` - 檢查超限後直接 return 錯誤
+- Event B: `SoEventB.java:195` - 計算完一層後繼續下一層
+
+### 24.8 Event B 堆積 (HEAP) 模式
+
+```mermaid
+flowchart TD
+    subgraph "HEAP = 'Y' (堆積模式)"
+        Y1["滿 1000 減 50"] --> Y2["滿 2000 再減 80"]
+        Y2 --> Y3["滿 3000 再減 100"]
+        Y3 --> YTOTAL["總折扣: 50 + 80 + 100 = 230"]
+    end
+
+    subgraph "HEAP = 'N' (擇優模式)"
+        N1["滿 1000 減 50"] --> N_CHECK{"金額 >= 3000?"}
+        N_CHECK -->|"是"| N3["只套用: 滿 3000 減 100"]
+        N_CHECK -->|"否"| N2["檢查下一層..."]
+    end
+
+    style YTOTAL fill:#ccffcc
+    style N3 fill:#ffffcc
+```
+
+| HEAP | 模式 | 說明 | 範例 (消費 3500 元) |
+|------|------|------|-------------------|
+| 'Y' | 堆積 | 所有符合條件的層級都累計 | 50 + 80 + 100 = 230 |
+| 'N' | 擇優 | 只取最高層級一次 | 100 |
+
+### 24.9 互斥規則摘要表
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                          互斥規則快速參照表                              │
+├─────────────────┬──────────────────┬───────────────┬──────────────────┤
+│ 組合            │ 關係             │ 執行順序      │ 備註             │
+├─────────────────┼──────────────────┼───────────────┼──────────────────┤
+│ Type 0/1 + Event│ 可疊加           │ Event → Type  │ 先促銷再會員折扣 │
+│ Type 2 + Event  │ 互斥             │ 只取 Type 2   │ 成本加成獨立計算 │
+│ Type CT + 0/1/2 │ 條件排除         │ 0/1/2 優先    │ 有其他則 CT 不用 │
+│ Bonus + Event   │ 排除             │ 只算會員折扣  │ 用紅利排除促銷   │
+│ Coupon + Coupon │ 視 OTHER_FLAG    │ 依加入順序    │ 查 TBL_CRM_COUPON│
+│ Event + Event   │ 單一指定         │ OMS 決定      │ 每商品只有一個   │
+└─────────────────┴──────────────────┴───────────────┴──────────────────┘
+```
+
+### 24.10 DDD 重構建議
+
+基於互斥規則分析，建議的 Domain Model 設計:
+
+```mermaid
+classDiagram
+    class DiscountPolicy {
+        <<interface>>
+        +canStackWith(other: DiscountPolicy): boolean
+        +getPriority(): int
+        +calculate(price: Money): Money
+    }
+
+    class MemberDiscount {
+        -type: DiscountType
+        -rate: BigDecimal
+        +canStackWith(other): boolean
+    }
+
+    class PromotionEvent {
+        -eventType: EventType
+        -limitQty: int
+        -heapMode: boolean
+        +canStackWith(other): boolean
+    }
+
+    class Coupon {
+        -otherFlag: CouponMode
+        -exclusionList: List~String~
+        +canStackWith(other): boolean
+    }
+
+    class BonusRedemption {
+        -points: int
+        +excludesPromotions(): boolean
+    }
+
+    class DiscountResolver {
+        +resolve(policies: List~DiscountPolicy~): List~DiscountPolicy~
+        -filterExclusive(policies): List~DiscountPolicy~
+        -sortByPriority(policies): List~DiscountPolicy~
+    }
+
+    DiscountPolicy <|.. MemberDiscount
+    DiscountPolicy <|.. PromotionEvent
+    DiscountPolicy <|.. Coupon
+    DiscountPolicy <|.. BonusRedemption
+    DiscountResolver --> DiscountPolicy
+```
+
+**關鍵設計決策**:
+
+1. **DiscountPolicy 介面**: 統一所有優惠類型的行為
+2. **canStackWith() 方法**: 封裝互斥邏輯，每種優惠知道自己能否與其他優惠疊加
+3. **DiscountResolver**: 負責解決優惠衝突，過濾互斥項目
+
+```java
+// 範例: MemberDiscount 互斥邏輯
+public class MemberDiscount implements DiscountPolicy {
+    @Override
+    public boolean canStackWith(DiscountPolicy other) {
+        if (this.type == DiscountType.COST_MARKUP) {
+            // Type 2 不能與促銷疊加
+            return !(other instanceof PromotionEvent);
+        }
+        return true; // Type 0/1 可以疊加
+    }
+}
+
+// 範例: Coupon 互斥邏輯
+public class Coupon implements DiscountPolicy {
+    @Override
+    public boolean canStackWith(DiscountPolicy other) {
+        if (!(other instanceof Coupon)) return true;
+
+        Coupon otherCoupon = (Coupon) other;
+        return switch (this.otherFlag) {
+            case MODE_10 -> true;  // 全部可用
+            case MODE_20 -> false; // 全部不可用
+            case MODE_30 -> this.whitelist.contains(otherCoupon.getGrno());
+            case MODE_40 -> !this.blacklist.contains(otherCoupon.getGrno());
+        };
+    }
+}
+```
