@@ -2278,3 +2278,57 @@ public class Coupon implements DiscountPolicy {
     }
 }
 ```
+
+---
+
+## 25. 延伸規格文件
+
+為避免本文件過大，以下規則已拆分至獨立文件:
+
+### 25.1 工種-商品對照規則
+
+**文件**: [worktype-mapping-spec.md](./worktype-mapping-spec.md)
+
+**涵蓋內容**:
+- TBL_WORKTYPE_SKUNO_MAPPING 查詢邏輯
+- DISCOUNT_BASE vs DISCOUNT_EXTRA 折數選擇
+- 安裝成本計算公式
+- GoodsType 與折數對應表
+
+**快速參照**:
+| GoodsType | 說明 | 使用折數 |
+|-----------|------|---------|
+| I, IA, IS | 標安/提前/補充 | DISCOUNT_BASE |
+| IE | 其他安裝 | DISCOUNT_EXTRA |
+| IC | 安裝調整 | 成本 = 0 |
+
+### 25.2 運費與配送規則
+
+**文件**: [delivery-fee-spec.md](./delivery-fee-spec.md)
+
+**涵蓋內容**:
+- 6 種配送方式 (N/D/V/F/C/P) 總覽
+- 免運條件完整規則
+- 直送費用計算 (ComputeType 5)
+- 大型家具配送規則
+- 宅配工種規則 (0167)
+- 當場自取驗收邏輯
+
+**快速參照**:
+| 配送方式 | 代碼 | 運費 | 安裝 |
+|---------|:----:|:----:|:----:|
+| 運送 | N | 有 | 有 |
+| 純運 | D | 有 | 無 |
+| 直送 | V | 有 | 無 |
+| 宅配 | F | 有 | 無 |
+| 當場自取 | C | 無 | 無 |
+| 下次自取 | P | 無 | 無 |
+
+### 25.3 文件索引
+
+```
+specs/002-create-order/
+├── pricing-calculation-spec.md   # 本文件: 試算主規格
+├── worktype-mapping-spec.md      # 工種-商品對照規則
+└── delivery-fee-spec.md          # 運費與配送規則
+```
