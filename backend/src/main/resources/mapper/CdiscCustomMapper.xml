@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgfc.som.mapper.custom.CdiscCustomMapper">
+
+    <!-- Result Map -->
+    <resultMap id="BaseResultMap" type="com.tgfc.som.entity.TblCdisc">
+        <id column="DISCOUNT_ID" property="discountId" jdbcType="VARCHAR"/>
+        <id column="CHANNEL_ID" property="channelId" jdbcType="VARCHAR"/>
+        <id column="SUB_DEPT_ID" property="subDeptId" jdbcType="VARCHAR"/>
+        <id column="CLASS_ID" property="classId" jdbcType="VARCHAR"/>
+        <id column="SUB_CLASS_ID" property="subClassId" jdbcType="VARCHAR"/>
+        <id column="SKU_NO" property="skuNo" jdbcType="VARCHAR"/>
+        <result column="DISC_PER" property="discPer" jdbcType="VARCHAR"/>
+        <result column="DISC_TYPE" property="discType" jdbcType="VARCHAR"/>
+        <result column="START_DATE" property="startDate" jdbcType="DATE"/>
+        <result column="END_DATE" property="endDate" jdbcType="DATE"/>
+        <result column="CREATED_DATE" property="createdDate" jdbcType="TIMESTAMP"/>
+        <result column="MODIFIED_DATE" property="modifiedDate" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- Base Columns -->
+    <sql id="Base_Column_List">
+        DISCOUNT_ID, CHANNEL_ID, SUB_DEPT_ID, CLASS_ID, SUB_CLASS_ID, SKU_NO,
+        DISC_PER, DISC_TYPE, START_DATE, END_DATE, CREATED_DATE, MODIFIED_DATE
+    </sql>
+
+    <!-- 有效日期條件 -->
+    <sql id="Valid_Date_Condition">
+        AND (START_DATE IS NULL OR START_DATE &lt;= #{checkDate,jdbcType=DATE})
+        AND (END_DATE IS NULL OR END_DATE &gt;= #{checkDate,jdbcType=DATE})
+    </sql>
+
+    <!-- selectByDiscountId -->
+    <select id="selectByDiscountId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM TBL_CDISC
+        WHERE DISCOUNT_ID = #{discountId,jdbcType=VARCHAR}
+        ORDER BY SUB_DEPT_ID, CLASS_ID, SUB_CLASS_ID, SKU_NO
+    </select>
+
+    <!-- selectByDiscountIdAndChannel -->
+    <select id="selectByDiscountIdAndChannel" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM TBL_CDISC
+        WHERE DISCOUNT_ID = #{discountId,jdbcType=VARCHAR}
+          AND CHANNEL_ID = #{channelId,jdbcType=VARCHAR}
+        ORDER BY SUB_DEPT_ID, CLASS_ID, SUB_CLASS_ID, SKU_NO
+    </select>
+
+    <!-- selectApplicableDiscounts -->
+    <select id="selectApplicableDiscounts" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM TBL_CDISC
+        WHERE DISCOUNT_ID = #{discountId,jdbcType=VARCHAR}
+          AND CHANNEL_ID = #{channelId,jdbcType=VARCHAR}
+          AND (SUB_DEPT_ID = '*' OR SUB_DEPT_ID = #{subDeptId,jdbcType=VARCHAR})
+          AND (CLASS_ID = '*' OR CLASS_ID = #{classId,jdbcType=VARCHAR})
+          AND (SUB_CLASS_ID = '*' OR SUB_CLASS_ID = #{subClassId,jdbcType=VARCHAR})
+          AND (SKU_NO = '*' OR SKU_NO = #{skuNo,jdbcType=VARCHAR})
+        <include refid="Valid_Date_Condition"/>
+        ORDER BY
+            CASE WHEN SKU_NO != '*' THEN 0 ELSE 1 END,
+            CASE WHEN SUB_CLASS_ID != '*' THEN 0 ELSE 1 END,
+            CASE WHEN CLASS_ID != '*' THEN 0 ELSE 1 END,
+            CASE WHEN SUB_DEPT_ID != '*' THEN 0 ELSE 1 END
+    </select>
+
+    <!-- selectType0Discounts -->
+    <select id="selectType0Discounts" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM TBL_CDISC
+        WHERE DISCOUNT_ID = #{discountId,jdbcType=VARCHAR}
+          AND CHANNEL_ID = #{channelId,jdbcType=VARCHAR}
+          AND DISC_TYPE = '0'
+        <include refid="Valid_Date_Condition"/>
+        ORDER BY SUB_DEPT_ID, CLASS_ID, SUB_CLASS_ID, SKU_NO
+    </select>
+
+    <!-- selectType1Discounts -->
+    <select id="selectType1Discounts" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM TBL_CDISC
+        WHERE DISCOUNT_ID = #{discountId,jdbcType=VARCHAR}
+          AND CHANNEL_ID = #{channelId,jdbcType=VARCHAR}
+          AND DISC_TYPE = '1'
+        <include refid="Valid_Date_Condition"/>
+        ORDER BY SUB_DEPT_ID, CLASS_ID, SUB_CLASS_ID, SKU_NO
+    </select>
+
+    <!-- selectType2Discounts -->
+    <select id="selectType2Discounts" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM TBL_CDISC
+        WHERE DISCOUNT_ID = #{discountId,jdbcType=VARCHAR}
+          AND CHANNEL_ID = #{channelId,jdbcType=VARCHAR}
+          AND DISC_TYPE = '2'
+        <include refid="Valid_Date_Condition"/>
+        ORDER BY SUB_DEPT_ID, CLASS_ID, SUB_CLASS_ID, SKU_NO
+    </select>
+
+    <!-- selectBestDiscountForSku -->
+    <select id="selectBestDiscountForSku" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM TBL_CDISC
+        WHERE DISCOUNT_ID = #{discountId,jdbcType=VARCHAR}
+          AND CHANNEL_ID = #{channelId,jdbcType=VARCHAR}
+          AND (SUB_DEPT_ID = '*' OR SUB_DEPT_ID = #{subDeptId,jdbcType=VARCHAR})
+          AND (CLASS_ID = '*' OR CLASS_ID = #{classId,jdbcType=VARCHAR})
+          AND (SUB_CLASS_ID = '*' OR SUB_CLASS_ID = #{subClassId,jdbcType=VARCHAR})
+          AND (SKU_NO = '*' OR SKU_NO = #{skuNo,jdbcType=VARCHAR})
+        <include refid="Valid_Date_Condition"/>
+        ORDER BY
+            CASE WHEN SKU_NO != '*' THEN 0 ELSE 1 END,
+            CASE WHEN SUB_CLASS_ID != '*' THEN 0 ELSE 1 END,
+            CASE WHEN CLASS_ID != '*' THEN 0 ELSE 1 END,
+            CASE WHEN SUB_DEPT_ID != '*' THEN 0 ELSE 1 END
+        FETCH FIRST 1 ROWS ONLY
+    </select>
+
+</mapper>

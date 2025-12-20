@@ -1089,24 +1089,118 @@ await orderService.updateLineServices(orderId, lineId, {
 
 ## 17. State Machine Diagrams
 
-### 17.1 Order Calculation State Machine
+### 17.1 12-Step 計價主流程 State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> Idle: 訂單建立
+
+    Idle --> Step1_Revert: doCalculate()
+
+    Step1_Revert --> Step2_Apportion: revertAllSkuAmt()
+    note right of Step1_Revert
+        還原 actPosAmt = posAmt
+        清除所有折扣記錄
+    end note
+
+    Step2_Apportion --> Step3_Assort: apportionmentDiscount()
+    note right of Step2_Apportion
+        工種變價分攤
+        觸發: installAuthEmpId != null
+    end note
+
+    Step3_Assort --> Step4_Type2: assortSku()
+    note right of Step3_Assort
+        商品分類
+        P/I/FI/DD/VD/D
+    end note
+
+    Step4_Type2 --> CheckType2: memberDiscountType2()
+
+    CheckType2 --> ReAssort: hasType2 = true
+    CheckType2 --> Step5_Promotion: hasType2 = false
+
+    ReAssort --> Step5_Promotion: 重新分類商品
+
+    Step5_Promotion --> Step6_Type0: promotionCalculation()
+    note right of Step5_Promotion
+        8 種促銷類型 A-H
+        依 EVENT_NO 分群
+    end note
+
+    Step6_Type0 --> Step7_Type1: memberDiscountType0()
+    note right of Step6_Type0
+        Discounting 折扣
+        不修改 actPosAmt
+    end note
+
+    Step7_Type1 --> Step8_Special: memberDiscountType1()
+    note right of Step7_Type1
+        Down Margin 折扣
+        修改 actPosAmt
+    end note
+
+    Step8_Special --> Step9_12_Compute: specialMemberDiscount()
+
+    Step9_12_Compute --> Calculated: generateComputeTypes 1-6
+    note right of Step9_12_Compute
+        ComputeType 1: 商品小計
+        ComputeType 2: 安裝小計
+        ComputeType 3: 運送小計
+        ComputeType 4: 會員折扣
+        ComputeType 5: 直送費用
+        ComputeType 6: 折價券折扣
+    end note
+
+    Calculated --> [*]
+```
+
+### 17.2 Order Calculation State Machine
 
 ```mermaid
 stateDiagram-v2
     [*] --> Draft: 建立訂單
 
-    Draft --> HasProduct: 新增商品
-    HasProduct --> Draft: 移除全部商品
+    Draft --> HasProduct: addLine()
 
-    HasProduct --> Calculating: 點擊試算
-    Calculating --> Calculated: 試算成功
-    Calculating --> HasProduct: 試算失敗
+    state HasProduct {
+        [*] --> ProductAdded
+        ProductAdded --> ProductAdded: addLine() / updateQuantity()
+        ProductAdded --> Empty: removeLine() 且商品數=0
+    }
 
-    Calculated --> HasProduct: 修改商品/數量
-    Calculated --> Calculated: 套用優惠券
-    Calculated --> Calculated: 使用紅利
+    Empty --> Draft
 
-    Calculated --> Submitting: 提交訂單
+    HasProduct --> Validating: calculate()
+
+    state Validating {
+        [*] --> CheckCount
+        CheckCount --> CountExceeded: lines > 500
+        CheckCount --> CheckMember: lines <= 500
+
+        CountExceeded --> ValidationFailed: ERR: 超過試算上限
+
+        CheckMember --> NoMember: member == null
+        CheckMember --> HasMember: member != null
+
+        NoMember --> RunCalculation: 跳過會員折扣
+        HasMember --> RunCalculation: 執行完整流程
+    }
+
+    ValidationFailed --> HasProduct
+
+    RunCalculation --> Calculated: 試算成功
+
+    state Calculated {
+        [*] --> Ready
+        Ready --> Ready: applyCoupon() / redeemBonus()
+        Ready --> Dirty: modifyLine()
+    }
+
+    Dirty --> HasProduct: 需重新試算
+
+    Calculated --> Submitting: submit()
+
     Submitting --> Submitted: 提交成功
     Submitting --> Calculated: 提交失敗
 
@@ -1128,81 +1222,211 @@ stateDiagram-v2
     end note
 ```
 
-### 17.2 Member Discount Type State Machine
+### 17.3 Member Discount Type State Machine
 
 ```mermaid
 stateDiagram-v2
-    [*] --> CheckType: 載入會員折扣
+    [*] --> LoadMember: 載入會員資料
 
-    CheckType --> Type2: discType == '2'
-    CheckType --> Type0: discType == '0'
-    CheckType --> Type1: discType == '1'
-    CheckType --> Special: discType == 'SPECIAL'
-    CheckType --> None: discType == null
+    LoadMember --> CheckDiscType: 取得 discType
 
-    Type2 --> CostMarkup: 計算成本加價
-    CostMarkup --> CheckNegative: 檢查結果
-    CheckNegative --> ReAssort: result >= 0
-    CheckNegative --> Alert: result < 0
-    Alert --> ReAssort: 歸零並告警
-    ReAssort --> Promotion: 重新分類商品
+    CheckDiscType --> Type2_CostMarkup: discType == '2'
+    CheckDiscType --> Type0_Discounting: discType == '0'
+    CheckDiscType --> Type1_DownMargin: discType == '1'
+    CheckDiscType --> SpecialMember: discType == 'SPECIAL'
+    CheckDiscType --> NoDiscount: discType == null
 
-    Type0 --> Discounting: 計算折價率
-    Discounting --> RecordOnly: 不改價，僅記錄
+    state Type2_CostMarkup {
+        [*] --> CalcCostMarkup
+        CalcCostMarkup: newPrice = CEIL(unitCost × (1 + rate))
+        CalcCostMarkup --> CheckTax
+        CheckTax --> AddTax: taxType == '1' && !taxZero
+        CheckTax --> CheckNegative: taxType != '1'
+        AddTax: newPrice = FLOOR(newPrice × 1.05)
+        AddTax --> CheckNegative
+        CheckNegative --> ReplacePrice: result >= 0
+        CheckNegative --> ZeroAndAlert: result < 0
+        ZeroAndAlert: 歸零並發送告警信
+        ZeroAndAlert --> ReplacePrice
+        ReplacePrice: actPosAmt = newPrice
+        ReplacePrice --> [*]
+    }
 
-    Type1 --> DownMargin: 計算固定降價
-    DownMargin --> ModifyPrice: 直接修改 actPosAmt
+    state Type0_Discounting {
+        [*] --> CalcDisc0
+        CalcDisc0: discAmt = CEIL(totalPrice × rate)
+        CalcDisc0 --> RecordOnly
+        RecordOnly: memberDisc += discAmt
+        RecordOnly --> [*]
+    }
 
-    Special --> VipCalc: VIP/員工價計算
+    state Type1_DownMargin {
+        [*] --> CalcDisc1
+        CalcDisc1: discAmt = CEIL(actPosAmt × rate)
+        CalcDisc1 --> ModifyPrice
+        ModifyPrice: actPosAmt -= discAmt
+        ModifyPrice --> SetFlag
+        SetFlag: posAmtChangePrice = true
+        SetFlag --> [*]
+    }
 
-    None --> [*]: 無會員折扣
+    state SpecialMember {
+        [*] --> CheckVIP
+        CheckVIP --> VIPPrice: isVIP
+        CheckVIP --> EmployeePrice: isEmployee
+        VIPPrice --> [*]
+        EmployeePrice --> [*]
+    }
 
-    Promotion --> Type0
-    RecordOnly --> Type1
-    ModifyPrice --> Special
-    VipCalc --> [*]
-    ReAssort --> [*]: Type2 執行完畢
+    Type2_CostMarkup --> PromotionCalc: 進入促銷計算
+    PromotionCalc --> Type0_Discounting
+    Type0_Discounting --> Type1_DownMargin
+    Type1_DownMargin --> SpecialMember
+    SpecialMember --> Done
+    NoDiscount --> Done
+
+    Done --> [*]
 ```
 
-### 17.3 Coupon Validation State Machine
+### 17.4 Promotion Calculation State Machine
 
 ```mermaid
 stateDiagram-v2
-    [*] --> CheckExist: 輸入優惠券
+    [*] --> GroupByEvent: 促銷計算開始
 
-    CheckExist --> NotFound: 不存在
-    CheckExist --> CheckDate: 存在
+    GroupByEvent --> CheckEventType: 依 EVENT_NO 分群商品
 
-    NotFound --> [*]: 錯誤：優惠券不存在
+    CheckEventType --> EventA: type == 'A'
+    CheckEventType --> EventB: type == 'B'
+    CheckEventType --> EventC: type == 'C'
+    CheckEventType --> EventD: type == 'D'
+    CheckEventType --> EventE: type == 'E'
+    CheckEventType --> EventF: type == 'F'
+    CheckEventType --> EventG: type == 'G'
+    CheckEventType --> EventH: type == 'H'
+    CheckEventType --> NoPromotion: type == null
 
-    CheckDate --> Expired: 已過期
-    CheckDate --> NotStarted: 未生效
-    CheckDate --> CheckQuantity: 效期內
+    state EventA {
+        [*] --> StampPrice
+        StampPrice: 印花價計算
+        StampPrice --> MarkParticipated
+    }
 
-    Expired --> [*]: 錯誤：優惠券已過期
-    NotStarted --> [*]: 錯誤：優惠券未生效
+    state EventB {
+        [*] --> CheckInvoiceAmount
+        CheckInvoiceAmount: 發票金額滿額
+        CheckInvoiceAmount --> AddOnPurchase
+        AddOnPurchase: 加價購優惠
+        AddOnPurchase --> MarkParticipated
+    }
 
-    CheckQuantity --> NoStock: 無剩餘數量
-    CheckQuantity --> CheckProduct: 有剩餘
+    state EventC {
+        [*] --> CheckThreshold
+        CheckThreshold: 滿額/滿件檢查
+        CheckThreshold --> ApplyDiscount
+        ApplyDiscount: 全面優惠
+        ApplyDiscount --> MarkParticipated
+    }
 
-    NoStock --> [*]: 錯誤：優惠券已用完
+    state EventD {
+        [*] --> CountQuantity
+        CountQuantity: 買 M 個
+        CountQuantity --> ApplyNDiscount
+        ApplyNDiscount: 享 N 個優惠
+        ApplyNDiscount --> MarkParticipated
+    }
 
-    CheckProduct --> NoMatch: 無適用商品
-    CheckProduct --> CheckAmount: 有適用商品
+    state EventE {
+        [*] --> CheckGroupA
+        CheckGroupA: 買 A 群組
+        CheckGroupA --> DiscountGroupB
+        DiscountGroupB: 享 B 群組優惠
+        DiscountGroupB --> MarkParticipated
+    }
 
-    NoMatch --> [*]: 錯誤：無適用商品
+    state EventF {
+        [*] --> BundlePrice
+        BundlePrice: 合購價計算
+        BundlePrice --> MarkParticipated
+    }
 
-    CheckAmount --> BelowThreshold: 未達門檻
-    CheckAmount --> Calculate: 達到門檻
+    state EventG {
+        [*] --> SharedBundle
+        SharedBundle: 共用商品合購價
+        SharedBundle --> MarkParticipated
+    }
 
-    BelowThreshold --> [*]: 錯誤：未達使用門檻
+    state EventH {
+        [*] --> SplitBundle
+        SplitBundle: 單品拆價合購價
+        SplitBundle --> MarkParticipated
+    }
 
-    Calculate --> CheckCap: 計算折扣
-    CheckCap --> Capped: 超過商品總額
-    CheckCap --> Applied: 未超過
+    MarkParticipated --> CheckMoreEvents: 標記已參與促銷
 
-    Capped --> Applied: 封頂處理
-    Applied --> [*]: 成功套用
+    CheckMoreEvents --> CheckEventType: 還有未處理事件
+    CheckMoreEvents --> Done: 所有事件處理完成
+    NoPromotion --> Done
+
+    Done --> [*]
+```
+
+### 17.5 Coupon Validation State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> InputCoupon: 輸入優惠券代碼
+
+    InputCoupon --> L1_Exist: 驗證存在性
+
+    L1_Exist --> L1_Fail: 不存在
+    L1_Exist --> L2_Date: 存在
+
+    L1_Fail --> [*]: ERR: 優惠券不存在
+
+    L2_Date --> L2_Expired: endDate < today
+    L2_Date --> L2_NotStarted: startDate > today
+    L2_Date --> L3_Quantity: 效期內
+
+    L2_Expired --> [*]: ERR: 優惠券已過期
+    L2_NotStarted --> [*]: ERR: 優惠券未生效
+
+    L3_Quantity --> L3_NoStock: remainingQty <= 0
+    L3_Quantity --> L4_Product: 有剩餘數量
+
+    L3_NoStock --> [*]: ERR: 優惠券已用完
+
+    L4_Product --> L4_NoMatch: 無適用商品
+    L4_Product --> L5_Amount: 有適用商品
+
+    L4_NoMatch --> [*]: ERR: 購物車無適用商品
+
+    L5_Amount --> L5_BelowThreshold: total < minOrderAmt
+    L5_Amount --> L6_Calculate: 達到門檻
+
+    L5_BelowThreshold --> [*]: ERR: 未達使用門檻
+
+    state L6_Calculate {
+        [*] --> CheckType
+        CheckType --> FixedAmount: couponType == '0'
+        CheckType --> DiscountRate: couponType == '1'
+
+        FixedAmount --> Apportion: 固定面額分攤
+        DiscountRate --> CalcPercent: 折扣率計算
+
+        Apportion --> CheckCap
+        CalcPercent --> CheckCap
+
+        CheckCap --> Cap: discount > eligibleTotal
+        CheckCap --> Apply: discount <= eligibleTotal
+
+        Cap --> Apply: 封頂處理
+    }
+
+    Apply --> TaxSeparate: 應稅/免稅分離
+    TaxSeparate --> Success: 套用成功
+
+    Success --> [*]
 ```
 
 ---

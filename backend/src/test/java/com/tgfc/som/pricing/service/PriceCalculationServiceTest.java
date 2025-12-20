@@ -33,15 +33,24 @@ class PriceCalculationServiceTest {
     private WorkTypeService workTypeService;
 
     private MemberDiscountService memberDiscountService;
+    private PromotionService promotionService;
+    private ApportionmentService apportionmentService;
+    private com.tgfc.som.catalog.service.ProductEligibilityService productEligibilityService;
     private PriceCalculationService priceCalculationService;
 
     @BeforeEach
     void setUp() {
         memberDiscountService = new MemberDiscountService();
+        promotionService = new PromotionService();
+        apportionmentService = new ApportionmentService();
+        productEligibilityService = new com.tgfc.som.catalog.service.ProductEligibilityService();
 
         priceCalculationService = new PriceCalculationService(
                 workTypeService,
-                memberDiscountService
+                memberDiscountService,
+                promotionService,
+                apportionmentService,
+                productEligibilityService
         );
     }
 

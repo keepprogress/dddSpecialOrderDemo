@@ -11,8 +11,11 @@ import com.tgfc.som.order.domain.valueobject.Money;
 import com.tgfc.som.order.domain.valueobject.OrderId;
 import com.tgfc.som.order.domain.valueobject.PriceCalculation;
 import com.tgfc.som.order.domain.valueobject.ProjectId;
+import com.tgfc.som.catalog.service.ProductEligibilityService;
+import com.tgfc.som.pricing.service.ApportionmentService;
 import com.tgfc.som.pricing.service.MemberDiscountService;
 import com.tgfc.som.pricing.service.PriceCalculationService;
+import com.tgfc.som.pricing.service.PromotionService;
 import com.tgfc.som.fulfillment.service.WorkTypeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -38,11 +41,18 @@ class PriceCalculationPerformanceTest {
 
     private PriceCalculationService priceCalculationService;
     private MemberDiscountService memberDiscountService;
+    private PromotionService promotionService;
+    private ApportionmentService apportionmentService;
+    private ProductEligibilityService productEligibilityService;
 
     @BeforeEach
     void setUp() {
         memberDiscountService = new MemberDiscountService();
-        priceCalculationService = new PriceCalculationService(workTypeService, memberDiscountService);
+        promotionService = new PromotionService();
+        apportionmentService = new ApportionmentService();
+        productEligibilityService = new ProductEligibilityService();
+        priceCalculationService = new PriceCalculationService(
+            workTypeService, memberDiscountService, promotionService, apportionmentService, productEligibilityService);
     }
 
     @Test

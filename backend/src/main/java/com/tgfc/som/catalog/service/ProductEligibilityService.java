@@ -478,6 +478,48 @@ public class ProductEligibilityService {
     }
 
     /**
+     * 取得商品資訊
+     *
+     * @param skuNo 商品編號
+     * @return 商品資訊 (Optional)
+     */
+    public java.util.Optional<ProductInfo> getProductInfo(String skuNo) {
+        if (skuNo == null || skuNo.isBlank()) {
+            return java.util.Optional.empty();
+        }
+        ProductInfo product = MOCK_PRODUCTS.get(skuNo.toUpperCase());
+        return java.util.Optional.ofNullable(product);
+    }
+
+    /**
+     * 取得商品成本
+     *
+     * 用於 12-Step 計價流程 Step 4: memberDiscountType2 (Cost Markup)
+     *
+     * @param skuNo 商品編號
+     * @return 成本價 (若找不到商品則返回 0)
+     */
+    public int getProductCost(String skuNo) {
+        return getProductInfo(skuNo)
+            .map(ProductInfo::cost)
+            .orElse(0);
+    }
+
+    /**
+     * 批次取得商品成本
+     *
+     * @param skuNos 商品編號列表
+     * @return 商品成本 Map (skuNo -> cost)
+     */
+    public java.util.Map<String, Integer> getProductCosts(java.util.Collection<String> skuNos) {
+        java.util.Map<String, Integer> costs = new java.util.HashMap<>();
+        for (String skuNo : skuNos) {
+            costs.put(skuNo, getProductCost(skuNo));
+        }
+        return costs;
+    }
+
+    /**
      * 大型家具設定 (來源: TBL_PARM_DETL.PARM='LARGE_FURNITURE')
      */
     private record LargeFurnitureConfig(String subDeptId, String classId, String subClassId) {}
