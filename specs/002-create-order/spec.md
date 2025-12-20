@@ -608,6 +608,22 @@ record EligibilityResponse(
   - 採購組織設定
   - 寫死常數整理與 Enum 化建議
 
+### Pricing Calculation Specification
+
+價格計算相關完整規格請參考:
+
+- **[pricing-calculation-spec.md](./pricing-calculation-spec.md)** - 價格計算完整規格，包含:
+  - 12 步驟計價流程與依賴關係圖
+  - 會員折扣 Type 0/1/2 完整公式與程式碼證據
+  - 工種變價分攤 (Worktype Apportionment) 公式
+  - 安裝費用計算 (標安/進階/免安)
+  - 運送費用計算 (代運/純運/直送/宅配)
+  - 促銷計算 8 種 Event Type (A-H)
+  - 折價券分攤與封頂處理
+  - 稅額計算規則 (零稅/應稅/免稅)
+  - GoodsType、ComputeType、MemberDiscountType 常數定義
+  - Legacy 程式碼參考 (BzSoServices.java)
+
 ### Mermaid Diagrams
 
 商品查詢相關圖表:
