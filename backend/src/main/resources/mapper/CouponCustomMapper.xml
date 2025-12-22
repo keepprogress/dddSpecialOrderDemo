@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgfc.som.mapper.custom.CouponCustomMapper">
+
+    <!-- Result Map -->
+    <resultMap id="BaseResultMap" type="com.tgfc.som.entity.TblCoupon">
+        <id column="DSC_SKU" property="dscSku" jdbcType="VARCHAR"/>
+        <result column="DISC_TYPE" property="discType" jdbcType="VARCHAR"/>
+        <result column="DISC_AMT" property="discAmt" jdbcType="DECIMAL"/>
+        <result column="MIN_COND" property="minCond" jdbcType="DECIMAL"/>
+        <result column="START_DATE" property="startDate" jdbcType="DATE"/>
+        <result column="END_DATE" property="endDate" jdbcType="DATE"/>
+        <result column="MAX_QTY" property="maxQty" jdbcType="INTEGER"/>
+        <result column="USE_QTY" property="useQty" jdbcType="INTEGER"/>
+        <result column="SO_FLAG" property="soFlag" jdbcType="VARCHAR"/>
+        <result column="DSC_NAME" property="dscName" jdbcType="VARCHAR"/>
+        <result column="CREATED_DATE" property="createdDate" jdbcType="TIMESTAMP"/>
+        <result column="MODIFIED_DATE" property="modifiedDate" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- Base Columns -->
+    <sql id="Base_Column_List">
+        DSC_SKU, DISC_TYPE, DISC_AMT, MIN_COND, START_DATE, END_DATE,
+        MAX_QTY, USE_QTY, SO_FLAG, DSC_NAME, CREATED_DATE, MODIFIED_DATE
+    </sql>
+
+    <!-- selectByDscSku -->
+    <select id="selectByDscSku" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM TBL_COUPON
+        WHERE DSC_SKU = #{dscSku,jdbcType=VARCHAR}
+    </select>
+
+    <!-- selectValidCoupons -->
+    <select id="selectValidCoupons" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM TBL_COUPON
+        WHERE (START_DATE IS NULL OR START_DATE &lt;= #{checkDate,jdbcType=DATE})
+          AND (END_DATE IS NULL OR END_DATE &gt;= #{checkDate,jdbcType=DATE})
+          AND (MAX_QTY IS NULL OR MAX_QTY = 0 OR USE_QTY &lt; MAX_QTY)
+        ORDER BY DSC_SKU
+    </select>
+
+    <!-- selectValidCouponsForSo -->
+    <select id="selectValidCouponsForSo" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM TBL_COUPON
+        WHERE (START_DATE IS NULL OR START_DATE &lt;= #{checkDate,jdbcType=DATE})
+          AND (END_DATE IS NULL OR END_DATE &gt;= #{checkDate,jdbcType=DATE})
+          AND (MAX_QTY IS NULL OR MAX_QTY = 0 OR USE_QTY &lt; MAX_QTY)
+          AND SO_FLAG = 'Y'
+        ORDER BY DSC_SKU
+    </select>
+
+    <!-- incrementUseQty -->
+    <update id="incrementUseQty">
+        UPDATE TBL_COUPON
+        SET USE_QTY = NVL(USE_QTY, 0) + #{quantity,jdbcType=INTEGER},
+            MODIFIED_DATE = SYSDATE
+        WHERE DSC_SKU = #{dscSku,jdbcType=VARCHAR}
+    </update>
+
+    <!-- isValidCoupon -->
+    <select id="isValidCoupon" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM TBL_COUPON
+        WHERE DSC_SKU = #{dscSku,jdbcType=VARCHAR}
+          AND (START_DATE IS NULL OR START_DATE &lt;= #{checkDate,jdbcType=DATE})
+          AND (END_DATE IS NULL OR END_DATE &gt;= #{checkDate,jdbcType=DATE})
+          AND (MAX_QTY IS NULL OR MAX_QTY = 0 OR USE_QTY &lt; MAX_QTY)
+          AND SO_FLAG = 'Y'
+    </select>
+
+</mapper>

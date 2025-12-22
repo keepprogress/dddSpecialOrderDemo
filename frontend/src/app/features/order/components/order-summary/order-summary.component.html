@@ -1,0 +1,184 @@
+<div class="order-summary">
+  <h3 class="summary-title">訂單摘要</h3>
+
+  <!-- 金額明細 -->
+  <div class="amount-section">
+    <div class="amount-row">
+      <span class="label">商品小計</span>
+      <span class="value">{{ formatAmount(productTotal()) }} 元</span>
+    </div>
+
+    @if (installationTotal() > 0) {
+      <div class="amount-row">
+        <span class="label">安裝費用</span>
+        <span class="value">{{ formatAmount(installationTotal()) }} 元</span>
+      </div>
+    }
+
+    @if (deliveryTotal() > 0) {
+      <div class="amount-row">
+        <span class="label">運送費用</span>
+        <span class="value">{{ formatAmount(deliveryTotal()) }} 元</span>
+      </div>
+    }
+
+    @if (memberDiscountTotal() !== 0) {
+      <div class="amount-row discount">
+        <span class="label">會員折扣</span>
+        <span class="value negative">{{ formatAmount(memberDiscountTotal()) }} 元</span>
+      </div>
+    }
+
+    @if (couponDiscountTotal() !== 0) {
+      <div class="amount-row discount">
+        <span class="label">優惠券折扣</span>
+        <span class="value negative">-{{ formatAmount(Math.abs(couponDiscountTotal())) }} 元</span>
+      </div>
+    }
+
+    @if (bonusDiscountTotal() !== 0) {
+      <div class="amount-row discount">
+        <span class="label">紅利折抵</span>
+        <span class="value negative">-{{ formatAmount(Math.abs(bonusDiscountTotal())) }} 元</span>
+      </div>
+    }
+
+    <div class="amount-row total">
+      <span class="label">應付總額</span>
+      <span class="value">{{ formatAmount(grandTotal()) }} 元</span>
+    </div>
+  </div>
+
+  <!-- 優惠券 -->
+  <div class="coupon-section">
+    <h4>優惠券</h4>
+
+    @if (!isCouponApplied()) {
+      <div class="coupon-input">
+        <input
+          type="text"
+          placeholder="請輸入優惠券代碼"
+          [value]="couponId()"
+          (input)="couponId.set($any($event.target).value)"
+          [disabled]="isApplyingCoupon()"
+        />
+        <button
+          type="button"
+          class="btn-apply"
+          (click)="applyCoupon()"
+          [disabled]="isApplyingCoupon() || !couponId()"
+        >
+          @if (isApplyingCoupon()) {
+            套用中...
+          } @else {
+            套用
+          }
+        </button>
+      </div>
+    } @else {
+      <div class="coupon-applied">
+        <div class="coupon-info">
+          <span class="coupon-code">{{ couponId() }}</span>
+          @if (couponValidation()?.discountAmount) {
+            <span class="coupon-discount">
+              折抵 {{ formatAmount(couponValidation()!.discountAmount!.amount) }} 元
+            </span>
+          }
+          @if (couponValidation()?.freeInstallation) {
+            <span class="coupon-tag">免安裝費</span>
+          }
+        </div>
+        <button type="button" class="btn-remove" (click)="removeCoupon()">
+          移除
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- 紅利折抵 -->
+  @if (!isTempCard()) {
+    <div class="bonus-section">
+      <h4>
+        紅利折抵
+        @if (isLoadingBonus()) {
+          <span class="loading-text">查詢中...</span>
+        } @else {
+          <span class="available-points">可用點數: {{ formatAmount(availableBonusPoints()) }}</span>
+        }
+      </h4>
+
+      @if (canUseBonus()) {
+        <div class="bonus-form">
+          <div class="form-row">
+            <label>選擇商品</label>
+            <select
+              [value]="selectedSkuNo() ?? ''"
+              (change)="selectLineForBonus($any($event.target).value)"
+              [disabled]="isRedeemingBonus()"
+            >
+              <option value="">請選擇商品</option>
+              @for (line of eligibleLinesForBonus(); track line.lineId) {
+                <option [value]="line.skuNo">
+                  {{ line.skuName }} ({{ formatAmount(line.subtotal) }} 元)
+                </option>
+              }
+            </select>
+          </div>
+
+          @if (selectedSkuNo()) {
+            <div class="form-row">
+              <label>折抵點數</label>
+              <input
+                type="number"
+                min="10"
+                [max]="availableBonusPoints()"
+                [value]="bonusPoints()"
+                (input)="bonusPoints.set(+$any($event.target).value)"
+                [disabled]="isRedeemingBonus()"
+                placeholder="最少 10 點"
+              />
+            </div>
+
+            <button
+              type="button"
+              class="btn-redeem"
+              (click)="redeemBonus()"
+              [disabled]="isRedeemingBonus() || bonusPoints() < 10"
+            >
+              @if (isRedeemingBonus()) {
+                折抵中...
+              } @else {
+                確認折抵
+              }
+            </button>
+          }
+        </div>
+
+        <!-- 已折抵清單 -->
+        @if (bonusRedemptions().size > 0) {
+          <div class="redemption-list">
+            <h5>已折抵項目</h5>
+            @for (entry of bonusRedemptions() | keyvalue; track entry.key) {
+              <div class="redemption-item">
+                <span class="sku-name">{{ entry.value.skuName }}</span>
+                <span class="points">{{ formatAmount(entry.value.pointsUsed) }} 點</span>
+                <span class="discount">-{{ formatAmount(entry.value.discountAmount.amount) }} 元</span>
+                <button
+                  type="button"
+                  class="btn-cancel"
+                  (click)="cancelBonus(entry.key)"
+                >
+                  取消
+                </button>
+              </div>
+            }
+          </div>
+        }
+      } @else if (isTempCard()) {
+        <p class="notice">臨時卡會員無法使用紅利折抵</p>
+      } @else if (availableBonusPoints() < 10) {
+        <p class="notice">可用點數不足 10 點，無法使用紅利折抵</p>
+      }
+    </div>
+  }
+</div>

@@ -46,7 +46,7 @@ public class StoreService {
      */
     public MastStoreResponse getMastStore(String empId) {
         // 查詢所有主店別並過濾 (UAT 使用 EMP_ID)
-        UserMastStore userMastStore = userMastStoreMapper.selectAll().stream()
+        UserMastStore userMastStore = userMastStoreMapper.selectByExample(null).stream()
             .filter(ums -> empId.equals(ums.getEmpId()))
             .findFirst()
             .orElse(null);
@@ -79,7 +79,7 @@ public class StoreService {
      */
     public List<StoreResponse> getSupportStores(String empId) {
         // 查詢所有支援店別並過濾 (UAT 使用 EMP_ID)
-        List<UserStore> userStores = userStoreMapper.selectAll().stream()
+        List<UserStore> userStores = userStoreMapper.selectByExample(null).stream()
             .filter(us -> empId.equals(us.getEmpId()))
             .toList();
 
@@ -93,7 +93,7 @@ public class StoreService {
             .toList();
 
         // 批量查詢店別詳情
-        List<Store> allStores = storeMapper.selectAll();
+        List<Store> allStores = storeMapper.selectByExample(null);
 
         return allStores.stream()
             .filter(store -> storeIds.contains(store.getStoreId()))

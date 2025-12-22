@@ -419,7 +419,7 @@ public PaymentResponse processPayment(String idempotencyKey, PaymentRequest requ
 
 ```java
 // ❌ 錯誤: 鍵過長 (84 bytes)
-String key = "pricing:result:memberCardId:A123456789:skus:[{skuNo:SKU001,qty:2},{skuNo:SKU002,qty:1}]";
+String key = "pricing:result:memberCardId:A123456789:skus:[{skuNo:014014014,qty:2},{skuNo:015015015,qty:1}]";
 
 // ✅ 正確: 使用 Hash 縮短鍵 (48 bytes)
 String skusJson = objectMapper.writeValueAsString(request.getSkus());

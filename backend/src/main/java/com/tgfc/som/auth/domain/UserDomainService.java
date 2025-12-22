@@ -3,8 +3,8 @@ package com.tgfc.som.auth.domain;
 import com.tgfc.som.entity.User;
 import org.springframework.stereotype.Service;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * 使用者領域服務
@@ -13,7 +13,7 @@ import java.util.Date;
 @Service
 public class UserDomainService {
 
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /**
      * 執行 6-checkpoint 驗證
@@ -55,17 +55,17 @@ public class UserDomainService {
         }
 
         // Checkpoint 5: 在有效使用期間內
-        Date today = new Date();
-        if (today.before(user.getStartDate())) {
+        LocalDateTime now = LocalDateTime.now();
+        if (now.isBefore(user.getStartDate())) {
             return ValidationResult.error(
                 "NOT_YET_ENABLED",
-                "帳號尚未啟用，啟用日期：" + DATE_FORMAT.format(user.getStartDate())
+                "帳號尚未啟用，啟用日期：" + user.getStartDate().format(DATE_FORMAT)
             );
         }
-        if (today.after(user.getEndDate())) {
+        if (now.isAfter(user.getEndDate())) {
             return ValidationResult.error(
                 "ALREADY_EXPIRED",
-                "帳號已過期，過期日期：" + DATE_FORMAT.format(user.getEndDate())
+                "帳號已過期，過期日期：" + user.getEndDate().format(DATE_FORMAT)
             );
         }
 

@@ -7,7 +7,7 @@ import { test as base, Page } from '@playwright/test';
 
 // 測試帳號配置
 const TEST_USER = {
-  username: 'H00199',
+  username: 'K00123',
   password: 'Aa123456',
 };
 

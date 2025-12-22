@@ -1,0 +1,139 @@
+<div class="create-order-page">
+  <header class="page-header">
+    <h1>新增訂單</h1>
+    @if (currentOrder(); as order) {
+      <div class="order-info">
+        <span class="order-id">訂單編號: {{ order.orderId }}</span>
+        <span class="order-status" [class]="'status-' + order.status">
+          {{ order.statusName }}
+        </span>
+      </div>
+    }
+  </header>
+
+  <!-- 訊息區塊 -->
+  @if (errorMessage()) {
+    <div class="message error-message" (click)="clearMessages()">
+      {{ errorMessage() }}
+    </div>
+  }
+  @if (successMessage()) {
+    <div class="message success-message" (click)="clearMessages()">
+      {{ successMessage() }}
+    </div>
+  }
+
+  <!-- 主要內容區 -->
+  <div class="content-wrapper">
+
+    <!-- 會員資訊區塊 -->
+    <section class="section member-section">
+      <h2>會員資訊</h2>
+      @if (isMemberLoading()) {
+        <app-skeleton-loader type="text" [lines]="[1, 2, 3]" />
+      } @else {
+        <app-member-info
+          [member]="member()"
+          [isLoading]="isMemberLoading()"
+          (memberFound)="onMemberFound($event)"
+          (tempCardCreated)="onTempCardCreated($event)"
+          (error)="onMemberError($event)"
+        />
+      }
+    </section>
+
+    <!-- 商品列表區塊 -->
+    @if (hasOrder()) {
+      <section class="section product-section">
+        <h2>商品列表</h2>
+        @if (isProductLoading()) {
+          <app-skeleton-loader type="text" [lines]="[1, 2, 3, 4, 5]" />
+        } @else {
+          <app-product-list
+            [orderId]="currentOrder()?.orderId ?? ''"
+            [lines]="orderLines()"
+            [channelId]="channelId()"
+            [storeId]="storeId()"
+            [isLoading]="isProductLoading()"
+            (productAdded)="onProductAdded($event)"
+            (productRemoved)="onProductRemoved($event)"
+            (quantityChanged)="onQuantityChanged($event)"
+            (serviceConfigUpdated)="onServiceConfigUpdated($event)"
+          />
+        }
+      </section>
+
+      <!-- 訂單摘要區塊 (優惠券/紅利) -->
+      @if (currentOrder(); as order) {
+        <section class="section summary-section">
+          <app-order-summary
+            [orderId]="order.orderId"
+            [lines]="orderLines()"
+            [calculation]="calculationResult()"
+            [isTempCard]="isTempCard()"
+            (couponApplied)="onCouponApplied($event)"
+            (couponRemoved)="onCouponRemoved()"
+            (bonusRedeemed)="onBonusRedeemed($event)"
+            (bonusCancelled)="onBonusCancelled($event)"
+            (errorOccurred)="onSummaryError($event)"
+          />
+        </section>
+      }
+
+      <!-- 價格試算結果區塊 -->
+      @if (calculationResult()) {
+        <section class="section calculation-section">
+          <h2>試算明細</h2>
+          <app-price-calculation
+            [calculation]="calculationResult()"
+          />
+        </section>
+      }
+
+      <!-- 操作按鈕區塊 -->
+      <section class="section action-section">
+        <div class="action-buttons">
+          <button
+            class="btn btn-secondary"
+            (click)="calculate()"
+            [disabled]="!hasLines() || isCalculating()"
+          >
+            @if (isCalculating()) {
+              <span class="spinner"></span> 試算中...
+            } @else {
+              執行試算
+            }
+          </button>
+
+          <button
+            class="btn btn-primary"
+            (click)="submit()"
+            [disabled]="!canSubmit()"
+          >
+            @if (isSubmitting()) {
+              <span class="spinner"></span> 提交中...
+            } @else {
+              提交訂單
+            }
+          </button>
+        </div>
+      </section>
+    }
+
+    <!-- 未建立訂單提示 -->
+    @if (!hasOrder() && !isLoading()) {
+      <div class="empty-state">
+        <p>請先輸入會員資料以建立訂單</p>
+      </div>
+    }
+
+    <!-- 全頁載入中 -->
+    @if (isLoading()) {
+      <div class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>處理中...</p>
+      </div>
+    }
+
+  </div>
+</div>

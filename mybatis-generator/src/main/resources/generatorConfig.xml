@@ -4,8 +4,14 @@
         "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
 
 <generatorConfiguration>
-    <!-- 讀取外部 properties 檔案 -->
-    <properties resource="generator.properties"/>
+    <!--
+        資料庫連線設定方式（選擇其一）：
+        1. Maven settings.xml (推薦): 在 ~/.m2/settings.xml 設定 mbg-oracle profile
+        2. 環境變數: set MBG_DB_URL=... MBG_DB_USER=... MBG_DB_PASSWORD=...
+        3. 命令列: mvn mybatis-generator:generate -Dmbg.db.url=... -Dmbg.db.user=... -Dmbg.db.password=...
+
+        詳見 generator.properties 檔案說明
+    -->
 
     <context id="OracleContext" targetRuntime="MyBatis3" defaultModelType="flat">
 
@@ -34,11 +40,11 @@
             <property name="addRemarkComments" value="true"/>
         </commentGenerator>
 
-        <!-- JDBC 連線設定（使用 properties 變數） -->
-        <jdbcConnection driverClass="${jdbc.driverClass}"
-                        connectionURL="${jdbc.connectionURL}"
-                        userId="${jdbc.userId}"
-                        password="${jdbc.password}">
+        <!-- JDBC 連線設定（Maven Resource Filtering 會替換變數） -->
+        <jdbcConnection driverClass="oracle.jdbc.OracleDriver"
+                        connectionURL="${mbg.db.url}"
+                        userId="${mbg.db.user}"
+                        password="${mbg.db.password}">
             <!-- Oracle 特有設定 -->
             <property name="remarksReporting" value="true"/>
         </jdbcConnection>
@@ -112,6 +118,116 @@
             <property name="useActualColumnNames" value="false"/>
             <columnOverride column="USER_ID" javaType="String"/>
             <columnOverride column="STORE_ID" javaType="String"/>
+        </table>
+
+        <!-- ================================================================== -->
+        <!-- Feature: 002-create-order 資料表配置                                 -->
+        <!-- 注意：資料表名稱來自 docs/tables/*.html 實際定義                       -->
+        <!-- ================================================================== -->
+
+        <!-- 訂單主檔 (TBL_ORDER, 非 TBL_ORDER_MAST) -->
+        <table tableName="TBL_ORDER" domainObjectName="TblOrder">
+            <property name="useActualColumnNames" value="false"/>
+            <columnOverride column="ORDER_ID" javaType="String"/>
+            <columnOverride column="PROJECT_ID" javaType="String"/>
+            <columnOverride column="CHANNEL_ID" javaType="String"/>
+            <columnOverride column="STORE_ID" javaType="String"/>
+            <columnOverride column="SYSTEM_FLAG" javaType="String"/>
+            <columnOverride column="ORDER_STATUS_ID" javaType="String"/>
+            <columnOverride column="OUT_STORE_ID" javaType="String"/>
+            <columnOverride column="MEMBER_CARD_ID" javaType="String"/>
+            <columnOverride column="MEMBER_CARD_TYPE" javaType="String"/>
+            <columnOverride column="TAX_TYPE" javaType="String"/>
+            <columnOverride column="TOTAL_PRICE" javaType="java.math.BigDecimal"/>
+            <columnOverride column="TOTAL_PRICE_NTX" javaType="java.math.BigDecimal"/>
+            <columnOverride column="CREATE_DATE" javaType="java.time.LocalDateTime"/>
+            <columnOverride column="UPDATE_DATE" javaType="java.time.LocalDateTime"/>
+            <columnOverride column="EXPIRED_DATE" javaType="java.time.LocalDate"/>
+            <columnOverride column="MEMBER_BIRTHDAY" javaType="java.time.LocalDate"/>
+        </table>
+
+        <!-- 訂單明細 (PK: ORDER_ID + DETL_SEQ_ID) -->
+        <table tableName="TBL_ORDER_DETL" domainObjectName="TblOrderDetl">
+            <property name="useActualColumnNames" value="false"/>
+            <columnOverride column="ORDER_ID" javaType="String"/>
+            <columnOverride column="DETL_SEQ_ID" javaType="String"/>
+            <columnOverride column="STORE_ID" javaType="String"/>
+            <columnOverride column="SKU_NO" javaType="String"/>
+            <columnOverride column="TAX_TYPE" javaType="String"/>
+            <columnOverride column="WORKTYPE_ID" javaType="String"/>
+            <columnOverride column="DELIVERY_WORKTYPE_ID" javaType="String"/>
+            <columnOverride column="TRADE_STATUS" javaType="String"/>
+            <columnOverride column="DELIVERY_FLAG" javaType="String"/>
+            <columnOverride column="GOODS_TYPE" javaType="String"/>
+            <columnOverride column="QUANTITY" javaType="Integer"/>
+            <columnOverride column="UNIT_COST" javaType="java.math.BigDecimal"/>
+            <columnOverride column="MKT_AMT" javaType="java.math.BigDecimal"/>
+            <columnOverride column="REG_AMT" javaType="java.math.BigDecimal"/>
+            <columnOverride column="POS_AMT" javaType="java.math.BigDecimal"/>
+            <columnOverride column="ACT_POS_AMT" javaType="java.math.BigDecimal"/>
+            <columnOverride column="INSTALL_PRICE" javaType="java.math.BigDecimal"/>
+            <columnOverride column="DELIVERY_PRICE" javaType="java.math.BigDecimal"/>
+            <columnOverride column="ACT_INSTALL_PRICE" javaType="java.math.BigDecimal"/>
+            <columnOverride column="ACT_DELIVERY_PRICE" javaType="java.math.BigDecimal"/>
+            <columnOverride column="TOTAL_PRICE" javaType="java.math.BigDecimal"/>
+            <columnOverride column="DISCOUNT_AMT" javaType="java.math.BigDecimal"/>
+            <columnOverride column="DELIVERY_DATE" javaType="java.time.LocalDate"/>
+            <columnOverride column="CREATE_DATE" javaType="java.time.LocalDateTime"/>
+            <columnOverride column="UPDATE_DATE" javaType="java.time.LocalDateTime"/>
+        </table>
+
+        <!-- 訂單試算結果 (PK: ORDER_ID + COMPUTE_TYPE) -->
+        <table tableName="TBL_ORDER_COMPUTE" domainObjectName="TblOrderCompute">
+            <property name="useActualColumnNames" value="false"/>
+            <columnOverride column="ORDER_ID" javaType="String"/>
+            <columnOverride column="COMPUTE_TYPE" javaType="String"/>
+            <columnOverride column="STORE_ID" javaType="String"/>
+            <columnOverride column="TOTAL_PRICE" javaType="java.math.BigDecimal"/>
+            <columnOverride column="DISCOUNT" javaType="java.math.BigDecimal"/>
+            <columnOverride column="ACT_TOTAL_PRICE" javaType="java.math.BigDecimal"/>
+            <columnOverride column="ACT_TOTAL_PRICE_TX" javaType="java.math.BigDecimal"/>
+            <columnOverride column="ACT_TOTAL_PRICE_NTX" javaType="java.math.BigDecimal"/>
+            <columnOverride column="UPDATE_DATE" javaType="java.time.LocalDateTime"/>
+            <columnOverride column="AUTHORIZED_DATE" javaType="java.time.LocalDateTime"/>
+        </table>
+
+        <!-- 商品檔 (TBL_SKU, 非 TBL_SKU_MAST) -->
+        <table tableName="TBL_SKU" domainObjectName="TblSku">
+            <property name="useActualColumnNames" value="false"/>
+            <columnOverride column="SKU_NO" javaType="String"/>
+            <columnOverride column="SUB_DEPT_ID" javaType="String"/>
+            <columnOverride column="CLASS_ID" javaType="String"/>
+            <columnOverride column="SUB_CLASS_ID" javaType="String"/>
+            <columnOverride column="TAX_TYPE" javaType="String"/>
+            <columnOverride column="SKU_STATUS" javaType="String"/>
+            <columnOverride column="SO_FLAG" javaType="String"/>
+            <columnOverride column="OPEN_PRICE" javaType="String"/>
+            <columnOverride column="FREE_DELIVER" javaType="String"/>
+            <columnOverride column="DANGER_FLAG" javaType="String"/>
+            <columnOverride column="DC_TYPE" javaType="String"/>
+            <columnOverride column="HEIGHT" javaType="java.math.BigDecimal"/>
+            <columnOverride column="WIDTH" javaType="java.math.BigDecimal"/>
+            <columnOverride column="DEEPTH" javaType="java.math.BigDecimal"/>
+            <columnOverride column="WEIGHT" javaType="java.math.BigDecimal"/>
+            <columnOverride column="MODIFY_TIME" javaType="java.time.LocalDateTime"/>
+        </table>
+
+        <!-- 門店商品檔 (PK: SKU_NO + STORE_ID) -->
+        <table tableName="TBL_SKU_STORE" domainObjectName="TblSkuStore">
+            <property name="useActualColumnNames" value="false"/>
+            <columnOverride column="STORE_ID" javaType="String"/>
+            <columnOverride column="SKU_NO" javaType="String"/>
+            <columnOverride column="CHANNEL_ID" javaType="String"/>
+            <columnOverride column="SKU_STATUS" javaType="String"/>
+            <columnOverride column="HOLD_ORDER" javaType="String"/>
+            <columnOverride column="ALLOW_SALES" javaType="String"/>
+            <columnOverride column="ALLOW_RETURN" javaType="String"/>
+            <columnOverride column="DISPLAY_FLAG" javaType="String"/>
+            <columnOverride column="MARKET_PRICE" javaType="java.math.BigDecimal"/>
+            <columnOverride column="REGULAR_PRICE" javaType="java.math.BigDecimal"/>
+            <columnOverride column="POS_AMT" javaType="java.math.BigDecimal"/>
+            <columnOverride column="AVG_COST" javaType="java.math.BigDecimal"/>
+            <columnOverride column="MODIFY_TIME" javaType="java.time.LocalDateTime"/>
         </table>
 
     </context>

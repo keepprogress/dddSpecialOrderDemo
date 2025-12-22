@@ -185,7 +185,7 @@ Content-Type: application/json
   "memberCardId": "A123456789",
   "skus": [
     {
-      "skuNo": "SKU001",
+      "skuNo": "014014014",
       "quantity": 2
     }
   ],
@@ -229,7 +229,7 @@ Content-Type: application/json
   "memberCardId": "A123456789",
   "skus": [
     {
-      "skuNo": "SKU001",
+      "skuNo": "014014014",
       "quantity": 3  // 修改數量
     }
   ],

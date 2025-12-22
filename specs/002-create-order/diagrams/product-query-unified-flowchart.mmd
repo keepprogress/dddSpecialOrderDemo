@@ -1,0 +1,112 @@
+%% 商品查詢統一流程圖
+%% 來源: BzSkuInfoServices.java
+
+flowchart TD
+    subgraph Input["輸入處理"]
+        A[("輸入 SKU/Barcode")] --> B{長度 >= 10?}
+        B -->|是| C["查詢 TBL_BARCODE<br/>queryBarcode()"]
+        B -->|否| D["以 SKU 直接查詢"]
+        C --> E{找到對應 SKU?}
+        E -->|是| F["取得對應 SKU_NO"]
+        E -->|否| G["查詢 TBL_SKU.BARCODE"]
+        F --> D
+        G --> H{找到 SKU?}
+        H -->|是| D
+        H -->|否| ERR1[("返回: 查無資料")]
+    end
+
+    subgraph BasicQuery["基本資訊查詢"]
+        D --> I["selectSkuInfo()<br/>JOIN TBL_SKU + TBL_SKU_STORE"]
+        I --> J{查詢成功?}
+        J -->|否| ERR1
+        J -->|是| K["填充 SkuInfoVO 基本欄位"]
+    end
+
+    subgraph TempMember["臨時會員處理"]
+        K --> L{isTrcbTemporaryMember?}
+        L -->|是| M["POS價 = 原價<br/>清除 EVENT_NO<br/>清除 PROM_EVENT_NO"]
+        L -->|否| N["保持原價格資訊"]
+        M --> O["繼續處理"]
+        N --> O
+    end
+
+    subgraph LargeFurniture["大型家具判斷"]
+        O --> P["查詢 TBL_PARM_DETL<br/>PARM = 'LARGE_FURNITURE'"]
+        P --> Q["checkIsBigFurniture()"]
+        Q --> R{是大型家具?}
+        R -->|是| S["largeFurniture = true"]
+        R -->|否| T["largeFurniture = false"]
+        S --> U["繼續"]
+        T --> U
+    end
+
+    subgraph OrderabilityCheck["可訂購規則檢查"]
+        U --> V["查詢 TBL_SUB_CONFIG<br/>PURCHASABLE_SKU_TYPE"]
+        V --> W{商品類型可訂購?}
+        W -->|否| X["lockTradeStatusY = 'Y'"]
+        W -->|是| Y{VENDOR_ID 有值?}
+        Y -->|否| ERR2[("錯誤: 未設定廠商ID")]
+        Y -->|是| Z["查詢 TBL_VENDOR_COMPANY<br/>VENDOR_ID + COMPANY_CODE"]
+        Z --> AA{廠商狀態 = 'A'?}
+        AA -->|否| AB{DC_TYPE = 'DC'?}
+        AB -->|是| AC["isDcVendorStatusD = true"]
+        AB -->|否| X
+        AA -->|是| AD["查詢 TBL_SKU_COMPANY"]
+        AC --> AD
+        AD --> AE{在採購組織內?}
+        AE -->|否| X
+        AE -->|是| AF["可訂購"]
+        X --> AG["繼續處理"]
+        AF --> AG
+    end
+
+    subgraph ServiceSkuCheck["外包服務商品判斷"]
+        AG --> AH{"SUB_DEPT = '026'<br/>AND CLASS = '888'?"}
+        AH -->|是| AI["qerySkuInfoFor026888()<br/>外包服務商品處理"]
+        AH -->|否| AJ["一般商品處理"]
+        AI --> RESULT[("返回 SkuInfoVO")]
+    end
+
+    subgraph NormalProcess["一般商品處理"]
+        AJ --> AK{零稅訂單?}
+        AK -->|是| AL["setZeroTaxAmt()<br/>重算零稅價格"]
+        AK -->|否| AM["保持原價格"]
+        AL --> AN["繼續"]
+        AM --> AN
+
+        AN --> AO["selectInstallSkuInfo()<br/>查詢安裝商品對照"]
+        AO --> AP{有標準安裝?}
+        AP -->|是| AQ["處理安裝商品列表<br/>I/IA/IE/IC/IS/FI"]
+        AP -->|否| AR["installFlag = 'N'"]
+
+        AQ --> AS["generateWorkType()<br/>查詢工種對照"]
+        AS --> AT{找到工種?}
+        AT -->|是| AU["設定工種資訊"]
+        AT -->|否| AR
+        AU --> AV["查詢安裝調整商品"]
+        AR --> AW["繼續"]
+        AV --> AW
+
+        AW --> AX{SKU_CAT = '10'?}
+        AX -->|是| AY["selectSetSkuInfo()<br/>查詢 SET SKU"]
+        AX -->|否| AZ["跳過"]
+        AY --> BA["addBonusCdiscForSku()<br/>加入紅利資訊"]
+        AZ --> BA
+
+        BA --> RESULT
+    end
+
+    subgraph ServiceProcess["外包服務處理"]
+        AI --> BB["設定預設值:<br/>stockAOH = '0'<br/>avgCost = '0'<br/>marketPrice = '0'<br/>posAmt = '0'"]
+        BB --> BC["installFlag = 'Y'<br/>goodsType = 'P'"]
+        BC --> BD["selectInstallSkuInfoFor026888()"]
+        BD --> BE["查詢工種對照"]
+        BE --> BF["設定工種資訊"]
+        BF --> RESULT
+    end
+
+    style ERR1 fill:#ffcccc
+    style ERR2 fill:#ffcccc
+    style RESULT fill:#ccffcc
+    style X fill:#ffffcc
+    style AC fill:#ffffcc
